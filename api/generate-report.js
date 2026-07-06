@@ -1,21 +1,21 @@
 import OpenAI from 'openai';
 
 /* ════════════════════════════════════════════════════════════════════
-   Credion MB — Financieringsrapport-tool · /api/generate-report
+   Credion — Financieringsrapport Generator · /api/generate-report
 
    Kwaliteitsprincipes:
+   - Bronwaarheid: elke naam, elk bedrag, elke conclusie herleidbaar
+     uit de aangeleverde documenten. Geen demo-data, geen aannames.
    - Onbekend is nooit nul: onbekende bedragen zijn null.
-   - Elke belangrijke waarde heeft een bronverwijzing.
-   - Rapporttype wordt server-side bepaald (financieringsmemorandum of
-     intake_documentatiememorandum) op basis van echte datadekking.
-   - Datadekking-score wordt server-side deterministisch berekend,
-     nooit door het model zelf.
+   - Datadekking (hoog / middel / beperkt) en rapporttype worden
+     server-side deterministisch bepaald, nooit door het model.
+   - Positieve conclusies zonder onderbouwing worden geblokkeerd.
+   - Grafiekdata zonder echte bronbedragen wordt leeggemaakt.
    ════════════════════════════════════════════════════════════════════ */
 
 /* ── Schema-bouwstenen ─────────────────────────────────────────────── */
 const s = { type: 'string' };
 const nN = { type: ['number', 'null'] };
-const bN = { type: ['boolean', 'null'] };
 const b = { type: 'boolean' };
 const strArr = { type: 'array', items: s };
 const en = (...values) => ({ type: 'string', enum: values });
@@ -28,236 +28,172 @@ const obj = (properties) => ({
 const arr = (items) => ({ type: 'array', items });
 
 const CONF = en('hoog', 'middel', 'laag');
-const VASTGESTELD = en('vastgesteld', 'deels vastgesteld', 'niet vastgesteld');
-const NIVEAU = en('voldoende', 'beperkt', 'onvoldoende');
+const PRIO = en('hoog', 'middel', 'laag');
 
-const factItem = obj({
-  label: s,
-  waarde: s,
-  bedrag: nN,
-  bron_document: s,
-  bron_fragment: s,
-  confidence: CONF,
-  toelichting: s,
-});
-
-const lineItem = obj({
-  label: s,
-  bedrag: nN,
-  periode: s,
-  status: s,
-  bron_document: s,
-  toelichting: s,
-});
-
-const partyItem = obj({
-  partij: s,
-  rol: s,
-  rechtsvorm: s,
-  kvk: s,
-  bron: s,
-  toelichting: s,
-});
-
-const riskItem = obj({
-  risico: s,
-  kans: en('hoog', 'middel', 'laag'),
-  impact: en('hoog', 'middel', 'laag'),
-  mitigant: s,
-  bron: s,
-});
-
-const chartItem = obj({ label: s, waarde: nN, toelichting: s });
-
-const secTxt = obj({ tekst: s, status: VASTGESTELD, bron: s });
-
-const docRecItem = obj({
-  document: s,
-  categorie: s,
-  bruikbare_informatie: s,
-  status: s,
-});
-
-const opvraagItem = obj({ item: s, prioriteit: en('hoog', 'middel', 'laag'), toelichting: s });
+const factItem = obj({ label: s, waarde: s, bedrag: nN, bron_document: s, bron_fragment: s, confidence: CONF });
+const kpiCard = obj({ label: s, waarde: s, subtekst: s });
+const partijRow = obj({ naam: s, rol: s, rechtsvorm: s, kvk: s, toelichting: s });
+const bnaRow = obj({ label: s, type: en('bron', 'aanwending'), bedrag: nN, toelichting: s });
+const finRow = obj({ label: s, bedrag: nN, condities: s, toelichting: s });
+const cijferRow = obj({ label: s, periode: s, bedrag: nN });
+const ratioRow = obj({ ratio: s, periode: s, waarde: s, norm: s, toelichting: s });
+const riskRow = obj({ risico: s, kans: PRIO, impact: PRIO, mitigant: s });
+const zekerRow = obj({ zekerheid: s, waarde: nN, toelichting: s });
+const docRow = obj({ document: s, status: en('ontvangen', 'onvolledig', 'te controleren'), toelichting: s });
+const missRow = obj({ item: s, prioriteit: PRIO, toelichting: s });
+const mixPoint = obj({ label: s, waarde: nN });
+const trendPoint = obj({ periode: s, waarde: nN });
+const ratioPoint = obj({ ratio: s, periode: s, waarde: nN });
 
 const REPORT_SCHEMA = obj({
   metadata: obj({
     rapport_type: en('financieringsmemorandum', 'intake_documentatiememorandum'),
-    rapporttitel: s,
-    onderneming: obj({ naam: s, confidence: CONF, bron: s }),
+    klantnaam: s,
+    financieringsdoel: s,
     datum: s,
-    documenten: strArr,
-    kritieke_ontbrekende_data: strArr,
+    status: s,
+    datadekking: en('hoog', 'middel', 'beperkt'),
+    bron_documenten: strArr,
     belangrijkste_beperkingen: strArr,
   }),
-  source_facts: obj({
+  bronfeiten: obj({
     partijen: arr(factItem),
     financieringsvraag: arr(factItem),
+    investering: arr(factItem),
+    financieringsstructuur: arr(factItem),
     financiele_cijfers: arr(factItem),
-    balansposten: arr(factItem),
-    verplichtingen: arr(factItem),
     zekerheden: arr(factItem),
-    memo_buitenbalans: arr(factItem),
+    risicos: arr(factItem),
     documentatie: arr(factItem),
     tegenstrijdigheden: strArr,
   }),
-  voorblad: obj({
-    ondertitel: s,
-    onderneming: s,
-    datum: s,
-    rapportlabel: s,
-  }),
   managementsamenvatting: obj({
     kernboodschap: s,
-    wat_is_bekend: strArr,
-    wat_ontbreekt: strArr,
-    voorlopige_beoordeling: s,
-    geen_definitief_oordeel_mogelijk: b,
-    belangrijkste_aandachtspunten: strArr,
-    kaarten: obj({
-      kredietnemer: s,
-      financieringsdoel: s,
-      financieringsbehoefte: s,
-      cijferbasis: en('beschikbaar', 'beperkt', 'ontbreekt'),
-      zekerheden: VASTGESTELD,
-    }),
-  }),
-  memorandum: obj({
-    aanleiding: secTxt,
-    kern_van_de_aanvraag: secTxt,
-    betrokken_partijen: obj({ tekst: s, items: arr(partyItem) }),
-    onderneming_en_activiteiten: secTxt,
-    financiele_positie: secTxt,
-    financieringsbehoefte: obj({ bedrag: nN, tekst: s, status: VASTGESTELD, bron: s }),
-    bestaande_verplichtingen: obj({ tekst: s, items: arr(lineItem) }),
-    zekerheden: obj({ tekst: s, items: arr(lineItem) }),
-    risicos_en_aandachtspunten: strArr,
-    benodigde_besluitvorming: strArr,
-    conceptconclusie: obj({
-      tekst: s,
-      oordeel: en('positief', 'voorzichtig positief', 'neutraal', 'onvoldoende data', 'negatief'),
-      onderbouwing: strArr,
-    }),
-  }),
-  juridische_structuur: obj({
-    rechtspersonen: arr(partyItem),
-    personen: arr(partyItem),
-    bestuur_tekenbevoegdheid: strArr,
-    ubo_aandeelhouders: strArr,
-    onduidelijkheden: strArr,
-  }),
-  activiteiten: obj({
-    status: VASTGESTELD,
-    omschrijving: s,
-    verdienmodel: s,
-    markt: s,
-    klanten: s,
+    kpi_cards: arr(kpiCard),
+    belangrijkste_sterktes: strArr,
+    belangrijkste_risicos: strArr,
     aandachtspunten: strArr,
+    voorlopig_oordeel: s,
   }),
-  financieringsvraag: obj({
-    status: VASTGESTELD,
-    doel: s,
-    totale_behoefte: nN,
-    nieuwe_hoofdsom: nN,
-    structuur: s,
-    looptijd: s,
-    rente: s,
-    aflossing: s,
-    maandlast: nN,
-    bronnen_en_aanwendingen: arr(lineItem),
-    bestaande_financieringen: arr(lineItem),
-    ontbrekend: strArr,
+  aanvraag_en_structuur: obj({
+    tekst: s,
+    partijen: arr(partijRow),
+    structuurpunten: strArr,
+  }),
+  financieringsopzet: obj({
+    tekst: s,
+    kerncijfers: obj({
+      totale_investering: nN,
+      gevraagde_financiering: nN,
+      eigen_inbreng: nN,
+      overige_financiering: nN,
+      looptijd: s,
+      rente: s,
+      aflossing: s,
+      ltv: s,
+    }),
+    bronnen_en_aanwendingen: arr(bnaRow),
+    bestaande_financieringen: arr(finRow),
+    nieuwe_financieringen: arr(finRow),
+    voorwaarden: strArr,
   }),
   financiele_analyse: obj({
-    status: NIVEAU,
-    samenvatting: s,
-    resultaten: arr(lineItem),
-    cashflow: arr(lineItem),
-    ratio_lijst: arr(obj({ ratio: s, waarde: s, norm: s, toelichting: s })),
+    tekst: s,
+    resultaten: arr(cijferRow),
+    balans: arr(cijferRow),
+    ratios: arr(ratioRow),
     observaties: strArr,
-    ontbrekend: strArr,
   }),
-  balansanalyse: obj({
-    status: NIVEAU,
-    peildata: strArr,
-    activa: arr(lineItem),
-    passiva: arr(lineItem),
-    controle: obj({
-      activa_totaal: nN,
-      passiva_totaal: nN,
-      verschil: nN,
-      sluitend: bN,
-      toelichting: s,
-    }),
-    memo_en_buitenbalansposten: arr(lineItem),
-    ontbrekend: strArr,
-  }),
-  zekerhedenanalyse: obj({
-    status: VASTGESTELD,
-    zekerheden: arr(lineItem),
+  zekerheden_en_risico: obj({
+    tekst: s,
+    zekerheden: arr(zekerRow),
     dekkingspositie: s,
-    zekerheidsstellers: strArr,
-    ontbrekend: strArr,
-    aandachtspunten: strArr,
-  }),
-  risicoanalyse: obj({
-    status: NIVEAU,
-    risicomatrix: arr(riskItem),
+    risicomatrix: arr(riskRow),
     bancaire_aandachtspunten: strArr,
-    risicoconclusie: s,
+  }),
+  conclusie: obj({
+    oordeel: en('voorzichtig positief', 'neutraal', 'onvoldoende data', 'negatief'),
+    tekst: s,
+    voorwaarden: strArr,
+    actiepunten: strArr,
+    extern_deelbaar: s,
   }),
   documentatiecheck: obj({
-    ontvangen: arr(docRecItem),
-    ontbrekend: arr(opvraagItem),
+    ontvangen: arr(docRow),
+    ontbrekend: arr(missRow),
+    te_controleren: strArr,
     vervolgvragen: strArr,
   }),
   visualisaties: obj({
-    financieringsmix: arr(chartItem),
-    balansverdeling_activa: arr(chartItem),
-    balansverdeling_passiva: arr(chartItem),
-    resultaatontwikkeling: arr(obj({ label: s, periode: s, waarde: nN })),
-    zekerhedenmix: arr(chartItem),
+    financieringsmix: arr(mixPoint),
+    omzetontwikkeling: arr(trendPoint),
+    resultaatontwikkeling: arr(trendPoint),
+    zekerhedenmix: arr(mixPoint),
+    ratioontwikkeling: arr(ratioPoint),
   }),
   kwaliteitscontrole: obj({
     geen_demo_data: b,
     geen_nul_fallbacks: b,
-    conclusies_onderbouwd: b,
-    kritieke_validatiefouten: strArr,
+    alle_bedragen_uit_bron: b,
+    geen_lege_grafieken: b,
+    validatiefouten: strArr,
     waarschuwingen: strArr,
-    agent_controles: strArr,
   }),
 });
 
 /* ── System prompt ─────────────────────────────────────────────────── */
-const SYSTEM_BASE = `Je bent een senior Credion financieringsspecialist. Je analyseert uitsluitend de aangeleverde documenten en eventuele adviseursnotities.
+const SYSTEM_BASE = `Je bent een senior Credion-financieringsspecialist. Je zet aangeleverde documentatie (bijvoorbeeld een Capsearch-memorandum, financieringsplan, jaarrekening, prognose of taxatie) om naar een compact, bankwaardig Credion-financieringsrapport. Je analyseert uitsluitend de aangeleverde documenten en eventuele adviseursnotities.
 
-ABSOLUTE REGELS
-1. Je mag geen bedragen, ratio's, conclusies, zekerheden, financieringsvoorwaarden of bedrijfsinformatie verzinnen.
-2. Iedere belangrijke uitspraak moet terug te voeren zijn op een bronfragment. Vul bij elk bedrag bron_document en bron_fragment in.
-3. Onbekende informatie blijft onbekend en wordt professioneel als ontbrekend gemarkeerd.
-4. Onbekend is nooit nul. Onbekende bedragen en percentages zijn null, nooit 0. Alleen als de bron expliciet een nulbedrag vermeldt mag 0 worden gebruikt, met bronverwijzing.
-5. Je mag nooit een positieve financieringsconclusie geven als de financieringsvraag, financiële cijfers of zekerheden ontbreken. Gebruik dan oordeel "onvoldoende data" met de standaardtekst: "Op basis van de aangeleverde documentatie kan nog geen definitief oordeel worden gegeven over betaalbaarheid, risico en financierbaarheid. Aanvullende financiële gegevens, specificatie van de financieringsbehoefte en zekerhedeninformatie zijn benodigd."
-6. Als de brondata onvoldoende is voor een volwaardig financieringsmemorandum, kies dan rapport_type "intake_documentatiememorandum". Schrijf dan een eerlijk, professioneel intake- en documentatiememorandum: wat is wel vastgesteld, wat nog niet, waarom dat belangrijk is, welke stukken nodig zijn en welke vervolgstap logisch is.
-7. Herhaal nooit tientallen keren dezelfde placeholder. Schrijf per ontbrekend onderdeel één professionele zin zoals: "Niet vastgesteld op basis van de aangeleverde documenten", "Niet herleidbaar uit bronmateriaal", "Aanvullende documentatie benodigd" of "Geen betrouwbare berekening mogelijk".
-8. Geen marketingtaal, geen kredietgoedkeuring, geen garanties, geen externe kennis, geen aannames als feit.
+ABSOLUTE REGELS — BRONWAARHEID
+1. Elke naam, elk bedrag, elk percentage, elk jaartal, elke ratio, elke zekerheid en elke voorwaarde moet herleidbaar zijn uit de aangeleverde documenten. Verzin niets. Geen demo-data, geen voorbeeldcijfers, geen externe kennis.
+2. Onbekend is nooit nul. Onbekende bedragen en percentages zijn null. Gebruik 0 alleen als de bron expliciet een nulwaarde vermeldt (bijv. "geen eigen inbreng").
+3. Extraheer EERST harde bronfeiten in "bronfeiten" (met bron_document, kort bron_fragment en confidence). Schrijf daarna pas de rapportsecties. Geen bronfeit = geen interpretatie. Noteer tegenstrijdigheden tussen documenten expliciet in bronfeiten.tegenstrijdigheden.
+4. Ontbrekende informatie markeer je met één professionele zin, zoals "Niet vastgesteld op basis van de aangeleverde documentatie" of "Aanvullende onderbouwing benodigd". Herhaal zulke zinnen niet tientallen keren; laat lege arrays gewoon leeg.
+5. Berekeningen (bijv. LTV, totalen) alleen als alle benodigde broncijfers aanwezig zijn. Vermeld afgeleide waarden als zodanig in de toelichting.
 
-WERKWIJZE
-Stap 1 — Extraheer eerst alle harde bronfeiten in source_facts: partijen, financieringsvraag, financiële cijfers, balansposten, verplichtingen, zekerheden, memo-/buitenbalansposten en documentatie. Elk feit met waarde, bron_document, bron_fragment, confidence en toelichting. Noteer tegenstrijdigheden expliciet.
-Stap 2 — Vul documentatiecheck.ontvangen met elk aangeleverd document: vermoedelijke categorie, bruikbare informatie en extractiestatus.
-Stap 3 — Schrijf daarna pas het memorandum. Interpretaties alleen op basis van bronfeiten. Geen bronfeit = geen interpretatie.
-Stap 4 — Bepaal rapport_type: "financieringsmemorandum" alleen als minimaal bekend zijn: kredietnemer, financieringsdoel of aanleiding, financieringsbedrag of duidelijke behoefte, én concrete financiële cijfers. Anders "intake_documentatiememorandum".
+CAPSEARCH / BRONMEMORANDUM
+Als een aangeleverd document een Capsearch-financieringsplan of vergelijkbaar memorandum is: behandel het als primaire bron. Neem de kerncijfers exact over, vat de casus samen en structureer die — herschrijf het document NIET integraal. Het resultaat is een executive Credion-samenvatting: korter, scherper en besluitvormingsgericht. Geen lange letterlijke citaten, geen herhaling van detailpagina's.
 
-MEMORANDUM-SCHRIJFSTIJL
-Zakelijke Credion-stijl: helder, direct, financieringsgericht, korte alinea's. Als een sectie niet kan worden vastgesteld, schrijf dan een volwaardige professionele zin. Voorbeeld: niet "Aanleiding: niet opgenomen in bron", maar "De aanleiding voor de financieringsaanvraag is op basis van de aangeleverde documentatie nog niet eenduidig vastgesteld. Voor een financieringsmemorandum richting bank of financier is een specificatie nodig van doel, bedrag, looptijd, aflossingsstructuur en gewenste financieringsvorm."
+RAPPORTTYPE
+"financieringsmemorandum" alleen als minimaal bekend zijn: kredietnemer, financieringsdoel, financieringsbedrag (of duidelijke behoefte) én concrete financiële cijfers. Anders "intake_documentatiememorandum": een eerlijk intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap).
+
+SCHRIJFSTIJL
+Zakelijk Nederlands in Credion-stijl: helder, compact, no-nonsense, adviserend. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen lange zinnen, geen juridisch jargon waar het niet nodig is. Het rapport moet voelen alsof een goede financieringsadviseur het heeft opgesteld.
+
+LENGTEBEGRENZING (het rapport is een compacte executive samenvatting van 6-8 pagina's)
+- kernboodschap: max 90 woorden. voorlopig_oordeel: max 70 woorden.
+- Sectieteksten (tekst-velden): max 120 woorden per sectie.
+- conclusie.tekst: max 140 woorden.
+- kpi_cards: max 5, alleen met een waarde die direct uit de bron of een verantwoorde berekening volgt (bijv. gevraagde financiering, totale investering, eigen inbreng, LTV, DSCR). Geen kaart zonder waarde.
+- belangrijkste_sterktes / belangrijkste_risicos: max 5 elk. aandachtspunten: max 4.
+- Tabellen (partijen, bronnen_en_aanwendingen, resultaten, balans, ratios, zekerheden, risicomatrix): max 8 rijen elk, alleen rijen met echte informatie.
+- structuurpunten / voorwaarden / actiepunten / observaties / bancaire_aandachtspunten: max 6 elk.
+- documentatiecheck: compact; ontvangen max 8, ontbrekend max 8, te_controleren max 5, vervolgvragen max 5.
+
+CONCLUSIEBELEID
+Wees voorzichtig en professioneel. Gebruik nuance: "voorlopig", "op basis van de aangeleverde informatie", "mits", "na adviseurscontrole", "onder voorbehoud van verificatie".
+- Sterke brondata → oordeel "voorzichtig positief" met een tekst in de trant van: "Op basis van de aangeleverde documentatie ontstaat een voorzichtig positief beeld. De financieringsaanvraag is financieel verdedigbaar, mits de uitgangspunten uit de prognose worden gerealiseerd en de genoemde aandachtspunten door de adviseur worden gecontroleerd."
+- Beperkte data → oordeel "onvoldoende data" met: "Op basis van de aangeleverde documentatie kan nog geen definitief oordeel worden gegeven over financierbaarheid en betaalbaarheid. Aanvullende informatie is benodigd."
+- VERBODEN zonder volledige onderbouwing: "de financiering is verantwoord en betaalbaar", "bankwaardig", "sterk onderbouwd", "duurzaam draagbaar", "geen noemenswaardige risico's", "financiering kan worden verstrekt".
+- conclusie.extern_deelbaar: één zin met advies of het rapport na adviseurscontrole extern deelbaar is.
+
+FINANCIËLE ANALYSE
+Neem omzet- en resultaatontwikkeling, liquiditeit, solvabiliteit, betaalcapaciteit, DSCR en Debt/EBITDA alleen op voor zover de bron ze bevat of ze verantwoord berekend kunnen worden. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren in de periode markeren met "(prognose)".
 
 VISUALISATIES
-Vul grafiekarrays uitsluitend met echte bedragen uit de bron. Als er geen betrouwbare bedragen zijn: lege array []. Nooit placeholder-data, nooit 0-waarden als vulling.
+Vul grafiekarrays uitsluitend met echte bronbedragen. financieringsmix: de opbouw van de financiering (bijv. bancair krediet, eigen inbreng, verkoper­lening). omzetontwikkeling / resultaatontwikkeling: per periode. zekerhedenmix: alleen met waardes uit de bron. Geen betrouwbare bedragen = lege array []. Nooit 0-waarden als vulling, nooit één losse onduidelijke waarde.
 
-RISICOANALYSE
-Alleen risico's die uit de bron volgen. Bij beperkte documentatie is "Documentatierisico" (kans hoog, impact hoog, mitigant: aanvullende stukken opvragen voordat externe financieringsbeoordeling plaatsvindt) het belangrijkste risico.
+RISICO'S
+Alleen risico's die uit de bron volgen, elk met mitigant. Bij beperkte documentatie is "Documentatierisico" (kans hoog, impact hoog, mitigant: aanvullende stukken opvragen vóór externe beoordeling) het belangrijkste risico.
+
+DOCUMENTATIECHECK
+Registreer elk aangeleverd document met status. Benoem ontbrekende of te verifiëren stukken met prioriteit. Formuleer maximaal 5 gerichte vervolgvragen.
+
+METADATA
+klantnaam: de kredietnemer/onderneming zoals in de bron. financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". datum: rapportdatum in Nederlandse notatie. datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
 
 OUTPUT
-Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen code fences, geen tekst buiten de JSON.`;
+Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
 
 function buildPrompt({ notities, docSummary }) {
   return `${SYSTEM_BASE}
@@ -276,133 +212,131 @@ Lever nu uitsluitend het JSON-object volgens het schema.`;
 
 /* ── Server-side kwaliteitslaag ────────────────────────────────────── */
 const num = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
+const hasTxt = (v) => typeof v === 'string' && v.trim().length > 0;
+const A = (v) => (Array.isArray(v) ? v : []);
 
-// Onbekend is nooit nul: 0 zonder expliciete nul-bron wordt null.
-function cleanAmount(value, sourceText) {
-  const v = num(value);
-  if (v === null) return null;
-  if (v === 0 && !/(expliciet|bron).{0,40}(nul|€\s*0)|(nul|€\s*0).{0,40}(expliciet|bron)/i.test(String(sourceText || ''))) {
-    return null;
-  }
-  return v;
+function makeZeroChecker(r) {
+  const srcTxt = JSON.stringify(r.bronfeiten || {});
+  const explicitZero = /(geen eigen (inbreng|middelen)|expliciet.{0,30}nul|€\s?0[\s,.;]|zonder eigen inbreng|nihil)/i.test(srcTxt);
+  return (v) => {
+    const n = num(v);
+    if (n === null) return null;
+    if (n === 0 && !explicitZero) return null;
+    return n;
+  };
 }
 
-function cleanChart(items) {
-  if (!Array.isArray(items)) return [];
-  const cleaned = items.filter((it) => typeof it?.waarde === 'number' && isFinite(it.waarde) && it.waarde > 0);
-  return cleaned.length ? cleaned : [];
+function cleanMix(items) {
+  const c = A(items).filter((x) => num(x?.waarde) !== null && x.waarde > 0 && hasTxt(x?.label));
+  return c.length >= 2 ? c : [];
+}
+function cleanTrend(items) {
+  const c = A(items).filter((x) => num(x?.waarde) !== null && hasTxt(x?.periode));
+  return c.length >= 2 ? c : [];
 }
 
-function computeDatadekking(r) {
-  const fv = r.financieringsvraag || {};
-  const fa = r.financiele_analyse || {};
-  const ba = r.balansanalyse || {};
-  const za = r.zekerhedenanalyse || {};
-  const js = r.juridische_structuur || {};
-  const dc = r.documentatiecheck || {};
-  const sf = r.source_facts || {};
+function computeDekking(r) {
+  const kc = r.financieringsopzet?.kerncijfers || {};
+  const bnaBron = A(r.financieringsopzet?.bronnen_en_aanwendingen).some((x) => x?.type === 'bron' && num(x.bedrag) !== null);
+  const bedrag = num(kc.gevraagde_financiering) !== null || bnaBron;
+  const cijfers =
+    A(r.financiele_analyse?.resultaten).filter((x) => num(x?.bedrag) !== null).length >= 2 ||
+    A(r.financiele_analyse?.ratios).length >= 2;
+  const zeker = A(r.zekerheden_en_risico?.zekerheden).filter((x) => hasTxt(x?.zekerheid)).length >= 1;
+  const partijen = A(r.aanvraag_en_structuur?.partijen).filter((x) => hasTxt(x?.naam)).length >= 1;
+  const doel = hasTxt(r.metadata?.financieringsdoel);
 
-  const vraagBekend = fv.status === 'vastgesteld';
-  const vraagDeels = fv.status === 'deels vastgesteld';
-  const bedragBekend = num(fv.totale_behoefte) !== null || num(fv.nieuwe_hoofdsom) !== null;
-  const cijfers = fa.status === 'voldoende' ? 2 : fa.status === 'beperkt' ? 1 : 0;
-  const balans = ba.status === 'voldoende' ? 2 : ba.status === 'beperkt' ? 1 : 0;
-  const zeker = za.status === 'vastgesteld' ? 2 : za.status === 'deels vastgesteld' ? 1 : 0;
-  const juridisch = (js.rechtspersonen || []).length > 0 || (sf.partijen || []).length > 0;
-  const docsOntvangen = (dc.ontvangen || []).length;
-  const inconsistenties = (sf.tegenstrijdigheden || []).length;
+  const volwaardig = bedrag && doel && cijfers;
+  let niveau;
+  if (bedrag && doel && cijfers && zeker && partijen) niveau = 'hoog';
+  else if (bedrag && doel && (cijfers || zeker)) niveau = 'middel';
+  else niveau = 'beperkt';
 
-  let score = 0;
-  score += vraagBekend ? 15 : vraagDeels ? 7 : 0;
-  score += bedragBekend ? 15 : 0;
-  score += cijfers === 2 ? 20 : cijfers === 1 ? 10 : 0;
-  score += balans === 2 ? 15 : balans === 1 ? 7 : 0;
-  score += zeker === 2 ? 10 : zeker === 1 ? 5 : 0;
-  score += juridisch ? 10 : 0;
-  score += Math.min(10, docsOntvangen * 3);
-  score += inconsistenties === 0 ? 5 : 0;
-
-  // Harde maxima
-  if (!bedragBekend) score = Math.min(score, 60);
-  if (cijfers === 0) score = Math.min(score, 55);
-  if (!bedragBekend && cijfers === 0) score = Math.min(score, 40);
-  if (zeker === 0) score = Math.min(score, 80);
-
-  const vol = vraagBekend || vraagDeels;
-  const volwaardig = vol && bedragBekend && cijfers >= 1 && score >= 55;
-  if (!volwaardig) score = Math.min(score, 60);
-
-  const niveau = score >= 75 ? 'hoog' : score >= 55 ? 'middel' : score >= 35 ? 'laag' : 'onvoldoende';
-  const publicatiestatus =
-    niveau === 'hoog' ? 'Bankwaardig concept — na adviseurscontrole'
-    : niveau === 'middel' ? 'Geschikt voor adviseursreview'
-    : 'Nog niet extern deelbaar — eerst aanvullen';
-
-  return { score, niveau, volwaardig, publicatiestatus, bedragBekend, cijfers, zeker, inconsistenties };
+  return { bedrag, cijfers, zeker, partijen, doel, volwaardig, niveau };
 }
+
+const CONCL_ONVOLDOENDE =
+  'Op basis van de aangeleverde documentatie kan nog geen definitief oordeel worden gegeven over financierbaarheid en betaalbaarheid. Aanvullende financiële gegevens, specificatie van de financieringsbehoefte en zekerhedeninformatie zijn benodigd.';
+
+const FORBIDDEN_CLAIMS =
+  /(verantwoord en betaalbaar|bankwaardig rapport|sterk onderbouwd|duurzaam draagbaar|geen noemenswaardige risico'?s|financiering kan worden verstrekt)/i;
 
 function enforceQuality(r) {
   const warnings = [];
+  const zero = makeZeroChecker(r);
 
-  // 1. Bedragen: 0-fallbacks weghalen
-  const fv = r.financieringsvraag || {};
-  const srcTxt = JSON.stringify(r.source_facts?.financieringsvraag || '');
-  for (const k of ['totale_behoefte', 'nieuwe_hoofdsom', 'maandlast']) {
-    const before = fv[k];
-    fv[k] = cleanAmount(fv[k], srcTxt);
-    if (before === 0 && fv[k] === null) warnings.push(`Veld financieringsvraag.${k} was 0 zonder expliciete nul-bron en is op onbekend gezet.`);
+  /* 1 — bedragen: 0-fallbacks naar null */
+  const fo = (r.financieringsopzet = r.financieringsopzet || {});
+  const kc = (fo.kerncijfers = fo.kerncijfers || {});
+  for (const k of ['totale_investering', 'gevraagde_financiering', 'eigen_inbreng', 'overige_financiering']) {
+    const before = kc[k];
+    kc[k] = zero(kc[k]);
+    if (before === 0 && kc[k] === null) warnings.push(`kerncijfers.${k} was 0 zonder expliciete nul-bron en is op onbekend gezet.`);
   }
-  if (r.memorandum?.financieringsbehoefte) {
-    r.memorandum.financieringsbehoefte.bedrag = cleanAmount(r.memorandum.financieringsbehoefte.bedrag, srcTxt);
+  for (const key of ['bronnen_en_aanwendingen', 'bestaande_financieringen', 'nieuwe_financieringen']) {
+    fo[key] = A(fo[key]).map((row) => ({ ...row, bedrag: zero(row?.bedrag) }));
+  }
+  const fa = (r.financiele_analyse = r.financiele_analyse || {});
+  fa.resultaten = A(fa.resultaten).map((row) => ({ ...row, bedrag: num(row?.bedrag) }));
+  fa.balans = A(fa.balans).map((row) => ({ ...row, bedrag: num(row?.bedrag) }));
+  const zr = (r.zekerheden_en_risico = r.zekerheden_en_risico || {});
+  zr.zekerheden = A(zr.zekerheden).map((row) => ({ ...row, waarde: zero(row?.waarde) }));
+
+  /* 2 — consistentiecheck bronnen en aanwendingen */
+  const bronnen = A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === 'bron' && num(x.bedrag) !== null);
+  const aanw = A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === 'aanwending' && num(x.bedrag) !== null);
+  if (bronnen.length && aanw.length) {
+    const tb = bronnen.reduce((t, x) => t + x.bedrag, 0);
+    const ta = aanw.reduce((t, x) => t + x.bedrag, 0);
+    if (Math.abs(tb - ta) > Math.max(tb, ta) * 0.02) {
+      warnings.push(`Bronnen (€ ${Math.round(tb).toLocaleString('nl-NL')}) en aanwendingen (€ ${Math.round(ta).toLocaleString('nl-NL')}) sluiten niet; verifieer met de bron.`);
+    }
   }
 
-  // 2. Grafieken: alleen echte data
-  const vis = r.visualisaties || {};
-  for (const k of ['financieringsmix', 'balansverdeling_activa', 'balansverdeling_passiva', 'zekerhedenmix']) {
-    vis[k] = cleanChart(vis[k]);
-  }
-  vis.resultaatontwikkeling = (vis.resultaatontwikkeling || []).filter(
-    (it) => typeof it?.waarde === 'number' && isFinite(it.waarde)
-  );
+  /* 3 — grafieken: alleen echte data */
+  const vis = (r.visualisaties = r.visualisaties || {});
+  vis.financieringsmix = cleanMix(vis.financieringsmix);
+  vis.zekerhedenmix = cleanMix(vis.zekerhedenmix);
+  vis.omzetontwikkeling = cleanTrend(vis.omzetontwikkeling);
+  vis.resultaatontwikkeling = cleanTrend(vis.resultaatontwikkeling);
+  vis.ratioontwikkeling = A(vis.ratioontwikkeling).filter((x) => num(x?.waarde) !== null && hasTxt(x?.periode));
+  if (vis.ratioontwikkeling.length < 2) vis.ratioontwikkeling = [];
 
-  // 3. Datadekking en rapporttype server-side
-  const dd = computeDatadekking(r);
-  const aiType = r.metadata?.rapport_type;
-  const type = dd.volwaardig ? (aiType || 'financieringsmemorandum') : 'intake_documentatiememorandum';
-  if (aiType === 'financieringsmemorandum' && type === 'intake_documentatiememorandum') {
-    warnings.push('Rapporttype door kwaliteitslaag teruggezet naar intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig financieringsmemorandum.');
-  }
-
+  /* 4 — datadekking en rapporttype server-side */
+  const dd = computeDekking(r);
   r.metadata = r.metadata || {};
-  r.metadata.rapport_type = type;
-  r.metadata.rapporttitel = type === 'financieringsmemorandum' ? 'Financieringsmemorandum' : 'Intake- en documentatiememorandum';
+  const aiType = r.metadata.rapport_type;
+  r.metadata.rapport_type = dd.volwaardig ? (aiType || 'financieringsmemorandum') : 'intake_documentatiememorandum';
+  if (aiType === 'financieringsmemorandum' && r.metadata.rapport_type === 'intake_documentatiememorandum') {
+    warnings.push('Rapporttype teruggezet naar intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig financieringsmemorandum.');
+  }
+  r.metadata.datadekking = dd.niveau;
   r.metadata.status = 'Concept · ter beoordeling';
-  r.metadata.datadekking = {
-    niveau: dd.niveau,
-    score: dd.score,
-    score_toelichting:
-      dd.niveau === 'hoog'
-        ? 'Datadekking is hoog: kernonderdelen zijn herleidbaar uit de aangeleverde documenten.'
-        : dd.niveau === 'middel'
-        ? 'Datadekking is gedeeltelijk: een aantal kernonderdelen is nog niet of beperkt vastgesteld.'
-        : 'Datadekking is beperkt: cruciale informatie ontbreekt voor een volwaardig financieringsmemorandum.',
-    kritieke_ontbrekende_data: r.metadata.kritieke_ontbrekende_data || [],
-  };
-  r.metadata.publicatiestatus = dd.publicatiestatus;
 
-  // 4. Conclusie-bewaking
-  const cc = r.memorandum?.conceptconclusie;
-  if (cc && ['positief', 'voorzichtig positief'].includes(cc.oordeel) && !dd.volwaardig) {
-    warnings.push('Positieve conceptconclusie door kwaliteitslaag vervangen: onvoldoende onderbouwing in brondata.');
+  /* 5 — conclusiebeleid */
+  const cc = (r.conclusie = r.conclusie || {});
+  if (cc.oordeel === 'voorzichtig positief' && !dd.volwaardig) {
+    warnings.push('Positieve conclusie vervangen: onvoldoende onderbouwing in de brondata.');
     cc.oordeel = 'onvoldoende data';
-    cc.tekst =
-      'Op basis van de aangeleverde documentatie kan nog geen definitief oordeel worden gegeven over betaalbaarheid, risico en financierbaarheid. Aanvullende financiële gegevens, specificatie van de financieringsbehoefte en zekerhedeninformatie zijn benodigd.';
+    cc.tekst = CONCL_ONVOLDOENDE;
+  }
+  if (hasTxt(cc.tekst) && FORBIDDEN_CLAIMS.test(cc.tekst)) {
+    warnings.push('Conclusietekst bevatte een te stellige claim; door adviseur te herformuleren.');
+  }
+  if (!hasTxt(cc.extern_deelbaar)) {
+    cc.extern_deelbaar =
+      dd.niveau === 'hoog'
+        ? 'Na controle en akkoord van de Credion-adviseur is dit rapport geschikt als basis voor afstemming met een financier.'
+        : dd.niveau === 'middel'
+        ? 'Eerst de gemarkeerde punten aanvullen en door de adviseur laten controleren voordat het rapport extern wordt gedeeld.'
+        : 'Nog niet extern delen; eerst de ontbrekende documentatie aanvullen.';
   }
 
-  // 5. Kwaliteitscontrole bijwerken
-  r.kwaliteitscontrole = r.kwaliteitscontrole || {};
-  r.kwaliteitscontrole.waarschuwingen = [...(r.kwaliteitscontrole.waarschuwingen || []), ...warnings];
-  r.kwaliteitscontrole.geen_nul_fallbacks = true;
+  /* 6 — kwaliteitscontrole bijwerken */
+  const kwc = (r.kwaliteitscontrole = r.kwaliteitscontrole || {});
+  kwc.geen_nul_fallbacks = true;
+  kwc.geen_lege_grafieken = true;
+  kwc.waarschuwingen = [...A(kwc.waarschuwingen), ...warnings];
 
   return r;
 }
