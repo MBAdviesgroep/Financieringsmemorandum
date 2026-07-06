@@ -1,10 +1,10 @@
 {
-  "name": "credion-mb-financieringsrapport",
-  "version": "1.0.0",
-  "type": "module",
+  "name": "credion-financieringsrapport",
+  "version": "2.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "openai": "latest",
-    "@vercel/blob": "2.3.3"
+    "openai": "^4.104.0",
+    "@vercel/blob": "^2.3.3"
   }
 }
