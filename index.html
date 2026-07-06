@@ -502,10 +502,15 @@ async function generate(e){
     setStep(1);
     for(const d of docs){
       if(d.kind!=='pdf'&&d.kind!=='image') continue;
-      try{ d.url = await uploadDoc(d.file); }
+      try{
+        d.url = await uploadDoc(d.file);
+        // Belangrijk tegen 504-timeouts: stuur na Blob-upload geen base64 meer mee naar de server.
+        // /api/generate-report gebruikt dan de Blob URL in plaats van een zware request body.
+        d.dataBase64 = '';
+      }
       catch(upErr){
         console.error('Blob-upload mislukt:', upErr);
-        if(d.needsUrl) throw new Error(`Uploaden van “${d.filename}” is mislukt en het bestand is te groot om rechtstreeks mee te sturen. Probeer het opnieuw of gebruik een kleiner bestand.`);
+        if(d.needsUrl || !d.dataBase64) throw new Error(`Uploaden van “${d.filename}” is mislukt. Controleer of BLOB_READ_WRITE_TOKEN goed aan dit Vercel-project is gekoppeld en deploy opnieuw.`);
       }
     }
 
@@ -522,6 +527,7 @@ async function generate(e){
     const resp = await fetch('/api/generate-report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(resp.status===413) throw new Error('De aanvraag is te groot voor de server. Gebruik kleinere bestanden.');
     const out = await resp.json().catch(()=>({}));
+    if(resp.status===504) throw new Error('De rapportservice liep tegen de Vercel-timeout aan. Gebruik de nieuwste versie met Blob-URL verwerking, of verklein het document.');
     if(!resp.ok||out.error) throw new Error(out.error||`De rapportservice gaf een fout (${resp.status}). Probeer het opnieuw.`);
 
     setStep(3);
