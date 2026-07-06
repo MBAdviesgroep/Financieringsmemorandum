@@ -366,6 +366,7 @@ async function createResponse(client, model, content) {
   return client.responses.create({
     model,
     input: [{ role: 'user', content }],
+    max_output_tokens: 12000,
     text: {
       format: {
         type: 'json_schema',
@@ -497,10 +498,10 @@ export default async function handler(req, res) {
 
     let response;
     try {
-      response = await createResponse(client, 'gpt-4.1', content);
+      response = await createResponse(client, 'gpt-4.1-mini', content);
     } catch (firstErr) {
       if (firstErr?.status === 429 || String(firstErr?.message || '').includes('429')) {
-        response = await createResponse(client, 'gpt-4.1-mini', content);
+        response = await createResponse(client, 'gpt-4.1-nano', content);
       } else {
         throw firstErr;
       }
