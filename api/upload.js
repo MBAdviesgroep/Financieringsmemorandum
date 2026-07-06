@@ -27,6 +27,9 @@ async function readJsonBody(req) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === 'GET') {
+    return res.status(200).json({ ok: true, endpoint: 'upload', method: 'POST required' });
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Only POST allowed' });
   }
@@ -57,7 +60,16 @@ export default async function handler(req, res) {
         }
 
         return {
-          allowedContentTypes: ['application/pdf', 'application/octet-stream'],
+          allowedContentTypes: [
+            'application/pdf',
+            'application/octet-stream',
+            'image/jpeg',
+            'image/png',
+            'text/plain',
+            'text/csv',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          ],
           maximumSizeInBytes: 25 * 1024 * 1024,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ label, pathname }),
