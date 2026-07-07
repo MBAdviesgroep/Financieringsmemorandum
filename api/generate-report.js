@@ -255,7 +255,7 @@ const SYSTEM_BASE = `Je bent een document-transformator voor Credion: geen nieuw
 ABSOLUTE REGELS — BRONWAARHEID
 1. Elke naam, elk bedrag, elk percentage, elk jaartal, elke ratio, elke zekerheid en elke voorwaarde moet herleidbaar zijn uit de aangeleverde documenten. Verzin niets. Geen demo-data, geen voorbeeldcijfers, geen externe kennis.
 2. Onbekend is nooit nul. Onbekende bedragen en percentages zijn null. Gebruik 0 alleen als de bron expliciet een nulwaarde vermeldt (bijv. "geen eigen inbreng").
-3. Extraheer harde bronfeiten in "bronfeiten" (met bron_document, kort bron_fragment en confidence) vóórdat je rapportsecties schrijft. Geen bronfeit = geen interpretatie. Noteer tegenstrijdigheden tussen documenten expliciet in bronfeiten.tegenstrijdigheden.
+3. Extraheer harde bronfeiten in "bronfeiten" (met bron_document, kort bron_fragment en confidence) vóórdat je rapportsecties schrijft. Geen bronfeit = geen interpretatie. Noteer tegenstrijdigheden tussen documenten expliciet in bronfeiten.tegenstrijdigheden. Spreekt de brontabel een andere brontoelichting tegen (bijv. een tabel die "geen bestaande financieringen" vermeldt terwijl de toelichting elders bestaande leningen noemt), verzin dan geen eigen interpretatie van welke bron gelijk heeft: benoem het verschil neutraal, bijvoorbeeld "In de brontabel staat vermeld dat geen bestaande financieringen zijn opgenomen, terwijl de toelichting bestaande financieringen noemt. De actuele positie dient daarom te worden geverifieerd."
 4. Ontbrekende informatie markeer je met één professionele zin, zoals "Niet vastgesteld op basis van de aangeleverde documentatie". Herhaal zulke zinnen niet tientallen keren; laat velden en arrays zonder brondata gewoon leeg.
 5. Berekeningen (bijv. LTV, totalen) alleen als alle benodigde broncijfers aanwezig zijn. Vermeld afgeleide waarden als zodanig in de toelichting.
 
@@ -299,7 +299,7 @@ SECTIES (vul alleen wat de bron ondersteunt)
 - financiele_analyse: historische cijfers én prognose. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode.
 - betaalcapaciteit: historische en genormaliseerde betaalcapaciteit, correcties, privéonttrekkingen/privébehoefte, rente- en aflossingsverplichtingen, DSCR, Debt/EBITDA, overgangsjaar versus structurele situatie. Tabel als {label, periode, bedrag}; DSCR/Debt-EBITDA als kengetallen-rijen.
 - inkomen_vermogen_prive: alleen indien de bron dit bevat: inkomen ondernemer, partnerinkomen, woningwaarde, hypotheek, vermogen, privébehoefte — als posten {label, waarde} — plus relevantie voor de financiering.
-- zekerheden_en_risico: alle zekerheden met waarde en status, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten. Neem het juridische zekerheidslabel EXACT over uit de bron: maak van hoofdelijke aansprakelijkheid nooit een borgstelling en omgekeerd; maak van een mogelijke of "indien nodig aan te reiken" zekerheid nooit een definitief gevestigde zekerheid. status: volg de bron en gebruik één van — "gevestigd", "bestaand", "te vestigen", "aangeboden", "mogelijk aan te reiken", "nog te formaliseren", "voorwaardelijk", "nog te controleren", of leeg indien onbekend. Bestaande zekerheden (van een lopende financiering) gelden niet automatisch ook voor de nieuwe aanvraag, tenzij de bron dat expliciet zo zegt. Marktwaarde/WOZ-waarde, hypotheekschuld en overwaarde zijn aparte gegevens: maak van overwaarde of hypotheekschuld geen zekerheidswaarde tenzij de bron dat expliciet zo presenteert; noemt de bron overwaarde van een privéwoning slechts als mogelijke aanvullende zekerheid, neem dit dan ook zo terughoudend op — niet als reeds gevestigd onderdeel van de zekerhedenmix. Voorbeeld van de juiste toon: "De primaire zekerheid bestaat uit een eerste hypotheekrecht op het bedrijfspand. Een tweede hypotheek op de privéwoning is in de bron genoemd als mogelijk aan te reiken aanvullende zekerheid indien dit de financieringspositie verbetert." Formuleer de dekkingspositie nooit positiever dan de bron toelaat wanneer aanvullende zekerheden nog niet definitief zijn.
+- zekerheden_en_risico: alle zekerheden met waarde en status, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten. Neem het juridische zekerheidslabel EXACT over uit de bron: maak van hoofdelijke aansprakelijkheid nooit een borgstelling en omgekeerd; maak van een mogelijke of "indien nodig aan te reiken" zekerheid nooit een definitief gevestigde zekerheid. status: volg de bron en gebruik één van — "gevestigd", "bestaand", "te vestigen", "aangeboden", "mogelijk aan te reiken", "nog te formaliseren", "voorwaardelijk", "nog te controleren", of leeg indien onbekend. Bestaande zekerheden (van een lopende financiering) gelden niet automatisch ook voor de nieuwe aanvraag, tenzij de bron dat expliciet zo zegt. Marktwaarde/WOZ-waarde, hypotheekschuld en overwaarde zijn aparte gegevens: maak van overwaarde of hypotheekschuld geen zekerheidswaarde tenzij de bron dat expliciet zo presenteert; noemt de bron overwaarde van een privéwoning slechts als mogelijke aanvullende zekerheid, neem dit dan ook zo terughoudend op — niet als reeds gevestigd onderdeel van de zekerhedenmix. Voorbeeld vastgoed: "De primaire zekerheid bestaat uit een eerste hypotheekrecht op het bedrijfspand. Een tweede hypotheek op de privéwoning is in de bron genoemd als mogelijk aan te reiken aanvullende zekerheid indien dit de financieringspositie verbetert." Voorbeeld lease: "Voor de nieuwe lease wordt verpanding van de te financieren bedrijfsmiddelen genoemd. Bestaande hypotheek- en borgstellingszekerheden zijn opgenomen als context bij bestaande financieringen en gelden niet automatisch als zekerheid voor de nieuwe lease, tenzij de bron dit expliciet vermeldt." Formuleer de dekkingspositie nooit positiever dan de bron toelaat wanneer aanvullende zekerheden nog niet definitief zijn.
 
 BRONNEN EN AANWENDINGEN
 Neem de tabel letterlijk uit de bron over. Bronnen = waar het geld vandaan komt (hypothecaire/bancaire lening, eigen inbreng, achtergestelde lening, vendor loan, subsidie, btw-financiering). Aanwendingen = waar het geld naartoe gaat (koop-/aanneemsom, btw, notaris, taxatie, financierings- en advieskosten, onvoorzien, werkkapitaal, herfinanciering). Eigen inbreng of een lening hoort niet onder aanwendingen; een koop-/aanneemsom of kosten koper hoort niet onder bronnen — wijkt de bron hiervan af, volg dan de bron en neem een controlepunt op. Bouwdepottermijnen tellen niet mee als bron (regel 8). Als de bron sluit (investering = financiering), moeten jouw totalen exact gelijk zijn; sluit de bron zelf niet, benoem het verschil dan in een toelichting. Markeer totaal-, subtotaal- en saldoregels (zoals "Totaal investering", "Totale financiering", "Totaal bronnen", "Financieringsbehoefte", "Subtotaal", "Eindtotaal") met totaalregel=true: een totaalregel is nooit een detailpost en telt nooit mee in een optelling. Staat er een brontotaal, gebruik dan dat brontotaal en bereken geen nieuw totaal daarbovenop; alleen als de bron géén totaal geeft mag je detailregels optellen, met "berekend op basis van bronregels" in de toelichting.
@@ -389,6 +389,23 @@ function cleanMix(items) {
 function cleanTrend(items) {
   const c = A(items).filter((x) => num(x?.waarde) !== null && hasTxt(x?.periode));
   return c.length >= 2 ? c : [];
+}
+
+/* Zekerhedenmix mag uitsluitend definitieve/gevestigde zekerheden tonen: een
+   mogelijke, aan te reiken of nog te formaliseren zekerheid mag niet meetellen
+   in een grafiek die de dekking visueel als vaststaand voorstelt. */
+const CONDITIONAL_STATUS_PAT = /mogelijk|aan te reiken|te vestigen|aangeboden|voorwaardelijk|nog te formaliseren|nog te controleren/i;
+const normLabel = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9à-ÿ]+/g, ' ').trim();
+function dropConditionalZekerheden(mix, zekerheden) {
+  const conditioneel = A(zekerheden)
+    .filter((z) => CONDITIONAL_STATUS_PAT.test(String(z?.status || '')))
+    .map((z) => normLabel(z?.zekerheid))
+    .filter(Boolean);
+  if (!conditioneel.length) return A(mix);
+  return A(mix).filter((pt) => {
+    const n = normLabel(pt?.label);
+    return !conditioneel.some((c) => n.includes(c.slice(0, 14)) || c.includes(n.slice(0, 14)));
+  });
 }
 
 /* Datums: rapport-/documentdatum mag geen geboorte-/oprichtings-/taxatiedatum zijn */
@@ -550,6 +567,7 @@ const EN_FIXES = [
   ['verzuring', 'verzwaring'],
   ['verifiren', 'verifiëren'],
   ['goedgekeurd de aanvraag', 'de aanvraag goedgekeurd'],
+  ['betaaldcapaciteit', 'betaalcapaciteit'],
 ];
 
 /* Foutieve vaktermen die de AI soms voor de juiste bronterm invult. Let op:
@@ -561,6 +579,8 @@ const PHRASE_FIXES = [
   [/\bverpakking\s+verpanding\b/gi, 'Vestiging van verpanding'],
   [/\beffecte\b/gi, 'effecten'],
   [/\bnieuw\s+financial\s+lease\b/gi, 'nieuwe financial lease'],
+  [/\bStructurele\s+dubbel(?:e)?\s+woonlasten\b/gi, 'Tijdelijke dubbele huisvestingslasten'],
+  [/\bverschil\s+btw-teruggave\s+en\s+financieringsbedrag\s+woning\b/gi, 'verwerking van btw-teruggave binnen de financieringsopzet'],
 ];
 
 /* Eurotekens die door PDF-tekstextractie zijn verminkt (bijv. bij Type3/custom-font
@@ -568,6 +588,11 @@ const PHRASE_FIXES = [
    Normaliseer dit altijd naar "€ 123", vóórdat de tekst het rapport bereikt. */
 function fixEuroSigns(v) {
   let out = v
+    /* Bij sommige PDF-lettertypen wordt het eurosymbool geëxtraheerd als
+       replacement-character + een losse "9" (niet kaal). Deze variant moet
+       vóór de kale vervanging worden gefixt, anders blijft de "9" als stray
+       cijfer vóór het bedrag staan (bijv. "€ 9 75.400" i.p.v. "€ 75.400"). */
+    .replace(/�9\s?(?=\d)/g, '€ ')
     .replace(/\uFFFD\s?(?=\d)/g, '€ ')
     .replace(/\bEUR\s?(?=\d)/gi, '€ ')
     .replace(/(\d[\d.,]*)\s?euro\b/gi, '€ $1');
@@ -725,7 +750,7 @@ function enforceQuality(r, vandaag, opts = {}) {
   /* 3 — grafieken: alleen echte data */
   const vis = (r.visualisaties = r.visualisaties || {});
   vis.financieringsmix = cleanMix(vis.financieringsmix);
-  vis.zekerhedenmix = cleanMix(vis.zekerhedenmix);
+  vis.zekerhedenmix = cleanMix(dropConditionalZekerheden(vis.zekerhedenmix, r.zekerheden_en_risico?.zekerheden));
   vis.omzetontwikkeling = cleanTrend(vis.omzetontwikkeling);
   vis.resultaatontwikkeling = cleanTrend(vis.resultaatontwikkeling);
   vis.ratioontwikkeling = A(vis.ratioontwikkeling).filter((x) => num(x?.waarde) !== null && hasTxt(x?.periode));
@@ -815,10 +840,12 @@ function enforceQuality(r, vandaag, opts = {}) {
     }
   }
 
+  /* "Datadekking verlaagd naar ..." is een interne toolstatus, geen zakelijk
+     controlepunt — staat expliciet op de verbodslijst voor externe teksten. */
   const missingHigh = A(dc.ontbrekend).some((x) => String(x?.prioriteit || '').toLowerCase() === 'hoog');
   if (missingHigh && r.metadata.datadekking === 'hoog') {
     r.metadata.datadekking = 'middel';
-    warnings.push('Datadekking verlaagd naar "middel": er ontbreken nog stukken met hoge prioriteit.');
+    internal.push('Datadekking verlaagd naar "middel": er ontbreken nog stukken met hoge prioriteit.');
   }
 
   /* Documentatielijsten beperkt houden tot de belangrijkste punten */
