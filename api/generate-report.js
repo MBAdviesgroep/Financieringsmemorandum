@@ -13,8 +13,8 @@ import OpenAI from 'openai';
    - Coverage: elk bronhoofdstuk wordt verwerkt of gemotiveerd
      weggelaten; dit wordt server-side gecontroleerd.
    - Onbekend is nooit nul: onbekende bedragen zijn null.
-   - Bronnen/aanwendingen volgen de bron; server-side wordt alleen
-     presentatie en dubbeltelling van totaalregels gecorrigeerd.
+   - Bronnen/aanwendingen worden server-side geherclassificeerd
+     bij evidente fouten (eigen inbreng hoort bij bronnen, etc.).
    - Datumregels: rapportdatum nooit een geboortedatum/oprichtings-
      datum; server-side gecontroleerd tegen de bronfeiten.
    - Positieve conclusies zonder onderbouwing worden geblokkeerd.
@@ -243,25 +243,23 @@ TRANSFORMATIE-MODUS — VOLG DE BRON
 8. Een bouwdepot of opnametermijnen (termijn 1 t/m n) zijn een opnameplanning/uitsplitsing van de lening — NOOIT een extra financieringsbron naast die lening, tenzij de bron dit expliciet zo presenteert. Zet de fasering in bouwdepot_fasering.
 9. Ratio's zijn geen geldbedragen. DSCR als "3,11" of "3,11x" (nooit "€ 3"), LTV als percentage ("84,7%"), Debt/EBITDA als ratio ("5,90x").
 10. Gebruik voor resultaatposten de exacte labels uit de bron: onderscheid bedrijfsresultaat, resultaat voor belastingen en resultaat na belastingen; verwissel deze nooit.
-11. Bij compact_intake wint compactheid boven volledige bronstructuur: voeg dunne bronhoofdstukken samen en zet detailinformatie alleen in overige_secties met render=false-achtige intentie via weggelaten_met_reden/samengevat; maak geen losse overige-informatiepagina.
-12. Bij twijfel in compact_intake: kort samenvatten onder controlepunten, niet als losse sectie renderen. Bij volwaardige bronnen: bronstructuur volgen voor zover inhoudelijk relevant.
+11. Behoud de hoofdstukstructuur van de bron: hoofdstukken niet onnodig samenvoegen of splitsen. Bronhoofdstukken die niet in het schema passen (bijv. detailgegevens van betrokken personen of rechtspersonen) zet je in overige_secties, elk met titel, tekst en eventueel een tabel met {label, waarde}-rijen.
+12. Bij twijfel: volg de bron letterlijk en neem een controlepunt op in coverage_check.waarschuwingen.
 
 WERKWIJZE — EERST INVENTARISEREN, DAN SCHRIJVEN
 Stap 1: lees het volledige brondocument. Vul "bronrapport" in: geschat aantal pagina's, documenttype (bijv. "Capsearch-financieringsplan", "jaarrekening"), alle hoofdstukken/secties in bronvolgorde, alle relevante afbeeldingen (korte omschrijving per beeld, bijv. "organogram nieuwe structuur", "rendering nieuwbouw", "plattegrond"), aangetroffen organogrammen en de belangrijkste tabellen.
-Stap 2: verantwoord per bronhoofdstuk wat ermee gebeurt in "coverage_check": zet elk hoofdstuk in precies één van de lijsten opgenomen_in_rapport, samengevat of weggelaten_met_reden. Bij compact_intake: twijfel = samenvatten of als controlepunt opnemen, niet als losse sectie meenemen. Kopieer de volledige hoofdstukkenlijst ook naar coverage_check.bronhoofdstukken.
+Stap 2: verantwoord per bronhoofdstuk wat ermee gebeurt in "coverage_check": zet elk hoofdstuk in precies één van de lijsten opgenomen_in_rapport (volledig verwerkt), samengevat, of weggelaten_met_reden (formaat "hoofdstuk — reden"; alleen bij echte duplicatie of niet-besluitvormingsrelevante inhoud). Twijfel = meenemen. Kopieer de volledige hoofdstukkenlijst ook naar coverage_check.bronhoofdstukken.
 Stap 3: extraheer bronfeiten. Stap 4: schrijf pas daarna de rapportsecties.
 
 RAPPORTTYPE EN LENGTE — NIET OPBLAZEN
 Kies eerst, op basis van de broninhoud, één rapporttype (metadata.rapport_type):
-- "compact_intake": beperkte bron — indicatief minder dan 10 pagina's, weinig tekstuele onderbouwing, geen financiële analyse, geen prognose of betaalcapaciteitsberekening; vooral juridische structuur, financiering, zekerheden en documentatie. Output: een compact intake- en documentatiememorandum, in verhouding tot de bron (maximaal circa bronlengte + 1 à 2 pagina's; bij een bron onder 10 pagina's doorgaans maximaal 6 à 8 inhoudelijke pagina's), tenzij de adviseur in de notities expliciet om een uitgebreid rapport vraagt.
+- "compact_intake": beperkte bron — indicatief minder dan 10 pagina's, weinig tekstuele onderbouwing, geen financiële analyse, geen prognose of betaalcapaciteitsberekening; vooral juridische structuur, financiering, zekerheden en documentatie. Output: een compact intake- en documentatiememorandum, in verhouding tot de bron (maximaal circa bronlengte + 1 à 2 pagina's; bij een bron onder 10 pagina's doorgaans maximaal 8 à 9 pagina's), tenzij de adviseur in de notities expliciet om een uitgebreid rapport vraagt.
 - "volwaardig_financieringsmemorandum": alleen als de bron dit inhoudelijk draagt — onderneming en activiteiten beschreven, financieringsopzet én zekerheden aanwezig, financiële analyse of prognose aanwezig, betaalcapaciteit of kasstroom aanwezig. Output mag langer zijn dan de bron als de bron rijk is aan informatie, maar nooit kunstmatig opgeblazen.
 - "luxe_samenvatting": lange bron (indicatief boven 20 pagina's) met veel herhaling, of wanneer de adviseur expliciet een compactere bankversie vraagt. Output: korter dan de bron; kerninformatie en tabellen behouden, herhaling schrappen.
-Paginarem: een compact rapport streeft naar maximaal ongeveer de bronlengte en bij korte bronnen nooit kunstmatig groter; een luxe samenvatting is korter dan de bron. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is. Laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
+Paginarem: een compact rapport streeft naar maximaal 125% van het aantal bronpagina's; een luxe samenvatting is korter dan de bron. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is. Laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
 
 SECTIESELECTIE — ALLEEN WAT DE BRON DRAAGT
 Vul geen sectie voor onderwerpen die niet werkelijk in de bron staan: geen financiële analyse zonder cijfers; geen betaalcapaciteit zonder kasstroom, DSCR of rente-/aflossingsgegevens; geen marktsectie als de bron alleen operationele activiteiten noemt; geen object-/vastgoedsectie als vastgoed slechts zijdelings als bestaande zekerheid voorkomt; geen privésectie zonder relevante privéanalyse; geen lange conclusie zonder data. Laat zulke velden en arrays leeg. Maak nooit inhoud die alleen uit "niet opgenomen in bron" bestaat; ontbrekende maar relevante onderdelen benoem je kort als controlepunt (coverage_check.waarschuwingen) of vervolgvraag. Voeg geen standaardtekst toe om een sectie te vullen: het rapport moet mooier zijn dan de bron, niet langer dan de bron rechtvaardigt.
-Bij compact_intake mag je GEEN aparte secties vullen voor overige_secties, markt, management, object/vastgoed, financiële analyse, betaalcapaciteit, privé, risicoanalyse of conclusie als die niet substantieel in de bron staan. Detailgegevens van personen/rechtsvormen alleen compact en besluitvormingsrelevant; anders onder documentatie of weggelaten_met_reden. Geen debugtekst of interne validatiemeldingen in coverage_check.waarschuwingen.
-
 Sectieteksten (tekst-velden): volledige, afgeronde alinea's, zo lang als de broninhoud rechtvaardigt (typisch 60-300 woorden per veld). Gebruik lege regels tussen alinea's. Schrijf ALTIJD volledige zinnen; breek nooit een zin af en eindig nooit met "..." of "…". Tabellen: alle relevante rijen uit de bron (tot 24 per tabel). Bullets: tot 10 per lijst, alleen met echte informatie.
 
 SECTIES (vul alleen wat de bron ondersteunt)
@@ -693,20 +691,11 @@ function enforceQuality(r, vandaag) {
   /* 8 — coverage */
   enforceCoverage(r, warnings);
 
-  /* 9 — kwaliteitscontrole bijwerken: alleen externe, zakelijke waarschuwingen */
+  /* 9 — kwaliteitscontrole bijwerken */
   const kwc = (r.kwaliteitscontrole = r.kwaliteitscontrole || {});
   kwc.geen_nul_fallbacks = true;
   kwc.geen_lege_grafieken = true;
-  const DEBUG_WARNING_RE = /(kerncijfers\.|\bJSON\b|\bdebug\b|status\s+gecorrigeerd|was\s+0\s+zonder\s+expliciete\s+nul-bron|gecorrigeerd\s+naar|geherclassificeerd|interne\s+validatie)/i;
-  const zakelijkeWaarschuwing = (w) => {
-    if (!hasTxt(w) || DEBUG_WARNING_RE.test(w)) return '';
-    return String(w)
-      .replace(/Detailregels ([^(]+) \(€ [^)]+\) wijken af van het brontotaal \(€ [^)]+\); verifieer met de bron\./i, 'Controleer of de bronnen-en-aanwendingentabel volledig aansluit op de brontabel.')
-      .replace(/Bronhoofdstuk "([^"]+)" is niet expliciet verwerkt of gemotiveerd weggelaten; door adviseur te controleren\./i, '$1 is niet afzonderlijk uitgewerkt en dient waar nodig door de adviseur te worden gecontroleerd.');
-  };
-  kwc.waarschuwingen = [...new Set([...A(kwc.waarschuwingen), ...warnings].map(zakelijkeWaarschuwing).filter(hasTxt))].slice(0, 8);
-  /* coverage_check.waarschuwingen wordt ook extern getoond; houd deze schoon. */
-  if (r.coverage_check) r.coverage_check.waarschuwingen = A(r.coverage_check.waarschuwingen).map(zakelijkeWaarschuwing).filter(hasTxt).slice(0, 6);
+  kwc.waarschuwingen = [...A(kwc.waarschuwingen), ...warnings];
 
   return r;
 }
