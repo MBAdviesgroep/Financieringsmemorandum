@@ -386,12 +386,43 @@ function cleanTextForReport(value){
   return String(value??'')
     .replace(/\uFFFD\s?(?=\d)/g,'€ ')
     .replace(/\bEUR\s?(?=\d)/gi,'€ ')
-    .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1');
+    .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1')
+    .replace(/\bverpand(?:en|t)?\s+(?:worden|word(?:t)?|zijn)\s+voor\s+verzending\b/gi,'afgeroepen worden voor verzending')
+    .replace(/\bverpakking\s+verpanding\b/gi,'Vestiging van verpanding')
+    .replace(/\beffecte\b/gi,'effecten')
+    .replace(/\bnieuw\s+financial\s+lease\b/gi,'nieuwe financial lease');
 }
 const esc = v => cleanTextForReport(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hasVal = v => v!==null && v!==undefined && String(v).trim()!=='' && !['null','undefined','NaN','[object Object]'].includes(String(v).trim());
 const NB = 'Niet vastgesteld op basis van de aangeleverde documentatie.';
 const safeText = (v,fb=NB) => esc(hasVal(v)?v:fb);
+
+/* Vangnet vóór rendering: technische/debug-formuleringen en lege "Niet vastgesteld"-
+   blokken mogen nooit als controlepunt in het externe rapport verschijnen, ook niet
+   als een oudere serverversie of een handmatig aangeleverde JSON (__credionRender)
+   ze toch in coverage_check/kwaliteitscontrole heeft gezet. */
+const FORBIDDEN_NOTE_PATTERNS = [
+  /\bjson\b/i,
+  /\bdebug\b/i,
+  /\binternal\b/i,
+  /status\s+gecorrigeerd/i,
+  /zonder\s+expliciete\s+nul-?bron/i,
+  /bronhoofdstuk[^.]{0,80}niet\s+expliciet\s+verwerkt/i,
+  /\bkerncijfers\.\w+/i,
+  /dekking van het bronrapport/i,
+  /beeldmateriaal in de bron/i,
+  /^bronhoofdstukken$/i,
+  /afbeeldingen in bron/i,
+  /aanvullend,?\s*uit de bron/i,
+];
+function sanitizeAdvisorNotes(items){
+  return A(items).filter(hasVal).map(String).filter(t=>{
+    const s=t.trim();
+    if(!s) return false;
+    if(s===NB || (/^niet vastgesteld\b/i.test(s) && s.length<60)) return false;
+    return !FORBIDDEN_NOTE_PATTERNS.some(p=>p.test(s));
+  });
+}
 const isNum = v => typeof v==='number' && isFinite(v);
 const money = v => isNum(v) ? '€ '+Math.round(v).toLocaleString('nl-NL') : null;
 const moneyShort = v => !isNum(v) ? '' : Math.abs(v)>=1e6 ? '€ '+(v/1e6).toLocaleString('nl-NL',{maximumFractionDigits:2})+' mln' : money(v);
@@ -973,7 +1004,7 @@ function buildCompactIntakeSections(r,ctx){
       blocks.push(bulletBlocks([...ontv.map(d=>`${d.document} (ontvangen)`),...inbron.map(d=>`${d.document} (in bron opgenomen)`)]));
     }
     if(ontbr.length){ blocks.push(secbarB('Op te vragen stukken')); blocks.push(bulletBlocks(ontbr.map(d=>d.item))); }
-    let warns=[...new Set([...A(cv.waarschuwingen),...A(r.kwaliteitscontrole?.waarschuwingen)])].filter(hasVal).slice(0,5);
+    let warns=sanitizeAdvisorNotes([...new Set([...A(cv.waarschuwingen),...A(r.kwaliteitscontrole?.waarschuwingen)])]).slice(0,5);
     if(warns.length){ blocks.push(secbarB('Controlepunten voor de adviseur')); blocks.push(bulletBlocks(warns,'orange')); }
     const vragen=A(dc.vervolgvragen).filter(hasVal).slice(0,5);
     if(vragen.length){ blocks.push(secbarB('Vervolgvragen')); blocks.push(bulletBlocks(vragen)); }
@@ -1317,7 +1348,7 @@ function buildSections(r,ctx){
        Alleen de zakelijk relevante controlepunten en toelichting op samenvoeging
        worden getoond. */
     const weggelaten=A(cv.weggelaten_met_reden).filter(hasVal);
-    let warns=[...new Set([...A(cv.waarschuwingen),...A(r.kwaliteitscontrole?.waarschuwingen)])].filter(hasVal);
+    let warns=sanitizeAdvisorNotes([...new Set([...A(cv.waarschuwingen),...A(r.kwaliteitscontrole?.waarschuwingen)])]);
     if(warns.length>8) warns=warns.slice(0,8);
     if(weggelaten.length||warns.length){
       if(weggelaten.length){ blocks.push(panel('Bewust samengevoegd of weggelaten',weggelaten.map(x=>'\u2022 '+x).join('\n'))); }
