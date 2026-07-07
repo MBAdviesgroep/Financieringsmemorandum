@@ -542,6 +542,17 @@ const EN_FIXES = [
   ['goedgekeurd de aanvraag', 'de aanvraag goedgekeurd'],
 ];
 
+/* Eurotekens die door PDF-tekstextractie zijn verminkt (bijv. bij Type3/custom-font
+   PDF's) komen soms als replacement character (�) of als "EUR 123"/"123 euro" terug.
+   Normaliseer dit altijd naar "€ 123", vóórdat de tekst het rapport bereikt. */
+function fixEuroSigns(v) {
+  let out = v
+    .replace(/\uFFFD\s?(?=\d)/g, '€ ')
+    .replace(/\bEUR\s?(?=\d)/gi, '€ ')
+    .replace(/(\d[\d.,]*)\s?euro\b/gi, '€ $1');
+  return out;
+}
+
 /* Afgekapte tekst en render-vervuiling opruimen */
 function deepCleanStrings(node, warnings, path = '') {
   if (typeof node === 'string') {
@@ -553,6 +564,12 @@ function deepCleanStrings(node, warnings, path = '') {
       }
     }
     if (/^(undefined|null|NaN|\[object Object\])$/i.test(v.trim())) return '';
+    const beforeEuro = v;
+    v = fixEuroSigns(v);
+    if (v !== beforeEuro) {
+      const w = 'Verminkt eurosymbool in de brontekst genormaliseerd naar "€".';
+      if (!warnings.includes(w)) warnings.push(w);
+    }
     for (const [en, nl] of EN_FIXES) {
       const re = new RegExp('\\b' + en + '\\b', 'gi');
       if (re.test(v)) {
@@ -600,7 +617,7 @@ function computeDekking(r) {
 }
 
 const CONCL_ONVOLDOENDE =
-  'Op basis van de aangeleverde documentatie kan nog geen definitief oordeel worden gegeven over financierbaarheid en betaalbaarheid. Aanvullende financiële gegevens, specificatie van de financieringsbehoefte en zekerhedeninformatie zijn benodigd.';
+  'Nog geen definitief oordeel mogelijk op basis van de aangeleverde informatie. Aanvullende bankopgaven en financiële onderbouwing zijn noodzakelijk.';
 
 const FORBIDDEN_CLAIMS =
   /(verantwoord en betaalbaar|zonder meer worden verstrekt|bankwaardig rapport|sterk onderbouwd|duurzaam draagbaar|geen noemenswaardige risico'?s|financiering kan worden verstrekt|definitief akkoord)/i;
@@ -685,37 +702,58 @@ function enforceQuality(r, vandaag, opts = {}) {
   /* 4 — datumregels */
   enforceDates(r, warnings, vandaag);
 
-  /* 5 — datadekking en rapporttype server-side */
+  /* 5 — paginabudget ééRST bepalen: sourcePageCount is de belangrijkste harde rem
+     op de typebepaling hieronder. bytesPageCount (gemeten aan de echte PDF-bytes)
+     weegt zwaarder dan de schatting van de AI zelf; bronrapport.aantal_paginas is
+     de terugval als de bytes op de server niet beschikbaar waren. */
+  const aiPages = num(r.bronrapport?.aantal_paginas);
+  const sourcePageCount = bytesPageCount || (aiPages && aiPages > 0 ? Math.round(aiPages) : null);
+  const bronIsKort = sourcePageCount !== null && sourcePageCount < 10;
+
+  /* 6 — datadekking en rapporttype server-side.
+     BUG DIE HIER ZAT: "volwaardig" werd al toegekend zodra er 2 cijferregels + 1
+     bedrag + 1 doelzin waren — veel te soepel voor een korte bron. Een korte bron
+     (< 10 pagina's) wordt daarom nu ALTIJD naar compact_intake gedwongen, ongeacht
+     wat de AI zelf koos en ongeacht of dd.volwaardig toevallig true uitkomt. Alleen
+     een expliciet "uitgebreid rapport" in de notities doorbreekt deze rem. */
   const dd = computeDekking(r);
   r.metadata = r.metadata || {};
   const TYPE_ALIAS = { financieringsmemorandum: 'volwaardig_financieringsmemorandum', intake_documentatiememorandum: 'compact_intake' };
   const GELDIGE_TYPES = ['volwaardig_financieringsmemorandum', 'compact_intake', 'luxe_samenvatting'];
   const aiType = TYPE_ALIAS[r.metadata.rapport_type] || r.metadata.rapport_type;
-  r.metadata.rapport_type = dd.volwaardig
-    ? (GELDIGE_TYPES.includes(aiType) ? aiType : 'volwaardig_financieringsmemorandum')
-    : 'compact_intake';
-  if (aiType !== 'compact_intake' && r.metadata.rapport_type === 'compact_intake') {
-    warnings.push('Rapporttype teruggezet naar compact intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig rapport.');
+  if (bronIsKort && !uitgebreid) {
+    r.metadata.rapport_type = 'compact_intake';
+    if (aiType !== 'compact_intake') {
+      warnings.push(`Rapporttype teruggezet naar compact intake- en documentatiememorandum: de bron telt ${sourcePageCount} pagina's, te kort voor een volwaardig rapport.`);
+    }
+  } else {
+    r.metadata.rapport_type = dd.volwaardig
+      ? (GELDIGE_TYPES.includes(aiType) ? aiType : 'volwaardig_financieringsmemorandum')
+      : 'compact_intake';
+    if (aiType !== 'compact_intake' && r.metadata.rapport_type === 'compact_intake') {
+      warnings.push('Rapporttype teruggezet naar compact intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig rapport.');
+    }
   }
   r.metadata.datadekking = dd.niveau;
   r.metadata.status = 'Concept · ter beoordeling';
 
-  /* 5b — paginabudget: sourcePageCount is leidend als bekend; anders rapporttype-fallback.
-     bytesPageCount (gemeten aan de echte PDF-bytes) is betrouwbaarder dan de schatting
-     van de AI en heeft daarom voorrang; bronrapport.aantal_paginas is de terugval als
-     de bytes op de server niet beschikbaar waren (grote bestanden via Blob-URL). */
-  const aiPages = num(r.bronrapport?.aantal_paginas);
-  const sourcePageCount = bytesPageCount || (aiPages && aiPages > 0 ? Math.round(aiPages) : null);
+  /* 6b — paginabudget vastleggen in metadata (nu na de definitieve typebepaling) */
   const FALLBACK_MAX_PAGES = { compact_intake: 8, volwaardig_financieringsmemorandum: 14, luxe_samenvatting: 10 };
   r.metadata.sourcePageCount = sourcePageCount;
   r.metadata.uitgebreidToegestaan = !!uitgebreid;
   r.metadata.maxOutputPages = uitgebreid
     ? null
-    : sourcePageCount || FALLBACK_MAX_PAGES[r.metadata.rapport_type] || 10;
+    : sourcePageCount || FALLBACK_MAX_PAGES[r.metadata.rapport_type] || 8;
 
-  /* 6 — conclusiebeleid */
+  /* 7 — conclusiebeleid.
+     Bij compact_intake zonder financiële analyse/prognose mag het oordeel nooit
+     "voorzichtig positief" zijn; dan geldt altijd de expliciete "nog geen definitief
+     oordeel"-tekst, ongeacht wat de AI zelf schreef. */
   const cc = (r.conclusie = r.conclusie || {});
-  if (cc.oordeel === 'voorzichtig positief' && !dd.volwaardig) {
+  const heeftFinancieleData =
+    A(r.financiele_analyse?.resultaten).some((x) => num(x?.bedrag) !== null) ||
+    A(r.financiele_analyse?.ratios).length > 0;
+  if (cc.oordeel === 'voorzichtig positief' && (!dd.volwaardig || (r.metadata.rapport_type === 'compact_intake' && !heeftFinancieleData))) {
     warnings.push('Positieve conclusie vervangen: onvoldoende onderbouwing in de brondata.');
     cc.oordeel = 'onvoldoende data';
     cc.tekst = CONCL_ONVOLDOENDE;
@@ -732,7 +770,7 @@ function enforceQuality(r, vandaag, opts = {}) {
         : 'Nog niet extern delen; eerst de ontbrekende documentatie aanvullen.';
   }
 
-  /* 7 — documentatiecheck: eerlijkheidscheck */
+  /* 8 — documentatiecheck: eerlijkheidscheck */
   const dc = (r.documentatiecheck = r.documentatiecheck || {});
   const bronDocs = A(r.metadata.bron_documenten).map((x) => String(x).toLowerCase());
   dc.ontvangen = A(dc.ontvangen).filter((row) => hasTxt(row?.document));
@@ -760,10 +798,10 @@ function enforceQuality(r, vandaag, opts = {}) {
   dc.vervolgvragen = A(dc.vervolgvragen).filter(hasTxt).slice(0, 6);
   dc.separaat_te_controleren = A(dc.separaat_te_controleren).filter(hasTxt).slice(0, 6);
 
-  /* 8 — coverage */
+  /* 9 — coverage */
   enforceCoverage(r, warnings);
 
-  /* 9 — kwaliteitscontrole bijwerken: uitsluitend advisorWarnings naar buiten.
+  /* 10 — kwaliteitscontrole bijwerken: uitsluitend advisorWarnings naar buiten.
      internalWarnings (tool-/debugcorrecties) gaan nooit mee in het rapport of de
      JSON-respons; ze worden alleen server-side gelogd voor de ontwikkelaar. */
   const kwc = (r.kwaliteitscontrole = r.kwaliteitscontrole || {});
