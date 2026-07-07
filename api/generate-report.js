@@ -1,5 +1,27 @@
 import OpenAI from 'openai';
 
+/* ── Bronomvang: pagina's tellen zonder extra dependency ─────────────
+   Werkt op de ruwe PDF-bytes. Twee heuristieken, generiek voor elke PDF:
+   1. /Count N op een /Pages-knoop (werkt ook bij deels gecomprimeerde PDF's
+      zolang de paginaboom zelf niet in een objectstream zit).
+   2. Losse /Type /Page objecten tellen (niet /Pages).
+   Geeft null terug als geen van beide betrouwbaar iets oplevert; dan valt
+   de rest van de tool terug op rapporttype-gebaseerde standaardlengtes. */
+function estimatePdfPageCount(buf) {
+  try {
+    const text = buf.toString('latin1');
+    const countMatches = [...text.matchAll(/\/Type\s*\/Pages\b(?:(?!endobj)[\s\S]){0,400}?\/Count\s+(\d+)/g)]
+      .map((m) => parseInt(m[1], 10))
+      .filter((n) => Number.isFinite(n) && n > 0 && n < 5000);
+    if (countMatches.length) return Math.max(...countMatches);
+    const pageMatches = text.match(/\/Type\s*\/Page(?!s)\b/g);
+    if (pageMatches && pageMatches.length) return pageMatches.length;
+  } catch {
+    // Onleesbare/versleutelde PDF: geen betrouwbare telling mogelijk.
+  }
+  return null;
+}
+
 /* ════════════════════════════════════════════════════════════════════
    Credion — Financieringsrapport Generator · /api/generate-report
 
@@ -251,6 +273,9 @@ Stap 1: lees het volledige brondocument. Vul "bronrapport" in: geschat aantal pa
 Stap 2: verantwoord per bronhoofdstuk wat ermee gebeurt in "coverage_check": zet elk hoofdstuk in precies één van de lijsten opgenomen_in_rapport (volledig verwerkt), samengevat, of weggelaten_met_reden (formaat "hoofdstuk — reden"; alleen bij echte duplicatie of niet-besluitvormingsrelevante inhoud). Twijfel = meenemen. Kopieer de volledige hoofdstukkenlijst ook naar coverage_check.bronhoofdstukken.
 Stap 3: extraheer bronfeiten. Stap 4: schrijf pas daarna de rapportsecties.
 
+PAGINABUDGET — HARDE REGEL
+Het aantal outputpagina's mag standaard niet groter zijn dan het aantal pagina's van de bron-PDF. Je moet informatie daarom samenvatten, samenvoegen en prioriteren. Ontbrekende onderdelen worden kort onder controlepunten genoemd en nooit als losse secties of pagina's uitgewerkt. Als de bron kort is, blijft de output kort. Je bent een transformatietool, geen uitbreidtool. Bij compact_intake wint paginabeperking boven volledige bronstructuur: twijfelgevallen worden samengevat onder controlepunten of weggelaten, niet als losse sectie gerenderd. Alleen als de adviseursnotities expliciet "uitgebreid rapport" vragen, mag de output langer worden dan de bron.
+
 RAPPORTTYPE EN LENGTE — NIET OPBLAZEN
 Kies eerst, op basis van de broninhoud, één rapporttype (metadata.rapport_type):
 - "compact_intake": beperkte bron — indicatief minder dan 10 pagina's, weinig tekstuele onderbouwing, geen financiële analyse, geen prognose of betaalcapaciteitsberekening; vooral juridische structuur, financiering, zekerheden en documentatie. Output: een compact intake- en documentatiememorandum, in verhouding tot de bron (maximaal circa bronlengte + 1 à 2 pagina's; bij een bron onder 10 pagina's doorgaans maximaal 8 à 9 pagina's), tenzij de adviseur in de notities expliciet om een uitgebreid rapport vraagt.
@@ -317,11 +342,20 @@ klantnaam: de kredietnemer/onderneming zoals in de bron. financieringsdoel: éé
 OUTPUT
 Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
 
-function buildPrompt({ notities, docSummary, vandaag }) {
+function buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid }) {
+  const budgetLine = uitgebreid
+    ? 'De adviseur heeft expliciet om een UITGEBREID rapport gevraagd: de standaard paginabeperking (maximaal de bronomvang) vervalt voor deze aanvraag.'
+    : bytesPageCount
+    ? `De aangeleverde bron-PDF telt ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}. Het rapport mag in omvang niet groter zijn dan ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}: wees beknopt, voeg samen en prioriteer.`
+    : 'Het exacte aantal bronpagina\'s kon niet automatisch worden bepaald: vul bronrapport.aantal_paginas zo nauwkeurig mogelijk in en houd de output in omvang gelijk aan of korter dan de bron.';
+
   return `${SYSTEM_BASE}
 
 AANGELEVERDE DOCUMENTEN
 ${docSummary}
+
+PAGINABUDGET
+${budgetLine}
 
 ADVISEURSNOTITIES
 ${notities || 'Geen aanvullende adviseursnotities opgegeven.'}
@@ -571,21 +605,35 @@ const CONCL_ONVOLDOENDE =
 const FORBIDDEN_CLAIMS =
   /(verantwoord en betaalbaar|zonder meer worden verstrekt|bankwaardig rapport|sterk onderbouwd|duurzaam draagbaar|geen noemenswaardige risico'?s|financiering kan worden verstrekt|definitief akkoord)/i;
 
-function enforceQuality(r, vandaag) {
+function enforceQuality(r, vandaag, opts = {}) {
+  const { bytesPageCount = null, uitgebreid = false } = opts;
+  /* Twee gescheiden categorieën, zoals vereist:
+     - internal: technische/tool-correcties. Nooit naar de client of het rapport.
+       Alleen console-logging voor de ontwikkelaar.
+     - warnings (= advisorWarnings): zakelijke, extern leesbare controlepunten. */
   const warnings = [];
+  const internal = [];
   const zero = makeZeroChecker(r);
 
-  /* 0 — afgekapte tekst / render-vervuiling */
-  deepCleanStrings(r, warnings);
-  scanDemoMarkers(r, warnings);
+  /* 0 — afgekapte tekst / render-vervuiling (tool-correcties → intern) */
+  deepCleanStrings(r, internal);
+  scanDemoMarkers(r, internal);
 
-  /* 1 — bedragen: 0-fallbacks naar null */
+  /* 1 — bedragen: 0-fallbacks naar null (tool-correctie → intern) */
   const fo = (r.financieringsopzet = r.financieringsopzet || {});
   const kc = (fo.kerncijfers = fo.kerncijfers || {});
+  let zeroFallbackHit = false;
   for (const k of ['totale_investering', 'gevraagde_financiering', 'eigen_inbreng', 'overige_financiering']) {
     const before = kc[k];
     kc[k] = zero(kc[k]);
-    if (before === 0 && kc[k] === null) warnings.push(`kerncijfers.${k} was 0 zonder expliciete nul-bron en is op onbekend gezet.`);
+    if (before === 0 && kc[k] === null) {
+      zeroFallbackHit = true;
+      internal.push(`kerncijfers.${k} was 0 zonder expliciete nul-bron en is op onbekend gezet.`);
+    }
+  }
+  if (zeroFallbackHit) {
+    const w = 'Een of meer kerncijfers zijn niet eenduidig met een nulwaarde onderbouwd in de bron; controleer dit met de aanvrager.';
+    if (!warnings.includes(w)) warnings.push(w);
   }
   for (const key of ['bronnen_en_aanwendingen', 'bestaande_financieringen', 'nieuwe_financieringen']) {
     fo[key] = A(fo[key]).map((row) => ({ ...row, bedrag: zero(row?.bedrag) }));
@@ -598,9 +646,11 @@ function enforceQuality(r, vandaag) {
   const zr = (r.zekerheden_en_risico = r.zekerheden_en_risico || {});
   zr.zekerheden = A(zr.zekerheden).map((row) => ({ ...row, waarde: zero(row?.waarde) }));
 
-  /* 2 — bronnen/aanwendingen: totaalregels, classificatie + sluitcheck */
+  /* 2 — bronnen/aanwendingen: totaalregels, classificatie + sluitcheck.
+     enforceBnA levert zowel zakelijke controlepunten (sluiting, herclassificatie)
+     als een puur tekstuele euroteken-fix (cleanRatios) — die laatste is intern. */
   enforceBnA(fo, warnings);
-  cleanRatios(r, warnings);
+  cleanRatios(r, internal);
   const bnaSide = (type) => A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === type && num(x.bedrag) !== null);
   const sideTotals = (type) => {
     const all = bnaSide(type);
@@ -650,6 +700,19 @@ function enforceQuality(r, vandaag) {
   r.metadata.datadekking = dd.niveau;
   r.metadata.status = 'Concept · ter beoordeling';
 
+  /* 5b — paginabudget: sourcePageCount is leidend als bekend; anders rapporttype-fallback.
+     bytesPageCount (gemeten aan de echte PDF-bytes) is betrouwbaarder dan de schatting
+     van de AI en heeft daarom voorrang; bronrapport.aantal_paginas is de terugval als
+     de bytes op de server niet beschikbaar waren (grote bestanden via Blob-URL). */
+  const aiPages = num(r.bronrapport?.aantal_paginas);
+  const sourcePageCount = bytesPageCount || (aiPages && aiPages > 0 ? Math.round(aiPages) : null);
+  const FALLBACK_MAX_PAGES = { compact_intake: 8, volwaardig_financieringsmemorandum: 14, luxe_samenvatting: 10 };
+  r.metadata.sourcePageCount = sourcePageCount;
+  r.metadata.uitgebreidToegestaan = !!uitgebreid;
+  r.metadata.maxOutputPages = uitgebreid
+    ? null
+    : sourcePageCount || FALLBACK_MAX_PAGES[r.metadata.rapport_type] || 10;
+
   /* 6 — conclusiebeleid */
   const cc = (r.conclusie = r.conclusie || {});
   if (cc.oordeel === 'voorzichtig positief' && !dd.volwaardig) {
@@ -678,7 +741,7 @@ function enforceQuality(r, vandaag) {
     const echtOntvangen = bronDocs.some((d) => d.includes(naam.slice(0, 12)) || naam.includes(d.slice(0, 12)));
     if (row.status === 'ontvangen' && !echtOntvangen && bronDocs.length) {
       row.status = 'in bron opgenomen';
-      warnings.push(`"${row.document}" stond als ontvangen maar is niet los aangeleverd; status gecorrigeerd naar "in bron opgenomen".`);
+      internal.push(`Documentstatus van "${row.document}" aangepast naar "in bron opgenomen" (was niet los aangeleverd).`);
     }
   }
 
@@ -688,14 +751,34 @@ function enforceQuality(r, vandaag) {
     warnings.push('Datadekking verlaagd naar "middel": er ontbreken nog stukken met hoge prioriteit.');
   }
 
+  /* Documentatielijsten beperkt houden tot de belangrijkste punten */
+  const PRIO_ORDER = { hoog: 0, middel: 1, laag: 2 };
+  dc.ontbrekend = A(dc.ontbrekend)
+    .filter((x) => hasTxt(x?.item))
+    .sort((a, b) => (PRIO_ORDER[String(a?.prioriteit).toLowerCase()] ?? 1) - (PRIO_ORDER[String(b?.prioriteit).toLowerCase()] ?? 1))
+    .slice(0, 6);
+  dc.vervolgvragen = A(dc.vervolgvragen).filter(hasTxt).slice(0, 6);
+  dc.separaat_te_controleren = A(dc.separaat_te_controleren).filter(hasTxt).slice(0, 6);
+
   /* 8 — coverage */
   enforceCoverage(r, warnings);
 
-  /* 9 — kwaliteitscontrole bijwerken */
+  /* 9 — kwaliteitscontrole bijwerken: uitsluitend advisorWarnings naar buiten.
+     internalWarnings (tool-/debugcorrecties) gaan nooit mee in het rapport of de
+     JSON-respons; ze worden alleen server-side gelogd voor de ontwikkelaar. */
   const kwc = (r.kwaliteitscontrole = r.kwaliteitscontrole || {});
   kwc.geen_nul_fallbacks = true;
   kwc.geen_lege_grafieken = true;
-  kwc.waarschuwingen = [...A(kwc.waarschuwingen), ...warnings];
+  let advisorWarnings = [...new Set([...A(kwc.waarschuwingen), ...warnings])].filter(hasTxt);
+  if (r.metadata.rapport_type === 'compact_intake' && advisorWarnings.length > 5) {
+    advisorWarnings = advisorWarnings.slice(0, 5);
+  }
+  kwc.waarschuwingen = advisorWarnings;
+  delete kwc.internalWarnings; // voor het geval een eerdere AI-respons dit veld toch vulde
+
+  if (internal.length) {
+    console.warn(`[credion] interne kwaliteitscorrecties (${internal.length}), niet extern getoond:\n- ${internal.join('\n- ')}`);
+  }
 
   return r;
 }
@@ -817,6 +900,26 @@ export default async function handler(req, res) {
     const body = await readJsonBody(req);
     const { filename, memorandum_url, extra_urls, notities } = body || {};
 
+    /* Bronomvang meten aan de hand van de daadwerkelijke bytes van het hoofddocument
+       (het eerste aangeleverde PDF-bestand). Alleen mogelijk als de bytes zijn
+       meegestuurd; bij grote bestanden die via Blob lopen ontbreken deze bytes op de
+       server, en valt de tool later terug op bronrapport.aantal_paginas of het
+       rapporttype. */
+    let bytesPageCount = null;
+    try {
+      let primaryB64 = '';
+      if (Array.isArray(body?.documents) && body.documents.length) {
+        const firstPdf = body.documents.find((d) => d?.kind === 'pdf' && d?.dataBase64);
+        primaryB64 = normalizeBase64(firstPdf?.dataBase64);
+      } else {
+        primaryB64 = normalizeBase64(body?.dataBase64);
+      }
+      if (primaryB64) bytesPageCount = estimatePdfPageCount(Buffer.from(primaryB64, 'base64'));
+    } catch {
+      bytesPageCount = null;
+    }
+    const uitgebreid = /uitgebreid\s*rapport/i.test(String(notities || ''));
+
     let docContent = [];
     let docNames = [];
 
@@ -853,7 +956,7 @@ export default async function handler(req, res) {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const docSummary = docNames.map((n, i) => `${i + 1}. ${n}`).join('\n');
     const vandaag = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-    const prompt = buildPrompt({ notities, docSummary, vandaag });
+    const prompt = buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid });
     const content = [{ type: 'input_text', text: prompt }, ...docContent];
 
     const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
@@ -886,7 +989,7 @@ export default async function handler(req, res) {
 
     let report;
     try {
-      report = enforceQuality(parsed, vandaag);
+      report = enforceQuality(parsed, vandaag, { bytesPageCount, uitgebreid });
     } catch (qErr) {
       console.error('Kwaliteitslaag-fout:', qErr);
       report = parsed; // liever ongepolijst rapport dan harde fout
