@@ -107,12 +107,12 @@ body.report-mode .up-view,body.report-mode .loading-view{display:none}
 .stage{padding:34px 16px 72px;background:#E9EEF5}
 
 /* ═══ A4-pagina's — mm-gebaseerd, identiek op scherm en print ═════ */
-.report-page{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;font-size:10pt;color:var(--ink-2);margin:0 auto 10mm;box-shadow:0 14px 52px rgba(16,32,51,.13)}
+.report-page{width:210mm;height:297mm;background:#fff;position:relative;overflow:visible;font-size:10pt;color:var(--ink-2);margin:0 auto 10mm;box-shadow:0 14px 52px rgba(16,32,51,.13)}
 .rp-head{height:13mm;background:var(--blue-deep);border-bottom:2px solid var(--orange);display:flex;align-items:center;justify-content:space-between;padding:0 16mm;color:#fff}
 .rp-head img{height:5mm;width:auto}
-.rp-head-right{font-size:7pt;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.78)}
+.rp-head-right{font-size:7pt;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.78);text-align:right}
 .rp-body{padding:11mm 16mm 0}
-.rp-foot{position:absolute;left:16mm;right:16mm;bottom:8mm;display:flex;justify-content:space-between;align-items:center;font-size:7.3pt;color:var(--muted);border-top:1px solid var(--line);padding-top:2.6mm}
+.rp-foot{position:absolute;left:16mm;right:16mm;bottom:8mm;display:flex;justify-content:space-between;align-items:center;font-size:7.3pt;color:var(--muted);border-top:1px solid var(--line);padding-top:2.6mm;background:#fff}
 .rp-foot-l{display:flex;align-items:center;gap:2.2mm}
 .rp-foot-l img{height:3.6mm;width:3.6mm;border-radius:1mm}
 .rp-foot-r b{color:var(--ink-2);font-weight:700}
@@ -127,8 +127,8 @@ body.report-mode .up-view,body.report-mode .loading-view{display:none}
 .cover-eyebrow{font-size:9pt;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:9mm;display:flex;align-items:center;gap:5mm}
 .cover-eyebrow::after{content:'';flex:none;width:14mm;height:2px;background:var(--orange)}
 .cover-name{font-size:30pt;font-weight:700;letter-spacing:-.8px;line-height:1.08;color:#fff;max-width:150mm}
-.cover-goal{font-size:11.5pt;color:rgba(255,255,255,.85);line-height:1.6;margin-top:7mm;max-width:135mm}
-.cover-meta{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.22);padding-top:6mm;gap:6mm}
+.cover-goal{font-size:11.5pt;color:rgba(255,255,255,.85);line-height:1.6;margin-top:7mm;max-width:140mm;text-wrap:pretty}
+.cover-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(28mm,1fr));border-top:1px solid rgba(255,255,255,.22);padding-top:6mm;gap:6mm}
 .cover-meta .cm-l{font-size:6.8pt;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:1.8mm}
 .cover-meta .cm-v{font-size:9.5pt;font-weight:600;color:#fff;line-height:1.35}
 .cover-contents{font-size:7.5pt;color:rgba(255,255,255,.6);line-height:1.7;margin-top:7mm}
@@ -136,12 +136,13 @@ body.report-mode .up-view,body.report-mode .loading-view{display:none}
 .cover-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,.22);margin-top:6mm;padding-top:4.5mm;font-size:7.5pt;color:rgba(255,255,255,.6)}
 
 /* Paginatitels en tekst */
+.chap{padding-top:1mm}
 .pt-eyebrow{font-size:7.5pt;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;color:var(--orange);margin-bottom:2.4mm}
 .pt-title{font-size:16.5pt;font-weight:700;color:var(--blue-deep);letter-spacing:-.3px;line-height:1.12}
 .pt-rule{width:12mm;height:0.8mm;background:var(--blue-deep);margin:3.4mm 0 5.5mm}
-.para{font-size:9.6pt;line-height:1.62;color:var(--ink-2);margin-bottom:4.5mm;text-wrap:pretty}
-.secbar{display:flex;justify-content:space-between;align-items:baseline;font-size:8pt;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue-deep);border-bottom:1.5px solid var(--blue-deep);padding-bottom:1.8mm;margin:6.5mm 0 3.8mm}
-.secbar small{font-size:7pt;font-weight:600;letter-spacing:.4px;text-transform:none;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70mm;flex:none}
+.para{font-size:9.6pt;line-height:1.62;color:var(--ink-2);margin-bottom:4.2mm;text-wrap:pretty}
+.secbar{display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;font-size:8pt;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue-deep);border-bottom:1.5px solid var(--blue-deep);padding-bottom:1.8mm;margin:6.5mm 0 3.8mm}
+.secbar small{font-size:7pt;font-weight:600;letter-spacing:.4px;text-transform:none;color:var(--muted);text-align:right}
 
 /* Chips */
 .chips{display:flex;gap:2.2mm;flex-wrap:wrap;margin-bottom:5mm}
@@ -155,7 +156,7 @@ body.report-mode .up-view,body.report-mode .loading-view{display:none}
 .kpis{display:grid;grid-template-columns:repeat(var(--kn,4),1fr);gap:3.5mm;margin-bottom:5.5mm}
 .kpi{border:1px solid var(--line);border-radius:2.6mm;padding:3.6mm 4mm 3.2mm;background:#fff}
 .kpi-l{font-size:6.8pt;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);margin-bottom:1.6mm}
-.kpi-v{font-size:13pt;font-weight:700;color:var(--blue-deep);letter-spacing:-.3px;line-height:1.1}
+.kpi-v{font-size:12.5pt;font-weight:700;color:var(--blue-deep);letter-spacing:-.3px;line-height:1.15;overflow-wrap:anywhere}
 .kpi-s{font-size:7.4pt;color:var(--muted);margin-top:1.4mm;line-height:1.4}
 
 /* Panels */
@@ -167,7 +168,7 @@ body.report-mode .up-view,body.report-mode .loading-view{display:none}
 /* Tabellen */
 table.t{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:4.5mm}
 table.t th{text-align:left;font-size:7pt;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:0 3mm 1.8mm;border-bottom:1.5px solid #B9C8DC}
-table.t td{padding:2.1mm 3mm;border-bottom:1px solid #EDF2F8;vertical-align:top;line-height:1.45}
+table.t td{padding:2.1mm 3mm;border-bottom:1px solid #EDF2F8;vertical-align:top;line-height:1.45;overflow-wrap:anywhere}
 table.t th.num,table.t td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 table.t td.neg{color:var(--red)}
 table.t tr.total td{font-weight:700;color:var(--ink);border-top:1.5px solid var(--ink);border-bottom:none}
@@ -181,12 +182,19 @@ table.t .sub{font-size:7.8pt;color:var(--muted);margin-top:.6mm;line-height:1.35
 .blist div::before{content:'';flex:none;width:1.6mm;height:1.6mm;border-radius:50%;background:var(--blue);margin-top:1.9mm}
 .blist.orange div::before{background:var(--orange)}
 .twocol{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4.5mm}
-.twocol .blist{margin-bottom:0}
+.twocol .blist,.twocol .panel{margin-bottom:0}
 .colh{font-size:7.4pt;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:2.6mm;padding-bottom:1.6mm;border-bottom:1px solid var(--line);color:var(--blue-deep)}
 .colh.gr{color:var(--green)}.colh.am{color:var(--amber)}
 
+/* Kenmerken-grid (object, privé) */
+.kvgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 8mm;margin-bottom:4.5mm}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:4mm;border-bottom:1px solid #EDF2F8;padding:1.7mm 0;font-size:8.8pt}
+.kv .k{color:var(--muted);flex:none;max-width:52%}
+.kv .v{font-weight:600;color:var(--ink);text-align:right;overflow-wrap:anywhere}
+
 /* Grafieken */
 .charts2{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4.5mm}
+.charts2>div:only-child{grid-column:span 1}
 .chart-card{border:1px solid var(--line);border-radius:2.6mm;padding:4mm 4.5mm 3mm;background:#fff}
 .chart-card .ch-h{font-size:7.2pt;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--blue-deep);margin-bottom:2.6mm}
 svg.chart{width:100%;height:auto;display:block}
@@ -195,18 +203,45 @@ svg.chart{width:100%;height:auto;display:block}
 .donut-wrap{display:flex;align-items:center;gap:5mm}
 .donut-wrap svg{flex:none;width:30mm;height:30mm}
 .donut-legend{flex:1;display:flex;flex-direction:column;gap:1.7mm;min-width:0}
-.dl-row{display:flex;align-items:center;gap:2.2mm;font-size:8.2pt;color:var(--ink-2)}
-.dl-dot{flex:none;width:2.4mm;height:2.4mm;border-radius:.8mm}
+.dl-row{display:flex;align-items:baseline;gap:2.2mm;font-size:8.2pt;color:var(--ink-2)}
+.dl-dot{flex:none;width:2.4mm;height:2.4mm;border-radius:.8mm;align-self:center}
+.dl-name{flex:1;min-width:0;line-height:1.35}
 .dl-v{margin-left:auto;font-weight:700;color:var(--blue-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
 .dl-p{color:var(--muted);font-size:7.4pt;white-space:nowrap}
 .noviz{font-size:8.6pt;color:var(--muted);background:var(--bg);border:1px dashed #CBD8E8;border-radius:2.4mm;padding:3.4mm 4mm;margin-bottom:4.5mm;line-height:1.5}
+
+/* Organogram */
+.orgcard{border:1px solid var(--line);border-radius:2.6mm;padding:4mm 4.5mm;margin-bottom:4.5mm;background:#fff;break-inside:avoid}
+.orgcard .ch-h{font-size:7.2pt;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--blue-deep);margin-bottom:3.4mm}
+.org{position:relative;display:flex;flex-direction:column;gap:10mm;padding:1mm 0}
+.org-level{display:flex;justify-content:center;align-items:stretch;gap:6mm;flex-wrap:wrap}
+.org-box{position:relative;z-index:1;min-width:30mm;max-width:54mm;background:#fff;border:1.2px solid #B9C8DC;border-radius:2mm;padding:2.6mm 3.4mm;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.org-box .ob-name{font-size:8.2pt;font-weight:700;color:var(--ink);line-height:1.3}
+.org-box .ob-role{font-size:6.8pt;color:var(--muted);margin-top:.8mm;line-height:1.35}
+.org-box.t-priv{border-radius:7mm;border-color:#8FB6EE;background:var(--blue-faint)}
+.org-box.t-hold{border-color:var(--blue-deep);border-width:1.6px}
+.org-box.t-hold .ob-name{color:var(--blue-deep)}
+.org-box.t-vast{border-color:var(--orange)}
+.org-box.t-stak{border-style:double;border-width:3px;border-color:#B9C8DC}
+.org-box.t-opr{border-style:dashed}
+.org-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.org-lbl{font-size:8.5px;fill:#68748A;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.org-note{font-size:7.8pt;color:var(--muted);margin-top:3mm;line-height:1.5}
+.org-legend{display:flex;gap:4mm;flex-wrap:wrap;margin-top:3mm;font-size:6.8pt;color:var(--muted)}
+.org-legend span{display:inline-flex;align-items:center;gap:1.6mm}
+.org-legend i{width:3.4mm;height:2.4mm;border:1px solid #B9C8DC;border-radius:.6mm;display:inline-block}
+.org-legend i.l-priv{border-radius:2mm;border-color:#8FB6EE;background:var(--blue-faint)}
+.org-legend i.l-hold{border-color:var(--blue-deep)}
+.org-legend i.l-vast{border-color:var(--orange)}
+.org-legend i.l-opr{border-style:dashed}
 
 /* Documentatie & status */
 .docrow{display:flex;align-items:baseline;gap:3mm;padding:1.9mm 0;border-bottom:1px solid #EDF2F8;font-size:8.8pt}
 .docrow:last-child{border-bottom:none}
 .docrow .dr-name{font-weight:600;color:var(--ink);flex:1;min-width:0}
 .docrow .dr-note{color:var(--muted);font-size:8pt;flex:1.2}
-.stat{flex:none;display:inline-block;font-size:6.8pt;font-weight:800;letter-spacing:.8px;text-transform:uppercase;border-radius:99px;padding:.9mm 2.6mm}
+.docwrap{margin-bottom:4.5mm}
+.stat{flex:none;display:inline-block;font-size:6.8pt;font-weight:800;letter-spacing:.8px;text-transform:uppercase;border-radius:99px;padding:.9mm 2.6mm;white-space:nowrap}
 .stat.g{background:var(--green-bg);color:var(--green)}
 .stat.a{background:var(--amber-bg);color:var(--amber)}
 .stat.r{background:var(--red-bg);color:var(--red)}
@@ -216,7 +251,8 @@ svg.chart{width:100%;height:auto;display:block}
 .verdict{border:1px solid #DCE6F2;background:var(--bg);border-radius:2.6mm;padding:5mm 5.5mm;margin-bottom:5mm}
 .verdict-top{display:flex;align-items:center;justify-content:space-between;gap:4mm;margin-bottom:2.6mm}
 .verdict-l{font-size:7.4pt;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue-deep)}
-.verdict p{font-size:9.6pt;line-height:1.62;color:var(--ink-2);text-wrap:pretty}
+.verdict p{font-size:9.6pt;line-height:1.62;color:var(--ink-2);text-wrap:pretty;margin-bottom:2.4mm}
+.verdict p:last-child{margin-bottom:0}
 
 /* Validatiefout */
 .errpage{max-width:210mm;margin:0 auto;background:#fff;border-radius:4mm;padding:14mm;box-shadow:0 14px 52px rgba(16,32,51,.13)}
@@ -235,13 +271,13 @@ svg.chart{width:100%;height:auto;display:block}
 /* ═══ Print — exact A4, geen schaal, geen chrome ══════════════════ */
 @page{size:A4;margin:0}
 @media print{
-  html,body{width:210mm;margin:0!important;padding:0!important;background:#fff!important}
+  html,body{width:210mm;margin:0!important;padding:0!important;background:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .up-view,.loading-view,.toolbar,.no-print{display:none!important}
   .rpt-view{display:block!important}
   .stage{padding:0!important;margin:0!important;background:#fff!important;display:block!important}
-  .report-page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;border-radius:0!important;transform:none!important;break-after:page;page-break-after:always;overflow:hidden!important}
+  .report-page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;border-radius:0!important;transform:none!important;break-after:page;page-break-after:always;overflow:visible!important}
   .report-page:last-child{break-after:auto;page-break-after:auto}
-  .panel,.chart-card,table.t,.kpi,.verdict{break-inside:avoid;page-break-inside:avoid}
+  .panel,.chart-card,.orgcard,table.t,.kpi,.verdict,.kv,.docrow{break-inside:avoid;page-break-inside:avoid}
 }
 </style>
 </head>
@@ -329,8 +365,8 @@ const safeText = (v,fb=NB) => esc(hasVal(v)?v:fb);
 const isNum = v => typeof v==='number' && isFinite(v);
 const money = v => isNum(v) ? '€ '+Math.round(v).toLocaleString('nl-NL') : null;
 const moneyShort = v => !isNum(v) ? '' : Math.abs(v)>=1e6 ? '€ '+(v/1e6).toLocaleString('nl-NL',{maximumFractionDigits:2})+' mln' : money(v);
+const numFmt = v => isNum(v) ? v.toLocaleString('nl-NL',{maximumFractionDigits:2}) : '';
 const A = v => Array.isArray(v)?v:[];
-const clip = (v,n)=>{const t=String(v??'');return t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+' …':t};
 const cell = v => hasVal(v)?esc(v):'—';
 const mcell = v => isNum(v)?money(v):'—';
 
@@ -338,7 +374,8 @@ const CHIP = { hoog:'g', middel:'a', beperkt:'r' };
 const dekChip = d => `<span class="chip ${CHIP[d]||'r'}">Datadekking: ${esc(d||'beperkt')}</span>`;
 const OORDEEL_CHIP = { 'voorzichtig positief':'g', neutraal:'', 'onvoldoende data':'a', negatief:'r' };
 const prioStat = p => {const t=String(p||'').toLowerCase();const cls=t==='hoog'?'r':t==='laag'?'n':'a';return `<span class="stat ${cls}">${esc(p||'middel')}</span>`};
-const statusStat = st => {const t=String(st||'').toLowerCase();const cls=t==='ontvangen'?'g':t==='onvolledig'?'a':'n';return `<span class="stat ${cls}">${esc(st||'te controleren')}</span>`};
+const STATUS_CLS = { 'ontvangen':'g', 'in bron opgenomen':'n', 'te controleren':'a', 'onvolledig':'a' };
+const statusStat = st => {const t=String(st||'te controleren').toLowerCase();return `<span class="stat ${STATUS_CLS[t]||'n'}">${esc(st||'te controleren')}</span>`};
 
 /* ══ Bestandsafhandeling ════════════════════════════════════════════ */
 const KIND = { pdf:'pdf', jpg:'image', jpeg:'image', png:'image', txt:'text', csv:'text', docx:'docx', xlsx:'xlsx' };
@@ -505,7 +542,6 @@ async function generate(e){
       try{
         d.url = await uploadDoc(d.file);
         // Belangrijk tegen 504-timeouts: stuur na Blob-upload geen base64 meer mee naar de server.
-        // /api/generate-report gebruikt dan de Blob URL in plaats van een zware request body.
         d.dataBase64 = '';
       }
       catch(upErr){
@@ -527,18 +563,18 @@ async function generate(e){
     const resp = await fetch('/api/generate-report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(resp.status===413) throw new Error('De aanvraag is te groot voor de server. Gebruik kleinere bestanden.');
     const out = await resp.json().catch(()=>({}));
-    if(resp.status===504) throw new Error('De rapportservice liep tegen de Vercel-timeout aan. Gebruik de nieuwste versie met Blob-URL verwerking, of verklein het document.');
+    if(resp.status===504) throw new Error('De rapportservice liep tegen de Vercel-timeout aan. Probeer het opnieuw of verklein het document.');
     if(!resp.ok||out.error) throw new Error(out.error||`De rapportservice gaf een fout (${resp.status}). Probeer het opnieuw.`);
 
     setStep(3);
     const report = typeof out.data==='string' ? JSON.parse(out.data) : out.data;
-    const problems = validateReportData(report);
+    const problems = validateReportBeforeRender(report);
     state.data = report;
 
     setStep(4);
+    await document.fonts.ready;
     if(problems.length){ renderValidationError(problems); }
     else { renderReport(report); }
-    document.body.classList.add('report-mode');
     window.scrollTo({top:0});
   }catch(err){
     console.error(err);
@@ -548,7 +584,7 @@ async function generate(e){
 el.form.addEventListener('submit',generate);
 
 /* ══ Validatie vóór render ══════════════════════════════════════════ */
-function validateReportData(r){
+function validateReportBeforeRender(r){
   const errs=[];
   if(!r||typeof r!=='object') return ['Geen rapportdata ontvangen.'];
   if(!r.metadata) errs.push('metadata ontbreekt.');
@@ -561,7 +597,23 @@ function validateReportData(r){
     const a=A(r.visualisaties?.[k]);
     if(a.length===1) errs.push(`Visualisatie ${k} heeft slechts één datapunt.`);
   }
-  return errs;
+  /* bronnen/aanwendingen: harde classificatieregels */
+  for(const row of A(r.financieringsopzet?.bronnen_en_aanwendingen)){
+    const l=String(row?.label||'').toLowerCase();
+    if(row?.type==='aanwending'&&/eigen inbreng|eigen middelen/.test(l)) errs.push(`"${row.label}" staat onder aanwendingen maar is een bron.`);
+    if(row?.type==='bron'&&/koopsom|aanneemsom|kosten koper/.test(l)) errs.push(`"${row.label}" staat onder bronnen maar is een aanwending.`);
+  }
+  /* render-vervuiling in strings */
+  const scan=(node)=>{
+    if(typeof node==='string'){
+      if(/^(undefined|\[object Object\])$/i.test(node.trim())) errs.push('Rapportdata bevat ongeldige tekstwaarden (undefined / [object Object]).');
+      return;
+    }
+    if(Array.isArray(node)){ node.forEach(scan); return; }
+    if(node&&typeof node==='object') Object.values(node).forEach(scan);
+  };
+  scan(r);
+  return [...new Set(errs)];
 }
 function renderValidationError(problems){
   el.tbTitle.textContent='Rapport niet betrouwbaar'; el.tbSub.textContent='Validatie mislukt';
@@ -572,64 +624,85 @@ function renderValidationError(problems){
     <p class="para">De gegenereerde analyse voldeed niet aan de kwaliteitseisen en is daarom niet gerenderd. Download de ruwe analyse voor controle of probeer het opnieuw met aanvullende documenten.</p>
     <div class="blist orange">${problems.map(p=>`<div>${esc(p)}</div>`).join('')}</div>
   </article>`;
+  document.body.classList.add('report-mode');
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   RAPPORT-RENDERER — compacte A4-pagina's met combineerlogica
+   RAPPORT-RENDERER — gemeten paginering, niets weglaten, niets afkappen
    ══════════════════════════════════════════════════════════════════ */
 const PALETTE = ['#006BFF','#003B8F','#FF8A00','#7FB3FF','#68748A','#2E4E7E'];
 
-/* blok = { html, mm } — mm is een ruwe hoogteschatting voor paginabudget */
-const BUDGET = 246;
-const textMm = (s,base=4)=>hasVal(s)?Math.ceil(String(s).length/95)*4.6+base:0;
-const block = (html,mm)=>({html,mm});
-const pack = (blocks,budget=BUDGET)=>{
-  let used=0, html='';
-  for(const b of blocks){
-    if(!b||!b.html) continue;
-    if(b.required||used+b.mm<=budget){ html+=b.html; used+=b.mm; }
+/* ── Blokbouwers (atomaire HTML-strings; nooit ellipsis) ───────────── */
+const chap=(eyebrow,title)=>`<div class="chap"><div class="pt-eyebrow">${esc(eyebrow)}</div><h2 class="pt-title">${esc(title)}</h2><div class="pt-rule"></div></div>`;
+const secbarB=(t,note)=>`<div class="secbar"><span>${esc(t)}</span>${hasVal(note)?`<small>${esc(note)}</small>`:''}</div>`;
+const noviz=(msg='Geen betrouwbare brondata beschikbaar voor visualisatie.')=>`<div class="noviz">${esc(msg)}</div>`;
+
+function paraBlocks(t){
+  if(!hasVal(t)) return [];
+  const out=[];
+  for(const p of String(t).split(/\n+/).map(x=>x.trim()).filter(Boolean)){
+    if(p.length<=900){ out.push(`<p class="para">${esc(p)}</p>`); continue; }
+    let cur='';
+    for(const sent of p.match(/[^.!?]+[.!?]+["']?\s*|[^.!?]+$/g)||[p]){
+      if((cur+sent).length>800&&cur){ out.push(`<p class="para">${esc(cur.trim())}</p>`); cur=''; }
+      cur+=sent;
+    }
+    if(cur.trim()) out.push(`<p class="para">${esc(cur.trim())}</p>`);
   }
-  return {html,used};
-};
-
-function titleBlock(eyebrow,title,sub){
-  return block(`<div class="pt-eyebrow">${esc(eyebrow)}</div><h2 class="pt-title">${esc(title)}</h2><div class="pt-rule"></div>${hasVal(sub)?`<p class="para">${esc(clip(sub,650))}</p>`:''}`, 26+textMm(sub,0));
+  return out;
 }
-const para = (txt,max=650)=>hasVal(txt)?block(`<p class="para">${esc(clip(txt,max))}</p>`, textMm(clip(txt,max))):null;
-const secbar = (t,note)=>block(`<div class="secbar"><span>${esc(t)}</span>${hasVal(note)?`<small>${esc(note)}</small>`:''}</div>`, 11);
-const bullets = (items,max=6,cls='')=>{
-  const its=A(items).filter(hasVal).slice(0,max);
-  if(!its.length) return null;
-  return block(`<div class="blist ${cls}">${its.map(i=>`<div>${esc(clip(i,260))}</div>`).join('')}</div>`, its.length*5.6+6);
-};
-const noviz = (msg='Geen betrouwbare brondata beschikbaar voor visualisatie.')=>block(`<div class="noviz">${esc(msg)}</div>`, 14);
-
-function table(headers,rows,totalRow){
-  if(!rows.length) return null;
+function bulletBlocks(items,cls='',chunk=9){
+  const its=A(items).filter(hasVal); const out=[];
+  for(let i=0;i<its.length;i+=chunk)
+    out.push(`<div class="blist ${cls}">${its.slice(i,i+chunk).map(x=>`<div>${esc(x)}</div>`).join('')}</div>`);
+  return out;
+}
+function panel(title,text,tint=true){
+  if(!hasVal(text)) return '';
+  const ps=String(text).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p class="para">${esc(x)}</p>`).join('');
+  return `<div class="panel${tint?' tint':''}"><div class="panel-h">${esc(title)}</div>${ps}</div>`;
+}
+function tableBlocks(headers,rowHtmls,{total='',chunk=14}={}){
+  if(!rowHtmls.length) return [];
   const ths=headers.map(h=>`<th class="${h.num?'num':''}">${esc(h.label)}</th>`).join('');
-  const trs=rows.join('') + (totalRow||'');
-  return block(`<table class="t"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`, rows.length*7.4+(totalRow?7:0)+13);
+  const out=[];
+  for(let i=0;i<rowHtmls.length;i+=chunk){
+    const last=i+chunk>=rowHtmls.length;
+    out.push(`<table class="t"><thead><tr>${ths}</tr></thead><tbody>${rowHtmls.slice(i,i+chunk).join('')}${last?total:''}</tbody></table>`);
+  }
+  return out;
+}
+function kvBlocks(items,chunk=14){
+  const its=A(items).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde)); const out=[];
+  for(let i=0;i<its.length;i+=chunk)
+    out.push(`<div class="kvgrid">${its.slice(i,i+chunk).map(x=>`<div class="kv"><span class="k">${esc(x.label)}</span><span class="v">${esc(x.waarde)}</span></div>`).join('')}</div>`);
+  return out;
+}
+function kpiBlock(pairs){
+  const ks=pairs.filter(Boolean).slice(0,6);
+  if(!ks.length) return '';
+  return `<div class="kpis" style="--kn:${Math.min(ks.length,4)}">${ks.map(k=>`<div class="kpi"><div class="kpi-l">${esc(k[0])}</div><div class="kpi-v">${esc(k[1])}</div>${hasVal(k[2])?`<div class="kpi-s">${esc(k[2])}</div>`:''}</div>`).join('')}</div>`;
 }
 
 /* Pivot: rijen {label,periode,bedrag} → label-rijen met periodekolommen */
-function pivotTable(rows,firstCol){
+function pivotBlocks(rows,firstCol){
   const rs=A(rows).filter(r=>hasVal(r?.label)&&isNum(r?.bedrag));
-  if(!rs.length) return null;
-  const periods=[...new Set(rs.map(r=>String(r.periode||'').trim()))].filter(Boolean).slice(0,4);
-  const labels=[...new Set(rs.map(r=>r.label.trim()))].slice(0,8);
-  if(periods.length>=2&&labels.length>=1&&periods.length<=4){
+  if(!rs.length) return [];
+  const periods=[...new Set(rs.map(r=>String(r.periode||'').trim()))].filter(Boolean);
+  const labels=[...new Set(rs.map(r=>r.label.trim()))];
+  if(periods.length>=2&&periods.length<=5&&labels.length>=1){
     const map={}; rs.forEach(r=>{map[r.label.trim()+'|'+String(r.periode||'').trim()]=r.bedrag});
     const trs=labels.map(l=>`<tr><td>${esc(l)}</td>${periods.map(p=>{const v=map[l+'|'+p];return `<td class="num ${isNum(v)&&v<0?'neg':''}">${mcell(v)}</td>`}).join('')}</tr>`);
-    return table([{label:firstCol},...periods.map(p=>({label:p,num:true}))],trs);
+    return tableBlocks([{label:firstCol},...periods.map(p=>({label:p,num:true}))],trs);
   }
-  const trs=rs.slice(0,8).map(r=>`<tr><td>${esc(r.label)}</td><td>${cell(r.periode)}</td><td class="num ${r.bedrag<0?'neg':''}">${mcell(r.bedrag)}</td></tr>`);
-  return table([{label:firstCol},{label:'Periode'},{label:'Bedrag',num:true}],trs);
+  const trs=rs.map(r=>`<tr><td>${esc(r.label)}</td><td>${cell(r.periode)}</td><td class="num ${r.bedrag<0?'neg':''}">${mcell(r.bedrag)}</td></tr>`);
+  return tableBlocks([{label:firstCol},{label:'Periode'},{label:'Bedrag',num:true}],trs);
 }
 
 /* Grafieken */
 function donut(items,title){
   const data=A(items).filter(x=>isNum(x?.waarde)&&x.waarde>0).slice(0,6);
-  if(data.length<2) return null;
+  if(data.length<2) return '';
   const total=data.reduce((s,x)=>s+x.waarde,0);
   const R=30,C=2*Math.PI*R; let off=0;
   const segs=data.map((x,i)=>{
@@ -637,12 +710,12 @@ function donut(items,title){
     const seg=`<circle r="${R}" cx="40" cy="40" fill="none" stroke="${PALETTE[i%6]}" stroke-width="12" stroke-dasharray="${Math.max(0,len-1.4)} ${C-len+1.4}" stroke-dashoffset="${-off}" transform="rotate(-90 40 40)"/>`;
     off+=len; return seg;
   }).join('');
-  const legend=data.map((x,i)=>`<div class="dl-row"><span class="dl-dot" style="background:${PALETTE[i%6]}"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(clip(x.label,38))}</span><span class="dl-v">${money(x.waarde)}</span><span class="dl-p">${Math.round(x.waarde/total*100)}%</span></div>`).join('');
-  return block(`<div class="chart-card"><div class="ch-h">${esc(title)}</div><div class="donut-wrap"><svg viewBox="0 0 80 80">${segs}</svg><div class="donut-legend">${legend}</div></div></div>`, data.length*6+22);
+  const legend=data.map((x,i)=>`<div class="dl-row"><span class="dl-dot" style="background:${PALETTE[i%6]}"></span><span class="dl-name">${esc(x.label)}</span><span class="dl-v">${money(x.waarde)}</span><span class="dl-p">${Math.round(x.waarde/total*100)}%</span></div>`).join('');
+  return `<div class="chart-card"><div class="ch-h">${esc(title)}</div><div class="donut-wrap"><svg viewBox="0 0 80 80">${segs}</svg><div class="donut-legend">${legend}</div></div></div>`;
 }
-function barChart(points,title){
-  const pts=A(points).filter(p=>isNum(p?.waarde)).slice(0,6);
-  if(pts.length<2) return null;
+function barChart(points,title,fmt=moneyShort){
+  const pts=A(points).filter(p=>isNum(p?.waarde)).slice(0,8);
+  if(pts.length<2) return '';
   const W=300,H=128,padT=16,padB=18,padS=8;
   const vals=pts.map(p=>p.waarde);
   const max=Math.max(...vals,0),min=Math.min(...vals,0),span=(max-min)||1;
@@ -655,213 +728,468 @@ function barChart(points,title){
     const isProg=/progn|budget|verwacht/i.test(String(p.periode||''));
     const fill=neg?'#B4432F':isProg?'#7FB3FF':'#006BFF';
     return `<rect x="${(cx-bw/2).toFixed(1)}" y="${(neg?y0:vy).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${fill}"/>`+
-      `<text x="${cx.toFixed(1)}" y="${(neg?vy+h+8:vy-4).toFixed(1)}" text-anchor="middle" class="ch-val">${moneyShort(p.waarde)}</text>`+
-      `<text x="${cx.toFixed(1)}" y="${H-5}" text-anchor="middle" class="ch-cat">${esc(clip(String(p.periode||''),14))}</text>`;
+      `<text x="${cx.toFixed(1)}" y="${(neg?vy+h+8:vy-4).toFixed(1)}" text-anchor="middle" class="ch-val">${fmt(p.waarde)}</text>`+
+      `<text x="${cx.toFixed(1)}" y="${H-5}" text-anchor="middle" class="ch-cat">${esc(String(p.periode||''))}</text>`;
   }).join('');
-  return block(`<div class="chart-card"><div class="ch-h">${esc(title)}</div><svg class="chart" viewBox="0 0 ${W} ${H}"><line x1="${padS}" x2="${W-padS}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#C6D4E6" stroke-width="1"/>${bars}</svg></div>`, 56);
+  return `<div class="chart-card"><div class="ch-h">${esc(title)}</div><svg class="chart" viewBox="0 0 ${W} ${H}"><line x1="${padS}" x2="${W-padS}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#C6D4E6" stroke-width="1"/>${bars}</svg></div>`;
 }
 function chartsRow(...cards){
   const cs=cards.filter(Boolean);
-  if(!cs.length) return null;
-  if(cs.length===1) return block(`<div class="charts2"><div>${cs[0].html}</div><div></div></div>`, cs[0].mm+6);
-  return block(`<div class="charts2">${cs.map(c=>c.html).join('')}</div>`, Math.max(...cs.map(c=>c.mm))+6);
+  if(!cs.length) return '';
+  return `<div class="charts2">${cs.map(c=>`<div>${c}</div>`).join('')}</div>`;
+}
+function ratioCharts(points){
+  const by={};
+  A(points).filter(p=>isNum(p?.waarde)&&hasVal(p?.periode)).forEach(p=>{(by[p.ratio||'Ratio']??=[]).push(p)});
+  const cards=Object.entries(by).filter(([,v])=>v.length>=2).slice(0,2)
+    .map(([k,v])=>barChart(v.map(p=>({periode:p.periode,waarde:p.waarde})),k,numFmt));
+  return chartsRow(...cards);
 }
 
-/* ── Paginasecties ─────────────────────────────────────────────────── */
-function msBlocks(r,ctx){
-  const ms=r.managementsamenvatting||{};
-  const blocks=[titleBlock('Managementsamenvatting','Samenvatting van de financieringscasus')];
-  blocks.push(block(`<div class="chips">${dekChip(ctx.dek)}<span class="chip">Adviseurcontrole vereist</span><span class="chip">${esc(ctx.status)}</span></div>`,10));
-  const kern=para(ms.kernboodschap,620); if(kern){kern.required=true;blocks.push(kern);}
-  /* KPI's: alleen kaarten met een waarde */
-  let kpis=A(ms.kpi_cards).filter(k=>hasVal(k?.waarde)&&hasVal(k?.label)).slice(0,4);
-  if(!kpis.length){
-    const kc=r.financieringsopzet?.kerncijfers||{};
-    kpis=[
-      isNum(kc.gevraagde_financiering)&&{label:'Gevraagde financiering',waarde:money(kc.gevraagde_financiering),subtekst:''},
-      isNum(kc.totale_investering)&&{label:'Totale investering',waarde:money(kc.totale_investering),subtekst:''},
-      isNum(kc.eigen_inbreng)&&{label:'Eigen inbreng',waarde:money(kc.eigen_inbreng),subtekst:''},
-      hasVal(kc.ltv)&&{label:'LTV',waarde:kc.ltv,subtekst:''},
-      hasVal(kc.looptijd)&&{label:'Looptijd',waarde:kc.looptijd,subtekst:''},
-    ].filter(Boolean).slice(0,4);
-  }
-  if(kpis.length){
-    blocks.push(block(`<div class="kpis" style="--kn:${kpis.length}">${kpis.map(k=>`<div class="kpi"><div class="kpi-l">${esc(clip(k.label,28))}</div><div class="kpi-v">${esc(clip(k.waarde,20))}</div>${hasVal(k.subtekst)?`<div class="kpi-s">${esc(clip(k.subtekst,60))}</div>`:''}</div>`).join('')}</div>`,24));
-  }
-  const st=A(ms.belangrijkste_sterktes).filter(hasVal).slice(0,5);
-  const ri=A(ms.belangrijkste_risicos).filter(hasVal).slice(0,5);
-  if(st.length||ri.length){
-    blocks.push(block(`<div class="twocol">
-      <div><div class="colh gr">Belangrijkste sterktes</div><div class="blist">${st.map(i=>`<div>${esc(clip(i,200))}</div>`).join('')||'<div>Nog geen sterktes vastgesteld.</div>'}</div></div>
-      <div><div class="colh am">Belangrijkste risico's</div><div class="blist orange">${ri.map(i=>`<div>${esc(clip(i,200))}</div>`).join('')||'<div>Nog geen risico\u2019s vastgesteld.</div>'}</div></div>
-    </div>`, Math.max(st.length,ri.length)*5.6+16));
-  }
-  if(hasVal(ms.voorlopig_oordeel)){
-    blocks.push(block(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${dekChip(ctx.dek)}</div><p>${esc(clip(ms.voorlopig_oordeel,520))}</p></div>`, textMm(clip(ms.voorlopig_oordeel,520))+16));
-  }
-  return blocks;
-}
-
-function aanvraagBlocks(r){
-  const as=r.aanvraag_en_structuur||{};
-  const partijen=A(as.partijen).filter(p=>hasVal(p?.naam)).slice(0,7);
-  const punten=A(as.structuurpunten).filter(hasVal).slice(0,6);
-  if(!hasVal(as.tekst)&&!partijen.length&&!punten.length) return null;
-  const blocks=[];
-  const p=para(as.tekst,700); if(p) blocks.push(p);
-  if(partijen.length){
-    blocks.push(secbar('Betrokken partijen'));
-    blocks.push(table(
-      [{label:'Partij'},{label:'Rol'},{label:'Rechtsvorm'},{label:'KvK'}],
-      partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(clip(x.toelichting,110))}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td>${cell(x.kvk)}</td></tr>`)
-    ));
-  }
-  if(punten.length){ blocks.push(secbar('Structuur en uitgangspunten')); blocks.push(bullets(punten,6)); }
-  return blocks;
-}
-
-function opzetBlocks(r){
-  const fo=r.financieringsopzet||{};
-  const kc=fo.kerncijfers||{};
-  const bna=A(fo.bronnen_en_aanwendingen).filter(x=>hasVal(x?.label));
-  const aanw=bna.filter(x=>x.type==='aanwending').slice(0,7);
-  const bron=bna.filter(x=>x.type==='bron').slice(0,7);
-  const best=A(fo.bestaande_financieringen).filter(x=>hasVal(x?.label)).slice(0,5);
-  const nieuw=A(fo.nieuwe_financieringen).filter(x=>hasVal(x?.label)).slice(0,5);
-  const voorw=A(fo.voorwaarden).filter(hasVal).slice(0,5);
-  const any=hasVal(fo.tekst)||aanw.length||bron.length||best.length||nieuw.length||isNum(kc.gevraagde_financiering);
-  if(!any) return null;
-  const blocks=[];
-  const p=para(fo.tekst,600); if(p) blocks.push(p);
-
-  const kpis=[
-    isNum(kc.totale_investering)&&['Totale investering',money(kc.totale_investering)],
-    isNum(kc.gevraagde_financiering)&&['Gevraagde financiering',money(kc.gevraagde_financiering)],
-    isNum(kc.eigen_inbreng)&&['Eigen inbreng',money(kc.eigen_inbreng)],
-    hasVal(kc.looptijd)&&['Looptijd',kc.looptijd],
-    hasVal(kc.rente)&&['Rente',kc.rente],
-    hasVal(kc.ltv)&&['LTV',kc.ltv],
-  ].filter(Boolean).slice(0,4);
-  if(kpis.length) blocks.push(block(`<div class="kpis" style="--kn:${kpis.length}">${kpis.map(k=>`<div class="kpi"><div class="kpi-l">${esc(k[0])}</div><div class="kpi-v">${esc(clip(String(k[1]),20))}</div></div>`).join('')}</div>`,24));
-
-  const side=(rows,label)=>{
-    if(!rows.length) return '';
-    const tot=rows.every(x=>isNum(x.bedrag))?rows.reduce((s,x)=>s+x.bedrag,0):null;
-    return `<div><table class="t"><thead><tr><th>${label}</th><th class="num">Bedrag</th></tr></thead><tbody>${
-      rows.map(x=>`<tr><td>${esc(clip(x.label,54))}${hasVal(x.toelichting)?`<div class="sub">${esc(clip(x.toelichting,90))}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td></tr>`).join('')
-    }${isNum(tot)?`<tr class="total"><td>Totaal</td><td class="num">${money(tot)}</td></tr>`:''}</tbody></table></div>`;
+/* ── Organogram: reconstructie uit gestructureerde brondata ────────── */
+const ORG_TYPE_CLS={privepersoon:'t-priv',holding:'t-hold',werkmaatschappij:'t-werk',vastgoed_bv:'t-vast',stak:'t-stak',in_oprichting:'t-opr',overig:'t-ovr'};
+function orgBlock(org,title){
+  if(!org||org.aanwezig!==true) return '';
+  const ents=A(org.entiteiten).filter(e=>hasVal(e?.naam)).slice(0,14);
+  if(!ents.length) return '';
+  const ids=new Set(ents.map(e=>String(e.id)));
+  const rels=A(org.relaties).filter(rl=>ids.has(String(rl?.van))&&ids.has(String(rl?.naar))&&String(rl.van)!==String(rl.naar));
+  const incoming={};
+  rels.forEach(rl=>{(incoming[String(rl.naar)]??=[]).push(String(rl.van))});
+  const level={};
+  const getL=(id,seen=new Set())=>{
+    if(level[id]!=null) return level[id];
+    if(seen.has(id)) return 0;
+    seen.add(id);
+    const ps=incoming[id]||[];
+    const l=ps.length?1+Math.max(...ps.map(p=>getL(p,seen))):0;
+    level[id]=l; return l;
   };
-  if(aanw.length||bron.length){
-    blocks.push(secbar('Bronnen en aanwendingen'));
-    blocks.push(block(`<div class="twocol">${side(aanw,'Aanwendingen')}${side(bron,'Bronnen')}</div>`, Math.max(aanw.length,bron.length)*7.4+22));
+  ents.forEach(e=>getL(String(e.id)));
+  const maxL=Math.max(...ents.map(e=>level[String(e.id)]||0));
+  const rows=[];
+  for(let l=0;l<=maxL;l++){
+    const r=ents.filter(e=>(level[String(e.id)]||0)===l);
+    if(r.length) rows.push(r);
   }
-  const mix=donut(r.visualisaties?.financieringsmix,'Financieringsmix');
-  if(mix) blocks.push(chartsRow(mix, nieuw.length?null:donut(r.visualisaties?.zekerhedenmix,'Zekerhedenmix — indicatief')));
-  if(nieuw.length){
-    blocks.push(secbar('Nieuwe financiering'));
-    blocks.push(table([{label:'Faciliteit'},{label:'Hoofdsom',num:true},{label:'Condities'}],
-      nieuw.map(x=>`<tr><td>${esc(clip(x.label,50))}${hasVal(x.toelichting)?`<div class="sub">${esc(clip(x.toelichting,100))}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td><td>${cell(x.condities)}</td></tr>`)));
-  }
-  if(best.length){
-    blocks.push(secbar('Bestaande financieringen'));
-    blocks.push(table([{label:'Financiering'},{label:'Restschuld',num:true},{label:'Condities'}],
-      best.map(x=>`<tr><td>${esc(clip(x.label,50))}${hasVal(x.toelichting)?`<div class="sub">${esc(clip(x.toelichting,100))}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td><td>${cell(x.condities)}</td></tr>`)));
-  }
-  if(voorw.length){ blocks.push(secbar('Voorwaarden en condities')); blocks.push(bullets(voorw,5)); }
-  return blocks;
+  const box=e=>`<div class="org-box ${ORG_TYPE_CLS[e.type]||'t-ovr'}" data-oid="${esc(e.id)}"><div class="ob-name">${esc(e.naam)}</div>${hasVal(e.rol)?`<div class="ob-role">${esc(e.rol)}</div>`:''}</div>`;
+  const rowsHtml=rows.map(r=>`<div class="org-level">${r.map(box).join('')}</div>`).join('');
+  const types=new Set(ents.map(e=>e.type));
+  const legendItems=[
+    types.has('privepersoon')&&'<span><i class="l-priv"></i>Privépersoon</span>',
+    types.has('holding')&&'<span><i class="l-hold"></i>Holding</span>',
+    (types.has('werkmaatschappij')||types.has('overig'))&&'<span><i></i>Werkmaatschappij</span>',
+    types.has('vastgoed_bv')&&'<span><i class="l-vast"></i>Vastgoed-BV</span>',
+    types.has('in_oprichting')&&'<span><i class="l-opr"></i>In oprichting</span>',
+  ].filter(Boolean).join('');
+  return `<div class="orgcard"><div class="ch-h">${esc(hasVal(org.titel)?org.titel:title)}</div>
+    <div class="org" data-rels="${esc(JSON.stringify(rels))}">${rowsHtml}<svg class="org-svg" aria-hidden="true"></svg></div>
+    ${legendItems?`<div class="org-legend">${legendItems}</div>`:''}
+    ${hasVal(org.toelichting)?`<div class="org-note">${esc(org.toelichting)}</div>`:''}
+  </div>`;
+}
+function drawOrganograms(root){
+  root.querySelectorAll('.org').forEach(org=>{
+    const svg=org.querySelector('.org-svg'); if(!svg) return;
+    let rels=[];
+    try{ rels=JSON.parse(org.dataset.rels||'[]'); }catch{ rels=[]; }
+    const W=org.offsetWidth,H=org.offsetHeight;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    let out='';
+    for(const rl of rels){
+      const a=org.querySelector(`[data-oid="${CSS.escape(String(rl.van))}"]`);
+      const b=org.querySelector(`[data-oid="${CSS.escape(String(rl.naar))}"]`);
+      if(!a||!b) continue;
+      const lvA=a.parentElement,lvB=b.parentElement;
+      const x1=lvA.offsetLeft+a.offsetLeft+a.offsetWidth/2, y1=lvA.offsetTop+a.offsetTop+a.offsetHeight;
+      const x2=lvB.offsetLeft+b.offsetLeft+b.offsetWidth/2, y2=lvB.offsetTop+b.offsetTop;
+      const my=(y1+y2)/2;
+      out+=`<path d="M ${x1} ${y1} L ${x1} ${my} L ${x2} ${my} L ${x2} ${y2-4}" fill="none" stroke="#B9C8DC" stroke-width="1.4"/>`;
+      out+=`<path d="M ${x2} ${y2} l -3.2 -5 h 6.4 z" fill="#B9C8DC"/>`;
+      if(hasVal(rl.label)) out+=`<text x="${x2+5}" y="${(my+y2)/2+2}" class="org-lbl">${esc(rl.label)}</text>`;
+    }
+    svg.innerHTML=out;
+  });
 }
 
-function finBlocks(r){
-  const fa=r.financiele_analyse||{};
-  const res=A(fa.resultaten).filter(x=>hasVal(x?.label)&&isNum(x?.bedrag));
-  const bal=A(fa.balans).filter(x=>hasVal(x?.label)&&isNum(x?.bedrag));
-  const ratios=A(fa.ratios).filter(x=>hasVal(x?.ratio)&&hasVal(x?.waarde)).slice(0,6);
-  const obs=A(fa.observaties).filter(hasVal).slice(0,4);
-  if(!hasVal(fa.tekst)&&!res.length&&!ratios.length&&!bal.length) return null;
-  const blocks=[];
-  const p=para(fa.tekst,650); if(p){p.required=true;blocks.push(p);}
-  const omzet=barChart(r.visualisaties?.omzetontwikkeling,'Omzetontwikkeling');
-  const result=barChart(r.visualisaties?.resultaatontwikkeling,'Resultaatontwikkeling');
-  if(res.length){ blocks.push(secbar('Resultaten','conform aangeleverde documentatie')); blocks.push(pivotTable(res,'Resultaat')); }
-  if(omzet||result) blocks.push(chartsRow(omzet,result));
-  if(ratios.length){
-    blocks.push(secbar('Kengetallen'));
-    blocks.push(table([{label:'Ratio'},{label:'Periode'},{label:'Waarde',num:true},{label:'Toelichting'}],
-      ratios.map(x=>`<tr><td>${esc(clip(x.ratio,34))}</td><td>${cell(x.periode)}</td><td class="num">${cell(x.waarde)}</td><td>${cell(clip(x.toelichting||x.norm,90))}</td></tr>`)));
-  }
-  if(bal.length){ blocks.push(secbar('Balans — kernposten')); blocks.push(pivotTable(bal,'Balanspost')); }
-  if(obs.length){ blocks.push(secbar('Observaties')); blocks.push(bullets(obs,4)); }
-  return blocks;
-}
+/* ── Sectiebouwers ─────────────────────────────────────────────────── */
+function buildSections(r,ctx){
+  const S=[];
+  const add=(label,eyebrow,title,blocks)=>{
+    const bs=A(blocks).flat(Infinity).filter(x=>typeof x==='string'&&x.trim());
+    if(!bs.length) return;
+    S.push({label,blocks:[chap(eyebrow,title),...bs]});
+  };
 
-function zekerBlocks(r){
-  const zr=r.zekerheden_en_risico||{};
-  const zeker=A(zr.zekerheden).filter(x=>hasVal(x?.zekerheid)).slice(0,7);
-  const risks=A(zr.risicomatrix).filter(x=>hasVal(x?.risico)).slice(0,6);
-  const aand=A(zr.bancaire_aandachtspunten).filter(hasVal).slice(0,4);
-  if(!zeker.length&&!risks.length&&!hasVal(zr.tekst)) return null;
-  const blocks=[];
-  const p=para(zr.tekst,520); if(p) blocks.push(p);
-  if(zeker.length){
-    blocks.push(secbar('Zekerheden'));
-    blocks.push(table([{label:'Zekerheid'},{label:'Waarde',num:true},{label:'Toelichting'}],
-      zeker.map(x=>`<tr><td>${esc(clip(x.zekerheid,54))}</td><td class="num">${mcell(x.waarde)}</td><td>${cell(clip(x.toelichting,110))}</td></tr>`)));
-  }
-  if(hasVal(zr.dekkingspositie)) blocks.push(block(`<div class="panel tint"><div class="panel-h">Dekkingspositie</div><p class="para">${esc(clip(zr.dekkingspositie,420))}</p></div>`, textMm(clip(zr.dekkingspositie,420))+14));
-  const mix=donut(r.visualisaties?.zekerhedenmix,'Zekerhedenmix');
-  if(mix&&zeker.length>=2) blocks.push(chartsRow(mix));
-  if(risks.length){
-    blocks.push(secbar('Risicomatrix'));
-    blocks.push(table([{label:'Risico'},{label:'Kans'},{label:'Impact'},{label:'Mitigerende factor'}],
-      risks.map(x=>`<tr><td>${esc(clip(x.risico,60))}</td><td>${prioStat(x.kans)}</td><td>${prioStat(x.impact)}</td><td>${cell(clip(x.mitigant,120))}</td></tr>`)));
-  }
-  if(aand.length){ blocks.push(secbar('Bancaire aandachtspunten')); blocks.push(bullets(aand,4,'orange')); }
-  return blocks;
-}
-
-function conclusieBlocks(r,ctx){
-  const cc=r.conclusie||{};
+  /* 1 · Managementsamenvatting */
   const ms=r.managementsamenvatting||{};
-  const blocks=[];
-  const chip=`<span class="chip ${OORDEEL_CHIP[cc.oordeel]||''}">${esc(cc.oordeel||'onvoldoende data')}</span>`;
-  blocks.push(block(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${chip}</div><p>${safeText(clip(cc.tekst,900),'Op basis van de aangeleverde documentatie kan nog geen definitief oordeel worden gegeven over financierbaarheid en betaalbaarheid. Aanvullende informatie is benodigd.')}</p></div>`, textMm(clip(cc.tekst||NB,900))+18));
-  const aand=A(ms.aandachtspunten).filter(hasVal).slice(0,4);
-  if(aand.length){ blocks.push(secbar('Belangrijkste aandachtspunten')); blocks.push(bullets(aand,4,'orange')); }
-  const vw=A(cc.voorwaarden).filter(hasVal).slice(0,6);
-  if(vw.length){ blocks.push(secbar('Voorwaarden en mitsen')); blocks.push(bullets(vw,6)); }
-  const ap=A(cc.actiepunten).filter(hasVal).slice(0,6);
-  if(ap.length){ blocks.push(secbar('Actiepunten voor de adviseur')); blocks.push(bullets(ap,6)); }
-  blocks.push(block(`<div class="panel tint"><div class="panel-h">Extern delen</div><p class="para">${safeText(clip(cc.extern_deelbaar,300),'Nog niet extern delen; eerst adviseurscontrole.')}</p></div>`, textMm(clip(cc.extern_deelbaar||NB,300))+14));
-  return blocks;
+  {
+    const blocks=[
+      `<div class="chips">${dekChip(ctx.dek)}<span class="chip">Adviseurcontrole vereist</span><span class="chip">${esc(ctx.status)}</span></div>`,
+      paraBlocks(ms.kernboodschap),
+    ];
+    let kpis=A(ms.kpi_cards).filter(k=>hasVal(k?.waarde)&&hasVal(k?.label)).map(k=>[k.label,k.waarde,k.subtekst]);
+    if(!kpis.length){
+      const kc=r.financieringsopzet?.kerncijfers||{};
+      kpis=[
+        isNum(kc.gevraagde_financiering)&&['Gevraagde financiering',money(kc.gevraagde_financiering)],
+        isNum(kc.totale_investering)&&['Totale investering',money(kc.totale_investering)],
+        isNum(kc.eigen_inbreng)&&['Eigen inbreng',money(kc.eigen_inbreng)],
+        hasVal(kc.ltv)&&['LTV',kc.ltv],
+        hasVal(kc.looptijd)&&['Looptijd',kc.looptijd],
+      ].filter(Boolean);
+    }
+    blocks.push(kpiBlock(kpis));
+    const st=A(ms.belangrijkste_sterktes).filter(hasVal);
+    const ri=A(ms.belangrijkste_risicos).filter(hasVal);
+    if(st.length||ri.length){
+      blocks.push(`<div class="twocol">
+        <div><div class="colh gr">Belangrijkste sterktes</div><div class="blist">${st.map(i=>`<div>${esc(i)}</div>`).join('')||'<div>Nog geen sterktes vastgesteld.</div>'}</div></div>
+        <div><div class="colh am">Belangrijkste risico's</div><div class="blist orange">${ri.map(i=>`<div>${esc(i)}</div>`).join('')||'<div>Nog geen risico\u2019s vastgesteld.</div>'}</div></div>
+      </div>`);
+    }
+    if(hasVal(ms.voorlopig_oordeel)){
+      blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${dekChip(ctx.dek)}</div><p>${esc(ms.voorlopig_oordeel)}</p></div>`);
+    }
+    add('Managementsamenvatting','Managementsamenvatting','Samenvatting van de financieringscasus',blocks);
+  }
+
+  /* 2 · Aanvraag en transactie */
+  const av=r.aanvraag_en_transactie||{};
+  add('Aanvraag & transactie','Aanvraag & transactie','Aanvraag en transactie',[
+    paraBlocks(av.tekst),
+    panel('Aanleiding',av.aanleiding),
+    panel('Besluitvormingsvraag',av.besluitvormingsvraag),
+    A(av.kernpunten).filter(hasVal).length?[secbarB('Kernpunten'),bulletBlocks(av.kernpunten)]:[],
+  ]);
+
+  /* 3 · Juridische structuur */
+  const ju=r.juridische_structuur||{};
+  {
+    const partijen=A(ju.partijen).filter(p=>hasVal(p?.naam));
+    const blocks=[paraBlocks(ju.tekst)];
+    if(partijen.length){
+      blocks.push(secbarB('Betrokken partijen'));
+      blocks.push(tableBlocks(
+        [{label:'Partij'},{label:'Rol'},{label:'Rechtsvorm'},{label:'KvK'}],
+        partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td>${cell(x.kvk)}</td></tr>`)
+      ));
+    }
+    const bes=A(ju.bestuur_en_tekenbevoegdheid).filter(hasVal);
+    if(bes.length){ blocks.push(secbarB('Bestuur en tekenbevoegdheid')); blocks.push(bulletBlocks(bes)); }
+    const ubo=A(ju.aandeelhouders_ubo).filter(hasVal);
+    if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO\u2019s')); blocks.push(bulletBlocks(ubo)); }
+    const ob=orgBlock(ju.organogram_bestaand,'Organogram — bestaande structuur');
+    const on=orgBlock(ju.organogram_nieuw,'Organogram — nieuwe structuur');
+    if(ob||on) blocks.push(secbarB('Structuur','gereconstrueerd uit de bron'));
+    if(ob) blocks.push(ob);
+    if(on) blocks.push(on);
+    add('Juridische structuur','Juridische structuur','Juridische structuur en betrokken partijen',blocks);
+  }
+
+  /* 4 · Activiteiten onderneming */
+  const ac=r.activiteiten_onderneming||{};
+  add('Activiteiten onderneming','Onderneming','Activiteiten van de onderneming',[
+    paraBlocks(ac.tekst),
+    panel('Historie',ac.historie),
+    panel('Verdienmodel',ac.verdienmodel),
+    panel('Strategie',ac.strategie),
+    A(ac.kernpunten).filter(hasVal).length?[secbarB('Operationele kernpunten'),bulletBlocks(ac.kernpunten)]:[],
+  ]);
+
+  /* 5 · Markt, afnemers en leveranciers */
+  const mk=r.markt_en_omgeving||{};
+  {
+    const blocks=[paraBlocks(mk.tekst)];
+    const afn=hasVal(mk.afnemers)?panel('Afnemers',mk.afnemers,false):'';
+    const lev=hasVal(mk.leveranciers)?panel('Leveranciers',mk.leveranciers,false):'';
+    if(afn&&lev) blocks.push(`<div class="twocol">${afn}${lev}</div>`);
+    else { if(afn) blocks.push(afn); if(lev) blocks.push(lev); }
+    if(hasVal(mk.concurrentie_en_trends)){ blocks.push(secbarB('Concurrentie en trends')); blocks.push(paraBlocks(mk.concurrentie_en_trends)); }
+    const afh=A(mk.afhankelijkheden).filter(hasVal);
+    if(afh.length){ blocks.push(secbarB('Afhankelijkheden')); blocks.push(bulletBlocks(afh,'orange')); }
+    add('Markt & omgeving','Markt','Markt, afnemers en leveranciers',blocks);
+  }
+
+  /* 6 · Management en organisatie */
+  const mg=r.management_en_organisatie||{};
+  {
+    const team=A(mg.team).filter(x=>hasVal(x?.naam));
+    const blocks=[paraBlocks(mg.tekst)];
+    if(team.length){
+      blocks.push(secbarB('Team'));
+      blocks.push(tableBlocks([{label:'Naam'},{label:'Rol'},{label:'Achtergrond'}],
+        team.map(x=>`<tr><td>${esc(x.naam)}</td><td>${cell(x.rol)}</td><td>${cell(x.achtergrond)}</td></tr>`)));
+    }
+    const kp=A(mg.kernpunten).filter(hasVal);
+    if(kp.length) blocks.push(bulletBlocks(kp));
+    add('Management & organisatie','Organisatie','Management en organisatie',blocks);
+  }
+
+  /* 7 · Financieringsopzet */
+  const fo=r.financieringsopzet||{};
+  {
+    const kc=fo.kerncijfers||{};
+    const bna=A(fo.bronnen_en_aanwendingen).filter(x=>hasVal(x?.label));
+    const aanw=bna.filter(x=>x.type==='aanwending');
+    const bron=bna.filter(x=>x.type==='bron');
+    const best=A(fo.bestaande_financieringen).filter(x=>hasVal(x?.label));
+    const nieuw=A(fo.nieuwe_financieringen).filter(x=>hasVal(x?.label));
+    const voorw=A(fo.voorwaarden).filter(hasVal);
+    const blocks=[paraBlocks(fo.tekst)];
+    blocks.push(kpiBlock([
+      isNum(kc.totale_investering)&&['Totale investering',money(kc.totale_investering)],
+      isNum(kc.gevraagde_financiering)&&['Gevraagde financiering',money(kc.gevraagde_financiering)],
+      isNum(kc.eigen_inbreng)&&['Eigen inbreng',money(kc.eigen_inbreng)],
+      hasVal(kc.looptijd)&&['Looptijd',kc.looptijd],
+      hasVal(kc.rente)&&['Rente',kc.rente],
+      hasVal(kc.ltv)&&['LTV',kc.ltv],
+    ].filter(Boolean)));
+    const side=(rows,label)=>{
+      if(!rows.length) return '';
+      const tot=rows.every(x=>isNum(x.bedrag))?rows.reduce((s,x)=>s+x.bedrag,0):null;
+      return `<div><table class="t"><thead><tr><th>${esc(label)}</th><th class="num">Bedrag</th></tr></thead><tbody>${
+        rows.map(x=>`<tr><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td></tr>`).join('')
+      }${isNum(tot)?`<tr class="total"><td>Totaal</td><td class="num">${money(tot)}</td></tr>`:''}</tbody></table></div>`;
+    };
+    if(aanw.length||bron.length){
+      blocks.push(secbarB('Bronnen en aanwendingen'));
+      blocks.push(`<div class="twocol">${side(aanw,'Aanwendingen')}${side(bron,'Bronnen')}</div>`);
+    }
+    const mix=donut(r.visualisaties?.financieringsmix,'Financieringsmix');
+    if(mix) blocks.push(chartsRow(mix));
+    if(nieuw.length){
+      blocks.push(secbarB('Nieuwe financiering'));
+      blocks.push(tableBlocks([{label:'Faciliteit'},{label:'Hoofdsom',num:true},{label:'Condities'}],
+        nieuw.map(x=>`<tr><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td><td>${cell(x.condities)}</td></tr>`)));
+    }
+    if(best.length){
+      blocks.push(secbarB('Bestaande financieringen'));
+      blocks.push(tableBlocks([{label:'Financiering'},{label:'Restschuld',num:true},{label:'Condities'}],
+        best.map(x=>`<tr><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td><td>${cell(x.condities)}</td></tr>`)));
+    }
+    if(hasVal(fo.bouwdepot_fasering)) blocks.push(panel('Bouwdepot en fasering',fo.bouwdepot_fasering));
+    if(voorw.length){ blocks.push(secbarB('Voorwaarden en condities')); blocks.push(bulletBlocks(voorw)); }
+    add('Financieringsopzet','Financieringsopzet','Financieringsopzet',blocks);
+  }
+
+  /* 8 · Object en vastgoed */
+  const ov=r.object_en_vastgoed||{};
+  {
+    const ken=A(ov.kenmerken).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
+    const blocks=[paraBlocks(ov.tekst)];
+    if(ken.length){ blocks.push(secbarB('Objectgegevens')); blocks.push(kvBlocks(ken)); }
+    const ap=A(ov.aandachtspunten).filter(hasVal);
+    if(ap.length){ blocks.push(secbarB('Aandachtspunten object')); blocks.push(bulletBlocks(ap,'orange')); }
+    add('Object & vastgoed','Object & vastgoed','Object en vastgoed',blocks);
+  }
+
+  /* 9 · Zekerheden */
+  const zr=r.zekerheden_en_risico||{};
+  {
+    const zeker=A(zr.zekerheden).filter(x=>hasVal(x?.zekerheid));
+    const blocks=[paraBlocks(zr.tekst)];
+    if(zeker.length){
+      blocks.push(secbarB('Zekerheden'));
+      blocks.push(tableBlocks([{label:'Zekerheid'},{label:'Waarde',num:true},{label:'Toelichting'}],
+        zeker.map(x=>`<tr><td>${esc(x.zekerheid)}</td><td class="num">${mcell(x.waarde)}</td><td>${cell(x.toelichting)}</td></tr>`)));
+    }
+    if(hasVal(zr.dekkingspositie)) blocks.push(panel('Dekkingspositie',zr.dekkingspositie));
+    const mix=donut(r.visualisaties?.zekerhedenmix,'Zekerhedenmix');
+    if(mix&&zeker.length>=2) blocks.push(chartsRow(mix));
+    add('Zekerheden','Zekerheden','Zekerheden en dekking',blocks);
+  }
+
+  /* 10 · Financiële analyse */
+  const fa=r.financiele_analyse||{};
+  {
+    const res=A(fa.resultaten).filter(x=>hasVal(x?.label)&&isNum(x?.bedrag));
+    const bal=A(fa.balans).filter(x=>hasVal(x?.label)&&isNum(x?.bedrag));
+    const ratios=A(fa.ratios).filter(x=>hasVal(x?.ratio)&&hasVal(x?.waarde));
+    const obs=A(fa.observaties).filter(hasVal);
+    const blocks=[paraBlocks(fa.tekst)];
+    if(res.length){ blocks.push(secbarB('Resultaten','conform aangeleverde documentatie')); blocks.push(pivotBlocks(res,'Resultaat')); }
+    const omzet=barChart(r.visualisaties?.omzetontwikkeling,'Omzetontwikkeling');
+    const result=barChart(r.visualisaties?.resultaatontwikkeling,'Resultaatontwikkeling');
+    if(omzet||result) blocks.push(chartsRow(omzet,result));
+    if(bal.length){ blocks.push(secbarB('Balans — kernposten')); blocks.push(pivotBlocks(bal,'Balanspost')); }
+    if(ratios.length){
+      blocks.push(secbarB('Kengetallen'));
+      blocks.push(tableBlocks([{label:'Ratio'},{label:'Periode'},{label:'Waarde',num:true},{label:'Toelichting'}],
+        ratios.map(x=>`<tr><td>${esc(x.ratio)}</td><td>${cell(x.periode)}</td><td class="num">${cell(x.waarde)}</td><td>${cell(x.toelichting||x.norm)}</td></tr>`)));
+    }
+    if(obs.length){ blocks.push(secbarB('Observaties')); blocks.push(bulletBlocks(obs)); }
+    add('Financiële analyse','Financiële analyse','Financiële analyse',blocks);
+  }
+
+  /* 11 · Betaalcapaciteit */
+  const bc=r.betaalcapaciteit||{};
+  {
+    const tab=A(bc.tabel).filter(x=>hasVal(x?.label)&&isNum(x?.bedrag));
+    const ken=A(bc.kengetallen).filter(x=>hasVal(x?.ratio)&&hasVal(x?.waarde));
+    const blocks=[paraBlocks(bc.tekst)];
+    if(tab.length){ blocks.push(secbarB('Betaalcapaciteit','conform aangeleverde documentatie')); blocks.push(pivotBlocks(tab,'Post')); }
+    if(ken.length){
+      blocks.push(secbarB('DSCR en overige kengetallen'));
+      blocks.push(tableBlocks([{label:'Ratio'},{label:'Periode'},{label:'Waarde',num:true},{label:'Norm / toelichting'}],
+        ken.map(x=>`<tr><td>${esc(x.ratio)}</td><td>${cell(x.periode)}</td><td class="num">${cell(x.waarde)}</td><td>${cell(x.toelichting||x.norm)}</td></tr>`)));
+    }
+    const rc=ratioCharts(r.visualisaties?.ratioontwikkeling);
+    if(rc) blocks.push(rc);
+    const kp=A(bc.kernpunten).filter(hasVal);
+    if(kp.length) blocks.push(bulletBlocks(kp));
+    add('Betaalcapaciteit','Betaalcapaciteit','Betaalcapaciteit',blocks);
+  }
+
+  /* 12 · Inkomen en vermogen privé */
+  const pv=r.inkomen_vermogen_prive||{};
+  {
+    const posten=A(pv.posten).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
+    const blocks=[paraBlocks(pv.tekst)];
+    if(posten.length){ blocks.push(secbarB('Inkomens- en vermogenspositie')); blocks.push(kvBlocks(posten)); }
+    if(hasVal(pv.relevantie)) blocks.push(panel('Relevantie voor de financiering',pv.relevantie));
+    add('Inkomen & vermogen privé','Privé','Inkomen en vermogen privé',blocks);
+  }
+
+  /* 13 · Risicoanalyse */
+  {
+    const risks=A(zr.risicomatrix).filter(x=>hasVal(x?.risico));
+    const aand=A(zr.bancaire_aandachtspunten).filter(hasVal);
+    const blocks=[];
+    if(risks.length){
+      blocks.push(secbarB('Risicomatrix'));
+      blocks.push(tableBlocks([{label:'Risico'},{label:'Kans'},{label:'Impact'},{label:'Mitigerende factor'}],
+        risks.map(x=>`<tr><td>${esc(x.risico)}</td><td>${prioStat(x.kans)}</td><td>${prioStat(x.impact)}</td><td>${cell(x.mitigant)}</td></tr>`)));
+    }
+    if(aand.length){ blocks.push(secbarB('Bancaire aandachtspunten')); blocks.push(bulletBlocks(aand,'orange')); }
+    add('Risicoanalyse','Risicoanalyse','Risicoanalyse en mitiganten',blocks);
+  }
+
+  /* 14 · Conclusie en advies */
+  {
+    const cc=r.conclusie||{};
+    const chip=`<span class="chip ${OORDEEL_CHIP[cc.oordeel]||''}">${esc(cc.oordeel||'onvoldoende data')}</span>`;
+    const cparas=hasVal(cc.tekst)?String(cc.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):`<p>${esc(NB)}</p>`;
+    const blocks=[
+      `<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${chip}</div>${cparas}</div>`,
+    ];
+    /* Ontbrekende kernsecties eerlijk benoemen */
+    const missing=[];
+    if(!S.some(x=>x.label==='Financiële analyse')) missing.push('Financiële analyse: geen betrouwbare cijfers geëxtraheerd uit de aangeleverde documentatie.');
+    if(!S.some(x=>x.label==='Zekerheden')) missing.push('Zekerheden: niet vastgesteld op basis van de aangeleverde documentatie.');
+    if(!S.some(x=>x.label==='Financieringsopzet')) missing.push('Financieringsopzet: niet vastgesteld op basis van de aangeleverde documentatie.');
+    if(missing.length) blocks.push(noviz(missing.join(' ')));
+    const aand=A(ms.aandachtspunten).filter(hasVal);
+    if(aand.length){ blocks.push(secbarB('Belangrijkste aandachtspunten')); blocks.push(bulletBlocks(aand,'orange')); }
+    const vw=A(cc.voorwaarden).filter(hasVal);
+    if(vw.length){ blocks.push(secbarB('Voorwaarden en mitsen')); blocks.push(bulletBlocks(vw)); }
+    const ap=A(cc.actiepunten).filter(hasVal);
+    if(ap.length){ blocks.push(secbarB('Actiepunten voor de adviseur')); blocks.push(bulletBlocks(ap)); }
+    blocks.push(`<div class="panel tint"><div class="panel-h">Extern delen</div><p class="para">${safeText(cc.extern_deelbaar,'Nog niet extern delen; eerst adviseurscontrole.')}</p></div>`);
+    add('Conclusie & advies','Conclusie','Conclusie en advies',blocks);
+  }
+
+  /* 15 · Documentatie en bijlagen */
+  {
+    const dc=r.documentatiecheck||{};
+    const md=r.metadata||{};
+    const br=r.bronrapport||{};
+    const cv=r.coverage_check||{};
+    const docRows=(rows,key)=>A(rows).filter(x=>hasVal(x?.[key]));
+    const rowHtml=(d,key,statFn)=>`<div class="docrow"><span class="dr-name">${esc(d[key])}</span>${hasVal(d.toelichting)?`<span class="dr-note">${esc(d.toelichting)}</span>`:''}${statFn(d)}</div>`;
+    const chunkRows=(rows,key,statFn)=>{
+      const out=[];
+      for(let i=0;i<rows.length;i+=12) out.push(`<div class="docwrap">${rows.slice(i,i+12).map(d=>rowHtml(d,key,statFn)).join('')}</div>`);
+      return out;
+    };
+    const blocks=[];
+    const ontv=docRows(dc.ontvangen,'document');
+    if(ontv.length){ blocks.push(secbarB('Ontvangen documenten','daadwerkelijk aangeleverd')); blocks.push(chunkRows(ontv,'document',d=>statusStat(d.status))); }
+    const inbron=docRows(dc.in_bron_opgenomen,'document');
+    if(inbron.length){ blocks.push(secbarB('Opgenomen in het bronmemorandum','niet los aangeleverd')); blocks.push(chunkRows(inbron,'document',d=>statusStat(d.status||'in bron opgenomen'))); }
+    const sep=A(dc.separaat_te_controleren).filter(hasVal);
+    if(sep.length){ blocks.push(secbarB('Separaat te controleren stukken')); blocks.push(bulletBlocks(sep)); }
+    const ontbr=docRows(dc.ontbrekend,'item');
+    if(ontbr.length){ blocks.push(secbarB('Ontbrekende of op te vragen stukken')); blocks.push(chunkRows(ontbr,'item',d=>prioStat(d.prioriteit))); }
+    const vragen=A(dc.vervolgvragen).filter(hasVal);
+    if(vragen.length){ blocks.push(secbarB('Vervolgvragen')); blocks.push(bulletBlocks(vragen)); }
+
+    /* Dekking van het bronrapport */
+    const bronInfo=[
+      hasVal(br.type)&&{label:'Type brondocument',waarde:br.type},
+      isNum(br.aantal_paginas)&&{label:'Omvang bron',waarde:`± ${br.aantal_paginas} pagina's`},
+      A(br.hoofdstukken).length&&{label:'Bronhoofdstukken',waarde:String(A(br.hoofdstukken).length)},
+      A(br.gevonden_organogrammen).filter(hasVal).length&&{label:'Organogrammen in bron',waarde:String(A(br.gevonden_organogrammen).filter(hasVal).length)},
+      A(br.gevonden_afbeeldingen).filter(hasVal).length&&{label:'Afbeeldingen in bron',waarde:String(A(br.gevonden_afbeeldingen).filter(hasVal).length)},
+    ].filter(Boolean);
+    const weggelaten=A(cv.weggelaten_met_reden).filter(hasVal);
+    const warns=[...new Set([...A(cv.waarschuwingen),...A(r.kwaliteitscontrole?.waarschuwingen)])].filter(hasVal);
+    const beelden=A(br.gevonden_afbeeldingen).filter(hasVal);
+    if(bronInfo.length||weggelaten.length||warns.length||beelden.length){
+      blocks.push(secbarB('Dekking van het bronrapport'));
+      if(bronInfo.length) blocks.push(kvBlocks(bronInfo));
+      if(beelden.length){
+        blocks.push(panel('Beeldmateriaal in de bron',
+          'De volgende beelden zijn in het brondocument aangetroffen. Organogrammen zijn in dit rapport opnieuw getekend; overig beeldmateriaal (foto\u2019s, renderings, plattegronden) kan niet automatisch uit de bron worden overgenomen en dient waar relevant handmatig te worden toegevoegd:\n'+beelden.map(x=>'\u2022 '+x).join('\n')));
+      }
+      if(weggelaten.length){ blocks.push(panel('Bewust samengevoegd of weggelaten',weggelaten.map(x=>'\u2022 '+x).join('\n'))); }
+      if(warns.length){ blocks.push(secbarB('Controlepunten voor de adviseur')); blocks.push(bulletBlocks(warns,'orange')); }
+    }
+    const beperk=A(md.belangrijkste_beperkingen).filter(hasVal);
+    if(beperk.length){ blocks.push(secbarB('Beperkingen van deze analyse')); blocks.push(bulletBlocks(beperk,'orange')); }
+    add('Documentatie & bijlagen','Documentatie','Documentatie en bijlagen',blocks);
+  }
+
+  return S;
 }
 
-function docBlocks(r,{compact=false}={}){
-  const dc=r.documentatiecheck||{};
-  const md=r.metadata||{};
-  const ontv=A(dc.ontvangen).filter(x=>hasVal(x?.document)).slice(0,compact?5:8);
-  const ontbr=A(dc.ontbrekend).filter(x=>hasVal(x?.item)).slice(0,compact?5:8);
-  const contr=A(dc.te_controleren).filter(hasVal).slice(0,compact?3:5);
-  const vragen=A(dc.vervolgvragen).filter(hasVal).slice(0,compact?3:5);
-  const beperk=A(md.belangrijkste_beperkingen).filter(hasVal).slice(0,4);
-  const blocks=[];
-  if(ontv.length){
-    blocks.push(secbar('Ontvangen documenten'));
-    blocks.push(block(`<div style="margin-bottom:4.5mm">${ontv.map(d=>`<div class="docrow"><span class="dr-name">${esc(clip(d.document,60))}</span>${hasVal(d.toelichting)?`<span class="dr-note">${esc(clip(d.toelichting,90))}</span>`:''}${statusStat(d.status)}</div>`).join('')}</div>`, ontv.length*6.6+8));
-  }
-  if(ontbr.length){
-    blocks.push(secbar('Ontbrekende of op te vragen stukken'));
-    blocks.push(block(`<div style="margin-bottom:4.5mm">${ontbr.map(d=>`<div class="docrow"><span class="dr-name">${esc(clip(d.item,60))}</span>${hasVal(d.toelichting)?`<span class="dr-note">${esc(clip(d.toelichting,90))}</span>`:''}${prioStat(d.prioriteit)}</div>`).join('')}</div>`, ontbr.length*6.6+8));
-  }
-  if(contr.length||vragen.length){
-    const col=(h,items)=>`<div><div class="colh">${h}</div><div class="blist">${items.map(i=>`<div>${esc(clip(i,160))}</div>`).join('')}</div></div>`;
-    const cols=[contr.length?col('Te controleren',contr):null,vragen.length?col('Vervolgvragen',vragen):null].filter(Boolean);
-    blocks.push(block(`<div class="twocol" style="${cols.length===1?'grid-template-columns:1fr':''}">${cols.join('')}</div>`, Math.max(contr.length,vragen.length)*5.6+16));
-  }
-  if(beperk.length&&!compact){ blocks.push(secbar('Beperkingen van deze analyse')); blocks.push(bullets(beperk,4,'orange')); }
-  return blocks;
+/* ── Gemeten paginering ────────────────────────────────────────────── */
+function mmPx(){
+  const d=document.createElement('div');
+  d.style.cssText='width:100mm;position:absolute;visibility:hidden';
+  document.body.appendChild(d);
+  const w=d.getBoundingClientRect().width/100;
+  d.remove();
+  return w||3.7795;
 }
+function layoutPages(sections){
+  const MMpx=mmPx();
+  const budget=248*MMpx;        /* netto contenthoogte per pagina */
+  const minSection=55*MMpx;     /* minimale restruimte om een nieuw hoofdstuk te starten */
+  const headReserve=26*MMpx;    /* kop nooit onderaan zonder inhoud eronder */
+  const page=document.createElement('div');
+  page.className='report-page';
+  page.style.cssText='position:absolute;left:-9999px;top:0;height:auto;overflow:visible;box-shadow:none;margin:0;transform:none';
+  const body=document.createElement('div');
+  body.className='rp-body';
+  page.appendChild(body);
+  document.body.appendChild(page);
+  const measure=html=>{ body.innerHTML=`<div style="overflow:hidden">${html}</div>`; return body.firstChild.getBoundingClientRect().height; };
+  const isHeading=h=>/^<div class="(secbar|chap)/.test(h);
 
-const sumMm = blocks => A(blocks).filter(Boolean).reduce((s,b)=>s+b.mm,0);
+  const pages=[]; let cur=null;
+  const open=label=>{ cur={label,html:'',h:0}; };
+  const close=()=>{ if(cur&&cur.html) pages.push(cur); cur=null; };
+
+  for(const sec of sections){
+    if(cur&&(budget-cur.h)<minSection) close();
+    if(cur){ cur.html+='<div style="height:8mm"></div>'; cur.h+=8*MMpx; }
+    if(!cur) open(sec.label);
+    let placed=false;
+    for(const bl of sec.blocks){
+      const h=measure(bl);
+      const reserve=isHeading(bl)?headReserve:0;
+      if(cur.h>0&&cur.h+h+reserve>budget){
+        close();
+        open(sec.label+(placed?' — vervolg':''));
+      }
+      cur.html+=bl; cur.h+=h; placed=true;
+    }
+  }
+  close();
+  page.remove();
+  return pages;
+}
 
 /* ── Hoofd-renderer ────────────────────────────────────────────────── */
 function renderReport(r){
@@ -869,74 +1197,32 @@ function renderReport(r){
   const isIntake = md.rapport_type==='intake_documentatiememorandum';
   const naam = hasVal(md.klantnaam)?md.klantnaam:'Onderneming niet vastgesteld';
   const titel = isIntake?'Intake- en documentatiememorandum':'Financieringsmemorandum';
-  const datum = hasVal(md.datum)?md.datum:new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+  const vandaag = new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+  const datum = hasVal(md.rapportdatum)?md.rapportdatum:(hasVal(md.datum)?md.datum:vandaag);
+  const docdatum = hasVal(md.documentdatum)&&md.documentdatum!==datum?md.documentdatum:'';
   const dek = ['hoog','middel','beperkt'].includes(md.datadekking)?md.datadekking:'beperkt';
   const status = md.status||'Concept · ter beoordeling';
-  const ctx = {naam,titel,datum,dek,status,isIntake};
+  const ctx = {naam,titel,datum,docdatum,dek,status,isIntake};
 
   el.tbTitle.textContent = titel;
   el.tbSub.textContent = `${naam} · ${status}`;
 
-  /* Inhoudspagina's samenstellen met combineerlogica */
-  const pages=[]; // {label, blocks:[...]} of {label, html}
-  const addPage=(label,blocksArr,eyebrow,title,sub)=>{
-    if(!blocksArr) return;
-    const all=[titleBlock(eyebrow??label,title??label,sub), ...blocksArr.filter(Boolean)];
-    pages.push({label, html:pack(all).html});
-  };
-
-  pages.push({label:'Managementsamenvatting', html:pack(msBlocks(r,ctx)).html});
-
-  const aB=aanvraagBlocks(r);
-  const oB=opzetBlocks(r);
-  const aMm=sumMm(aB), oMm=sumMm(oB);
-  if(aB&&oB&&(aMm+oMm+30)<=BUDGET){
-    pages.push({label:'Aanvraag & financieringsopzet', html:pack([titleBlock('Aanvraag & structuur','Aanvraag, structuur en financieringsopzet'),...aB,secbar('Financieringsopzet'),...oB]).html});
-  } else {
-    if(aB) addPage('Aanvraag & structuur',aB,'Aanvraag & structuur','Aanvraag en structuur');
-    if(oB) addPage('Financieringsopzet',oB,'Financieringsopzet','Financieringsopzet');
-  }
-
-  const fB=finBlocks(r);
-  if(fB) addPage('Financiële analyse',fB,'Financiële analyse','Financiële analyse');
-  else if(!isIntake) { /* volwaardig rapport zonder cijfers komt niet voor (servertype-regel) */ }
-
-  const zB=zekerBlocks(r);
-  if(zB) addPage('Zekerheden & risico\u2019s',zB,'Zekerheden & risico\u2019s','Zekerheden en risico\u2019s');
-
-  const cB=conclusieBlocks(r,ctx);
-  const dCompact=docBlocks(r,{compact:true});
-  const dFull=docBlocks(r,{compact:false});
-  const cMm=sumMm(cB), dMm=sumMm(dCompact);
-  if((cMm+dMm+34)<=BUDGET&&dCompact.length){
-    pages.push({label:'Conclusie & documentatie', html:pack([titleBlock('Conclusie & aandachtspunten','Conclusie, aandachtspunten en documentatie'),...cB,...dCompact]).html});
-  } else {
-    addPage('Conclusie & aandachtspunten',cB,'Conclusie & aandachtspunten','Conclusie en aandachtspunten');
-    if(dFull.length) addPage('Documentatiecheck',dFull,'Documentatiecheck','Documentatiecheck');
-  }
-
-  /* Ontbrekende kernsecties benoemen in plaats van lege pagina's */
-  const missingNotes=[];
-  if(!fB) missingNotes.push('Financiële analyse: geen betrouwbare cijfers geëxtraheerd uit de aangeleverde documentatie.');
-  if(!zB) missingNotes.push('Zekerheden: niet vastgesteld op basis van de aangeleverde documentatie.');
-  if(missingNotes.length){
-    const target=pages.find(p=>p.label.startsWith('Conclusie'));
-    if(target) target.html = target.html.replace('</h2><div class="pt-rule"></div>', `</h2><div class="pt-rule"></div><div class="noviz">${missingNotes.map(esc).join('<br>')}</div>`);
-  }
-
-  /* Voorblad + chrome */
+  const sections=buildSections(r,ctx);
+  const pages=layoutPages(sections);
   const tot=pages.length+1;
-  const contents=pages.map(p=>p.label).join('  ·  ');
+
+  const contents=[...new Set(pages.map(p=>p.label.replace(/ — vervolg$/,'')))].join('  ·  ');
   const cover=`<section class="report-page cover" data-screen-label="Voorblad">
     <div class="cover-inner">
       <div class="cover-top"><img src="${WORD}" alt="Credion"><div class="cover-conf">Vertrouwelijk<br>${esc(status)}</div></div>
       <div class="cover-mid">
         <div class="cover-eyebrow">${esc(titel)}</div>
         <div class="cover-name">${esc(naam)}</div>
-        <div class="cover-goal">${safeText(clip(md.financieringsdoel,240),'Financieringsdoel: nog vast te stellen op basis van aanvullende documentatie.')}</div>
+        <div class="cover-goal">${safeText(md.financieringsdoel,'Financieringsdoel: nog vast te stellen op basis van aanvullende documentatie.')}</div>
       </div>
       <div class="cover-meta">
-        <div><div class="cm-l">Datum</div><div class="cm-v">${esc(datum)}</div></div>
+        <div><div class="cm-l">Rapportdatum</div><div class="cm-v">${esc(datum)}</div></div>
+        ${docdatum?`<div><div class="cm-l">Documentdatum bron</div><div class="cm-v">${esc(docdatum)}</div></div>`:''}
         <div><div class="cm-l">Rapporttype</div><div class="cm-v">${isIntake?'Intake & documentatie':'Financierings\u00admemorandum'}</div></div>
         <div><div class="cm-l">Status</div><div class="cm-v">${esc(status)}</div></div>
         <div><div class="cm-l">Datadekking</div><div class="cm-v" style="text-transform:capitalize">${esc(dek)}</div></div>
@@ -950,12 +1236,14 @@ function renderReport(r){
     <header class="rp-head"><img src="${WORD}" alt="Credion"><div class="rp-head-right">${esc(p.label)}</div></header>
     <div class="rp-body">${p.html}</div>
     <footer class="rp-foot">
-      <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(clip(naam,44))} — Vertrouwelijk</div>
+      <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(naam)} — Vertrouwelijk</div>
       <div class="rp-foot-r">${esc(datum)} &nbsp;·&nbsp; <b>Pagina ${i+2} van ${tot}</b></div>
     </footer>
   </section>`;
 
   el.stage.innerHTML = cover + pages.map(chrome).join('');
+  document.body.classList.add('report-mode');
+  drawOrganograms(el.stage);
 }
 
 /* ══ Toolbar ════════════════════════════════════════════════════════ */
@@ -973,7 +1261,13 @@ $('#newReport').addEventListener('click',()=>{
 });
 
 /* Debug/test-hook: render een rapport-JSON zonder API-call (console) */
-window.__credionRender = (r)=>{ state.data=r; const p=validateReportData(r); p.length?renderValidationError(p):renderReport(r); document.body.classList.add('report-mode'); window.scrollTo({top:0}); };
+window.__credionRender = async (r)=>{
+  state.data=r;
+  await document.fonts.ready;
+  const p=validateReportBeforeRender(r);
+  p.length?renderValidationError(p):renderReport(r);
+  window.scrollTo({top:0});
+};
 </script>
 </body>
 </html>
