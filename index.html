@@ -384,13 +384,17 @@ const el = {
    tweede laag die altijd meeloopt via esc(), voor elk dynamisch tekstveld. */
 function cleanTextForReport(value){
   return String(value??'')
+    .replace(/�9\s?(?=\d)/g,'€ ')
     .replace(/\uFFFD\s?(?=\d)/g,'€ ')
     .replace(/\bEUR\s?(?=\d)/gi,'€ ')
     .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1')
     .replace(/\bverpand(?:en|t)?\s+(?:worden|word(?:t)?|zijn)\s+voor\s+verzending\b/gi,'afgeroepen worden voor verzending')
     .replace(/\bverpakking\s+verpanding\b/gi,'Vestiging van verpanding')
     .replace(/\beffecte\b/gi,'effecten')
-    .replace(/\bnieuw\s+financial\s+lease\b/gi,'nieuwe financial lease');
+    .replace(/\bnieuw\s+financial\s+lease\b/gi,'nieuwe financial lease')
+    .replace(/\bStructurele\s+dubbel(?:e)?\s+woonlasten\b/gi,'Tijdelijke dubbele huisvestingslasten')
+    .replace(/\bbetaaldcapaciteit\b/gi,'betaalcapaciteit')
+    .replace(/\bverschil\s+btw-teruggave\s+en\s+financieringsbedrag\s+woning\b/gi,'verwerking van btw-teruggave binnen de financieringsopzet');
 }
 const esc = v => cleanTextForReport(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hasVal = v => v!==null && v!==undefined && String(v).trim()!=='' && !['null','undefined','NaN','[object Object]'].includes(String(v).trim());
@@ -409,6 +413,7 @@ const FORBIDDEN_NOTE_PATTERNS = [
   /zonder\s+expliciete\s+nul-?bron/i,
   /bronhoofdstuk[^.]{0,80}niet\s+expliciet\s+verwerkt/i,
   /\bkerncijfers\.\w+/i,
+  /datadekking\s+verlaagd\s+naar/i,
   /dekking van het bronrapport/i,
   /beeldmateriaal in de bron/i,
   /^bronhoofdstukken$/i,
@@ -430,6 +435,16 @@ const numFmt = v => isNum(v) ? v.toLocaleString('nl-NL',{maximumFractionDigits:2
 const A = v => Array.isArray(v)?v:[];
 const cell = v => hasVal(v)?esc(v):'—';
 const mcell = v => isNum(v)?money(v):'—';
+
+/* Zekerheden splitsen: definitief/gevestigd blijft in de hoofdtabel, een
+   mogelijke/aan te reiken/nog te formaliseren zekerheid komt apart onder
+   "Aanvullend mogelijk" te staan — nooit gemengd gepresenteerd als vaststaand. */
+const CONDITIONAL_STATUS_PAT = /mogelijk|aan te reiken|te vestigen|aangeboden|voorwaardelijk|nog te formaliseren|nog te controleren/i;
+function splitZekerheden(list){
+  const vast=[], mogelijk=[];
+  for(const x of A(list)){ (CONDITIONAL_STATUS_PAT.test(String(x?.status||''))?mogelijk:vast).push(x); }
+  return {vast,mogelijk};
+}
 
 const CHIP = { hoog:'g', middel:'a', beperkt:'r' };
 const dekChip = d => `<span class="chip ${CHIP[d]||'r'}">Datadekking: ${esc(d||'beperkt')}</span>`;
@@ -974,13 +989,18 @@ function buildCompactIntakeSections(r,ctx){
 
   /* 4 · Zekerheden en dekking (+ relevante objectinformatie, + top risico's) */
   {
-    const zeker=A(zr.zekerheden).filter(x=>hasVal(x?.zekerheid));
+    const {vast:zeker,mogelijk}=splitZekerheden(A(zr.zekerheden).filter(x=>hasVal(x?.zekerheid)));
     const blocks=[paraBlocks(zr.tekst)];
     if(zeker.length){
       const withStatus=zeker.some(x=>hasVal(x?.status));
       blocks.push(secbarB('Zekerheden'));
       blocks.push(tableBlocks([{label:'Zekerheid'},{label:'Waarde',num:true},...(withStatus?[{label:'Status'}]:[])],
         zeker.map(x=>`<tr><td>${esc(x.zekerheid)}</td><td class="num">${mcell(x.waarde)}</td>${withStatus?`<td>${cell(x.status)}</td>`:''}</tr>`)));
+    }
+    if(mogelijk.length){
+      blocks.push(secbarB('Aanvullend mogelijk','nog niet definitief'));
+      blocks.push(tableBlocks([{label:'Zekerheid'},{label:'Waarde',num:true},{label:'Status'}],
+        mogelijk.map(x=>`<tr><td>${esc(x.zekerheid)}</td><td class="num">${mcell(x.waarde)}</td><td>${cell(x.status)}</td></tr>`)));
     }
     if(hasVal(zr.dekkingspositie)) blocks.push(panel('Dekkingspositie',zr.dekkingspositie));
     const ken=A(ov.kenmerken).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
@@ -1209,7 +1229,7 @@ function buildSections(r,ctx){
   /* 9 · Zekerheden */
   const zr=r.zekerheden_en_risico||{};
   {
-    const zeker=A(zr.zekerheden).filter(x=>hasVal(x?.zekerheid));
+    const {vast:zeker,mogelijk}=splitZekerheden(A(zr.zekerheden).filter(x=>hasVal(x?.zekerheid)));
     const blocks=[paraBlocks(zr.tekst)];
     if(zeker.length){
       blocks.push(secbarB('Zekerheden'));
@@ -1217,6 +1237,11 @@ function buildSections(r,ctx){
       const heads=[{label:'Zekerheid'},{label:'Waarde',num:true},...(withStatus?[{label:'Status'}]:[]),{label:'Toelichting'}];
       blocks.push(tableBlocks(heads,
         zeker.map(x=>`<tr><td>${esc(x.zekerheid)}</td><td class="num">${mcell(x.waarde)}</td>${withStatus?`<td>${cell(x.status)}</td>`:''}<td>${cell(x.toelichting)}</td></tr>`)));
+    }
+    if(mogelijk.length){
+      blocks.push(secbarB('Aanvullend mogelijk','nog niet definitief'));
+      blocks.push(tableBlocks([{label:'Zekerheid'},{label:'Waarde',num:true},{label:'Status'},{label:'Toelichting'}],
+        mogelijk.map(x=>`<tr><td>${esc(x.zekerheid)}</td><td class="num">${mcell(x.waarde)}</td><td>${cell(x.status)}</td><td>${cell(x.toelichting)}</td></tr>`)));
     }
     if(hasVal(zr.dekkingspositie)) blocks.push(panel('Dekkingspositie',zr.dekkingspositie));
     const mix=donut(r.visualisaties?.zekerhedenmix,'Zekerhedenmix');
