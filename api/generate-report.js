@@ -74,6 +74,7 @@ const REPORT_SCHEMA = obj({
     rapportdatum: s,
     datum_toelichting: s,
     status: s,
+    kantoor_adviseur: s,
     datadekking: en('hoog', 'middel', 'beperkt'),
     bron_documenten: strArr,
     belangrijkste_beperkingen: strArr,
@@ -215,6 +216,7 @@ const REPORT_SCHEMA = obj({
     zekerhedenmix: arr(mixPoint),
     ratioontwikkeling: arr(ratioPoint),
   }),
+  overige_secties: arr(obj({ titel: s, tekst: s, tabel: arr(kvRow) })),
   kwaliteitscontrole: obj({
     geen_demo_data: b,
     geen_nul_fallbacks: b,
@@ -226,7 +228,7 @@ const REPORT_SCHEMA = obj({
 });
 
 /* ── System prompt ─────────────────────────────────────────────────── */
-const SYSTEM_BASE = `Je bent een senior Credion-financieringsspecialist en rapport-engineer. Je transformeert aangeleverde documentatie (bijvoorbeeld een Capsearch-memorandum, financieringsplan, jaarrekeningpakket, prognose, taxatie of ander dossierdocument) naar een volwaardig, professioneel Credion-financieringsrapport. Je bent een veredelingsengine, geen samenvatter: je behoudt alle besluitvormingsrelevante informatie uit de bron, structureert die beter en presenteert die in Credion-vorm. Je analyseert uitsluitend de aangeleverde documenten en eventuele adviseursnotities.
+const SYSTEM_BASE = `Je bent een document-transformator voor Credion: geen nieuwe kredietanalist, maar een document designer, zakelijke redacteur, structuurverbeteraar en kwaliteitscontroleur. Je neemt het aangeleverde financieringsplan of memorandum (bijvoorbeeld Capsearch) inhoudelijk zo volledig en letterlijk mogelijk over en zet het om naar een professioneel Credion-rapport. Je mag teksten redigeren, compacter maken en beter structureren, maar cijfers, tabellen, labels en financiële verbanden blijven exact zoals in de bron. Je herclassificeert geen posten, voegt geen eigen berekeningen of conclusies toe en signaleert onduidelijkheden als controlepunt. Je analyseert uitsluitend de aangeleverde documenten en eventuele adviseursnotities.
 
 ABSOLUTE REGELS — BRONWAARHEID
 1. Elke naam, elk bedrag, elk percentage, elk jaartal, elke ratio, elke zekerheid en elke voorwaarde moet herleidbaar zijn uit de aangeleverde documenten. Verzin niets. Geen demo-data, geen voorbeeldcijfers, geen externe kennis.
@@ -234,6 +236,15 @@ ABSOLUTE REGELS — BRONWAARHEID
 3. Extraheer harde bronfeiten in "bronfeiten" (met bron_document, kort bron_fragment en confidence) vóórdat je rapportsecties schrijft. Geen bronfeit = geen interpretatie. Noteer tegenstrijdigheden tussen documenten expliciet in bronfeiten.tegenstrijdigheden.
 4. Ontbrekende informatie markeer je met één professionele zin, zoals "Niet vastgesteld op basis van de aangeleverde documentatie". Herhaal zulke zinnen niet tientallen keren; laat velden en arrays zonder brondata gewoon leeg.
 5. Berekeningen (bijv. LTV, totalen) alleen als alle benodigde broncijfers aanwezig zijn. Vermeld afgeleide waarden als zodanig in de toelichting.
+
+TRANSFORMATIE-MODUS — VOLG DE BRON
+6. Neem bedragen exact over. Tel niets zelf op, tenzij het totaal letterlijk in de bron staat. Als een brontabel sluit, sluit jouw tabel ook — exact hetzelfde totaal.
+7. Herclassificeer geen posten en verplaats geen bedragen tussen bronnen en aanwendingen. Neem bronnen-en-aanwendingentabellen letterlijk over zoals de bron ze presenteert, met de labels uit de bron.
+8. Een bouwdepot of opnametermijnen (termijn 1 t/m n) zijn een opnameplanning/uitsplitsing van de lening — NOOIT een extra financieringsbron naast die lening, tenzij de bron dit expliciet zo presenteert. Zet de fasering in bouwdepot_fasering.
+9. Ratio's zijn geen geldbedragen. DSCR als "3,11" of "3,11x" (nooit "€ 3"), LTV als percentage ("84,7%"), Debt/EBITDA als ratio ("5,90x").
+10. Gebruik voor resultaatposten de exacte labels uit de bron: onderscheid bedrijfsresultaat, resultaat voor belastingen en resultaat na belastingen; verwissel deze nooit.
+11. Behoud de hoofdstukstructuur van de bron: hoofdstukken niet onnodig samenvoegen of splitsen. Bronhoofdstukken die niet in het schema passen (bijv. detailgegevens van betrokken personen of rechtspersonen) zet je in overige_secties, elk met titel, tekst en eventueel een tabel met {label, waarde}-rijen.
+12. Bij twijfel: volg de bron letterlijk en neem een controlepunt op in coverage_check.waarschuwingen.
 
 WERKWIJZE — EERST INVENTARISEREN, DAN SCHRIJVEN
 Stap 1: lees het volledige brondocument. Vul "bronrapport" in: geschat aantal pagina's, documenttype (bijv. "Capsearch-financieringsplan", "jaarrekening"), alle hoofdstukken/secties in bronvolgorde, alle relevante afbeeldingen (korte omschrijving per beeld, bijv. "organogram nieuwe structuur", "rendering nieuwbouw", "plattegrond"), aangetroffen organogrammen en de belangrijkste tabellen.
@@ -258,8 +269,8 @@ SECTIES (vul alleen wat de bron ondersteunt)
 - inkomen_vermogen_prive: alleen indien de bron dit bevat: inkomen ondernemer, partnerinkomen, woningwaarde, hypotheek, vermogen, privébehoefte — als posten {label, waarde} — plus relevantie voor de financiering.
 - zekerheden_en_risico: alle zekerheden met waarde, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten.
 
-BRONNEN EN AANWENDINGEN — CLASSIFICATIE
-Bronnen = waar het geld vandaan komt: hypothecaire lening, bancaire lening, eigen inbreng, achtergestelde lening, vendor loan, bouwdepot, subsidie, btw-financiering, overige bronnen. Aanwendingen = waar het geld naartoe gaat: koop-/aanneemsom, aankoopprijs, bouwkosten, verbouwing, kosten koper, btw, notaris, taxatie, financierings- en advieskosten, onvoorzien, werkkapitaal, herfinanciering bestaande schuld. Eigen inbreng of een lening staat NOOIT onder aanwendingen; een koop-/aanneemsom of kosten koper staat NOOIT onder bronnen. Totalen van bronnen en aanwendingen moeten sluiten; zo niet, benoem het verschil expliciet in een toelichting.
+BRONNEN EN AANWENDINGEN
+Neem de tabel letterlijk uit de bron over. Bronnen = waar het geld vandaan komt (hypothecaire/bancaire lening, eigen inbreng, achtergestelde lening, vendor loan, subsidie, btw-financiering). Aanwendingen = waar het geld naartoe gaat (koop-/aanneemsom, btw, notaris, taxatie, financierings- en advieskosten, onvoorzien, werkkapitaal, herfinanciering). Eigen inbreng of een lening hoort niet onder aanwendingen; een koop-/aanneemsom of kosten koper hoort niet onder bronnen — wijkt de bron hiervan af, volg dan de bron en neem een controlepunt op. Bouwdepottermijnen tellen niet mee als bron (regel 8). Als de bron sluit (investering = financiering), moeten jouw totalen exact gelijk zijn; sluit de bron zelf niet, benoem het verschil dan in een toelichting.
 
 DATUMREGELS
 metadata.documentdatum: de datum van het brondocument zelf (voorblad, "opgesteld op", documentmetadata) in Nederlandse notatie; leeg als die niet vaststaat. metadata.rapportdatum: de datum van dít rapport — gebruik de actuele datum. Gebruik NOOIT een geboortedatum, oprichtingsdatum of taxatiedatum als document- of rapportdatum. Bij twijfel: documentdatum leeg laten en toelichten in datum_toelichting.
@@ -268,10 +279,10 @@ AFBEELDINGEN UIT DE BRON
 Je kunt beeldmateriaal uit een PDF niet als afbeelding opnieuw aanleveren. Registreer daarom elk relevant beeld (rendering, objectfoto, plattegrond, bouwplanning, grafiek, schema) in bronrapport.gevonden_afbeeldingen met een korte, concrete omschrijving. Organogrammen reconstrueer je als data (zie boven). Feitelijke informatie die alleen in beelden staat (adres op een rendering, oppervlaktes op een plattegrond) verwerk je in de betreffende sectie als tekst of kenmerk.
 
 SCHRIJFSTIJL
-Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld.
+Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld. Schrijf uitsluitend Nederlands: geen Engelse restwoorden zoals "expected", "fluctuations", "report", "source" of "business case" — gebruik "verwacht", "schommelingen", enzovoort. Let op correcte vaktermen ("verzwaring" of "tijdelijke druk", nooit "verzuring"). Vermijd "circa" waar het exacte broncijfer beschikbaar is.
 
 CONCLUSIEBELEID
-Wees voorzichtig en professioneel. Gebruik nuance: "voorlopig", "op basis van de aangeleverde informatie", "mits", "na adviseurscontrole", "onder voorbehoud van verificatie", "liquiditeit monitoren".
+Volg de conclusie en toonzetting van de bron; voeg geen eigen oordeel toe dat niet uit de bron volgt. Een aanvullende observatie markeer je expliciet als adviseursoordeel. Wees voorzichtig en professioneel. Gebruik nuance: "voorlopig", "op basis van de aangeleverde informatie", "mits", "na adviseurscontrole", "onder voorbehoud van verificatie", "liquiditeit monitoren".
 - Sterke brondata → oordeel "voorzichtig positief": financieel verdedigbaar, mits de uitgangspunten uit de prognose worden gerealiseerd en de onderliggende stukken door de adviseur worden gecontroleerd.
 - Beperkte data → oordeel "onvoldoende data": nog geen definitief oordeel mogelijk; aanvullende informatie benodigd.
 - VERBODEN zonder volledige onderbouwing: "de financiering is verantwoord en betaalbaar", "kan zonder meer worden verstrekt", "bankwaardig", "sterk onderbouwd", "duurzaam draagbaar", "geen noemenswaardige risico's", "definitief akkoord".
@@ -294,7 +305,7 @@ RAPPORTTYPE
 "financieringsmemorandum" alleen als minimaal bekend zijn: kredietnemer, financieringsdoel, financieringsbedrag (of duidelijke behoefte) én concrete financiële cijfers. Anders "intake_documentatiememorandum": een eerlijk intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap).
 
 METADATA
-klantnaam: de kredietnemer/onderneming zoals in de bron. financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
+klantnaam: de kredietnemer/onderneming zoals in de bron. financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". kantoor_adviseur: het Credion-kantoor en/of de adviseur zoals vermeld in de bron; leeg indien onbekend. datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
 
 OUTPUT
 Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
@@ -392,7 +403,7 @@ function enforceDates(r, warnings, vandaag) {
 }
 
 /* Bronnen/aanwendingen: evidente classificatiefouten herstellen */
-const BRON_PAT = /(eigen\s+(inbreng|middelen|vermogen)|\binbreng\b|hypothecaire\s+(lening|financiering)|bancaire?\s+(lening|financiering)|achtergestelde?\s+lening|vendor\s?loan|verkopersl?ening|\bsubsidie\b|bouwdepot|btw[- ]?(teruggave|financiering)|\blening\b|\bkrediet\b)/i;
+const BRON_PAT = /(eigen\s+(inbreng|middelen|vermogen)|\binbreng\b|hypothecaire\s+(lening|financiering)|bancaire?\s+(lening|financiering)|achtergestelde?\s+lening|vendor\s?loan|verkopersl?ening|\bsubsidie\b|btw[- ]?(teruggave|financiering)|\blening\b|\bkrediet\b)/i;
 const AANW_PAT = /(koopsom|aanneemsom|aankoopprijs|\baankoop\b|kosten\s+koper|bouwkosten|verbouwing|renovatie|nieuwbouwkosten|notaris|taxatiekosten|advieskosten|financieringskosten|afsluitprovisie|onvoorzien|werkkapitaal|inventaris|installaties|leges|overdrachtsbelasting|herfinanciering)/i;
 
 function enforceBnA(fo, warnings) {
@@ -405,6 +416,24 @@ function enforceBnA(fo, warnings) {
     } else if (row.type === 'bron' && AANW_PAT.test(l) && !BRON_PAT.test(l)) {
       row.type = 'aanwending';
       warnings.push(`"${l}" stond onder bronnen en is verplaatst naar aanwendingen (classificatieregel).`);
+    }
+  }
+
+  /* Bouwdepot/opnametermijnen zijn een opnameplanning van de lening, geen extra bron */
+  const DEPOT_PAT = /(bouwdepot|opnametermijn|\btermijn\s*\d)/i;
+  const rows = A(fo.bronnen_en_aanwendingen);
+  const depotRows = rows.filter((x) => x?.type === 'bron' && DEPOT_PAT.test(String(x?.label || '')));
+  if (depotRows.length) {
+    const tb = rows.filter((x) => x?.type === 'bron' && num(x?.bedrag) !== null).reduce((t, x) => t + x.bedrag, 0);
+    const ta = rows.filter((x) => x?.type === 'aanwending' && num(x?.bedrag) !== null).reduce((t, x) => t + x.bedrag, 0);
+    const depotSum = depotRows.reduce((t, x) => t + (num(x?.bedrag) || 0), 0);
+    if (ta > 0 && Math.abs(tb - ta) > ta * 0.02 && Math.abs(tb - depotSum - ta) <= ta * 0.02) {
+      fo.bronnen_en_aanwendingen = rows.filter((x) => !depotRows.includes(x));
+      const note = `Bouwdepot/opnametermijnen (${depotRows.map((x) => x.label).join(', ')}) zijn verwerkt als opnameplanning van de lening en niet als extra financieringsbron geteld.`;
+      fo.bouwdepot_fasering = [fo.bouwdepot_fasering, note].filter(hasTxt).join('\n');
+      warnings.push(note);
+    } else if (ta > 0 && Math.abs(tb - ta) > ta * 0.02) {
+      warnings.push('Bouwdepot/opnametermijnen staan als financieringsbron vermeld; controleer op dubbeltelling met de lening.');
     }
   }
 }
@@ -433,6 +462,22 @@ function enforceCoverage(r, warnings) {
   warnings.push(...cv.waarschuwingen.filter((w) => !warnings.includes(w)));
 }
 
+/* Ratio's zijn geen geldbedragen: eurotekens bij DSCR/LTV/Debt-EBITDA verwijderen */
+function cleanRatios(r, warnings) {
+  const fix = (row, key) => {
+    if (typeof row?.[key] !== 'string' || !/€/.test(row[key])) return;
+    if (/dscr|debt|ltv|icr|solvab|current|ratio|ebitda|loan/i.test(String(row?.ratio || ''))) {
+      row[key] = row[key].replace(/€\s*/g, '').trim();
+      const w = 'Euroteken bij een ratio verwijderd; ratio\u2019s zijn geen geldbedragen.';
+      if (!warnings.includes(w)) warnings.push(w);
+    }
+  };
+  for (const row of A(r.financiele_analyse?.ratios)) { fix(row, 'waarde'); fix(row, 'norm'); }
+  for (const row of A(r.betaalcapaciteit?.kengetallen)) { fix(row, 'waarde'); fix(row, 'norm'); }
+}
+
+const EN_FIXES = [['expected', 'verwacht'], ['fluctuations', 'schommelingen'], ['fluctuation', 'schommeling'], ['verzuring', 'verzwaring']];
+
 /* Afgekapte tekst en render-vervuiling opruimen */
 function deepCleanStrings(node, warnings, path = '') {
   if (typeof node === 'string') {
@@ -444,6 +489,14 @@ function deepCleanStrings(node, warnings, path = '') {
       }
     }
     if (/^(undefined|null|NaN|\[object Object\])$/i.test(v.trim())) return '';
+    for (const [en, nl] of EN_FIXES) {
+      const re = new RegExp('\\b' + en + '\\b', 'gi');
+      if (re.test(v)) {
+        v = v.replace(re, nl);
+        const w = 'Engelse of foutieve restterm gecorrigeerd in de rapporttekst; door adviseur te controleren.';
+        if (!warnings.includes(w)) warnings.push(w);
+      }
+    }
     return v;
   }
   if (Array.isArray(node)) return node.map((x, i) => deepCleanStrings(x, warnings, `${path}[${i}]`));
@@ -517,6 +570,7 @@ function enforceQuality(r, vandaag) {
 
   /* 2 — bronnen/aanwendingen: classificatie + sluitcheck */
   enforceBnA(fo, warnings);
+  cleanRatios(r, warnings);
   const bronnen = A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === 'bron' && num(x.bedrag) !== null);
   const aanw = A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === 'aanwending' && num(x.bedrag) !== null);
   if (bronnen.length && aanw.length) {
@@ -580,6 +634,12 @@ function enforceQuality(r, vandaag) {
       row.status = 'in bron opgenomen';
       warnings.push(`"${row.document}" stond als ontvangen maar is niet los aangeleverd; status gecorrigeerd naar "in bron opgenomen".`);
     }
+  }
+
+  const missingHigh = A(dc.ontbrekend).some((x) => String(x?.prioriteit || '').toLowerCase() === 'hoog');
+  if (missingHigh && r.metadata.datadekking === 'hoog') {
+    r.metadata.datadekking = 'middel';
+    warnings.push('Datadekking verlaagd naar "middel": er ontbreken nog stukken met hoge prioriteit.');
   }
 
   /* 8 — coverage */
