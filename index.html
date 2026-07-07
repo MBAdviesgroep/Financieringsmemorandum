@@ -119,31 +119,44 @@ body.show-json #downloadJson{display:inline-block}
 .rp-foot-l img{height:3.6mm;width:3.6mm;border-radius:1mm}
 .rp-foot-r b{color:var(--ink-2);font-weight:700}
 
-/* Voorblad */
-.report-page.cover{background:var(--blue-deep);color:#fff}
-.cover-inner{height:100%;display:flex;flex-direction:column;padding:20mm 20mm 16mm}
-.cover-top{display:flex;justify-content:space-between;align-items:flex-start}
-.cover-top img{height:8mm;width:auto}
-.cover-conf{font-size:8pt;color:rgba(255,255,255,.75);text-align:right;line-height:1.5;letter-spacing:.3px}
-.cover-mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:8mm}
-.cover-eyebrow{font-size:9pt;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:9mm;display:flex;align-items:center;gap:5mm}
-.cover-eyebrow::after{content:'';flex:none;width:14mm;height:2px;background:var(--orange)}
-.cover-name{font-size:30pt;font-weight:700;letter-spacing:-.8px;line-height:1.08;color:#fff;max-width:150mm}
-.cover-goal{font-size:11.5pt;color:rgba(255,255,255,.85);line-height:1.6;margin-top:7mm;max-width:140mm;text-wrap:pretty}
-.cover-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(28mm,1fr));border-top:1px solid rgba(255,255,255,.22);padding-top:6mm;gap:6mm}
-.cover-meta .cm-l{font-size:6.8pt;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:1.8mm}
-.cover-meta .cm-v{font-size:9.5pt;font-weight:600;color:#fff;line-height:1.35}
-.cover-contents{font-size:7.5pt;color:rgba(255,255,255,.6);line-height:1.7;margin-top:7mm}
-.cover-contents b{color:rgba(255,255,255,.85);font-weight:700}
-.cover-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,.22);margin-top:6mm;padding-top:4.5mm;font-size:7.5pt;color:rgba(255,255,255,.6)}
+/* Voorblad — licht, premium */
+.report-page.cover{background:#fff;color:var(--ink)}
+.cover-bar{position:absolute;left:0;top:0;bottom:0;width:3.5mm;background:var(--blue)}
+.cover-inner{height:100%;display:flex;flex-direction:column;padding:16mm 18mm 13mm 22mm}
+.cover-top{display:flex;justify-content:space-between;align-items:center}
+.cover-logo{display:flex;align-items:center;gap:3mm}
+.cover-logo img{height:9mm;width:9mm;border-radius:2mm}
+.cover-logo span{font-size:17pt;font-weight:700;letter-spacing:-.5px;color:var(--blue-deep)}
+.cover-conf{font-size:7.3pt;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:1.6mm 4mm;letter-spacing:.3px;white-space:nowrap}
+.cover-mid{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:152mm}
+.cover-eyebrow{font-size:9pt;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;color:var(--blue);margin-bottom:7mm;display:flex;align-items:center;gap:4mm}
+.cover-eyebrow::before{content:'';flex:none;width:10mm;height:2px;background:var(--orange)}
+.cover-name{font-size:29pt;font-weight:700;letter-spacing:-.6px;line-height:1.08;color:var(--ink)}
+.cover-goal{font-size:11.5pt;color:var(--ink-2);line-height:1.6;margin-top:6mm;max-width:135mm;text-wrap:pretty}
+.cover-meta{display:flex;gap:11mm;flex-wrap:wrap;margin-top:9mm;padding-top:5mm;border-top:1px solid var(--line)}
+.cover-meta .cm-l{font-size:6.8pt;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:1.4mm}
+.cover-meta .cm-v{font-size:9.5pt;font-weight:600;color:var(--ink);line-height:1.35}
+.cover-kpis{display:grid;gap:4mm;margin-top:6mm}
+.cover-kpi{border:1px solid var(--line);border-radius:2.6mm;padding:4mm 4.5mm;background:var(--bg)}
+.cover-kpi .ck-l{font-size:6.8pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:1.8mm}
+.cover-kpi .ck-v{font-size:11.5pt;font-weight:700;color:var(--blue-deep);letter-spacing:-.2px;line-height:1.25;overflow-wrap:anywhere}
+.cover-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:7mm;padding-top:4.5mm;font-size:7.5pt;color:var(--muted)}
+
+/* Inhoudsopgave */
+.toc{display:flex;flex-direction:column;margin-top:2mm}
+.toc-row{display:flex;align-items:baseline;gap:3.5mm;padding:2.9mm 0;border-bottom:1px solid #EDF2F8;font-size:10pt}
+.toc-num{flex:none;width:8mm;font-size:8pt;font-weight:700;color:var(--orange);font-variant-numeric:tabular-nums}
+.toc-name{font-weight:600;color:var(--ink);white-space:nowrap}
+.toc-dots{flex:1;border-bottom:1px dotted #C6D4E6;transform:translateY(-1mm)}
+.toc-page{flex:none;font-weight:700;color:var(--blue-deep);font-variant-numeric:tabular-nums}
 
 /* Paginatitels en tekst */
 .chap{padding-top:1mm}
-.pt-eyebrow{font-size:7.5pt;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;color:var(--orange);margin-bottom:2.4mm}
+.pt-eyebrow{font-size:7.5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);margin-bottom:2.4mm}
 .pt-title{font-size:16.5pt;font-weight:700;color:var(--blue-deep);letter-spacing:-.3px;line-height:1.12}
 .pt-rule{width:12mm;height:0.8mm;background:var(--blue-deep);margin:3.4mm 0 5.5mm}
 .para{font-size:9.6pt;line-height:1.62;color:var(--ink-2);margin-bottom:4.2mm;text-wrap:pretty}
-.secbar{display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;font-size:8pt;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue-deep);border-bottom:1.5px solid var(--blue-deep);padding-bottom:1.8mm;margin:6.5mm 0 3.8mm}
+.secbar{display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;font-size:8pt;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--blue-deep);border-bottom:1.5px solid var(--blue-deep);padding-bottom:1.8mm;margin:6.5mm 0 3.8mm}
 .secbar small{font-size:7pt;font-weight:600;letter-spacing:.4px;text-transform:none;color:var(--muted);text-align:right}
 
 /* Chips */
@@ -825,7 +838,7 @@ function buildSections(r,ctx){
   const add=(label,eyebrow,title,blocks)=>{
     const bs=A(blocks).flat(Infinity).filter(x=>typeof x==='string'&&x.trim());
     if(!bs.length) return;
-    S.push({label,blocks:[chap(eyebrow,title),...bs]});
+    S.push({label,blocks:[chap(`Hoofdstuk ${String(S.length+1).padStart(2,'0')}`,title),...bs]});
   };
 
   /* 1 · Managementsamenvatting */
@@ -879,7 +892,7 @@ function buildSections(r,ctx){
       blocks.push(secbarB('Betrokken partijen'));
       blocks.push(tableBlocks(
         [{label:'Partij'},{label:'Rol'},{label:'Rechtsvorm'},{label:'KvK'}],
-        partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td>${cell(x.kvk)}</td></tr>`)
+        partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${cell(x.kvk)}</td></tr>`)
       ));
     }
     const bes=A(ju.bestuur_en_tekenbevoegdheid).filter(hasVal);
@@ -1058,6 +1071,15 @@ function buildSections(r,ctx){
     add('Inkomen & vermogen privé','Privé','Inkomen en vermogen privé',blocks);
   }
 
+  /* 12b · Overige bronhoofdstukken (structuur van de bron volgen) */
+  for(const os of A(r.overige_secties)){
+    if(!os||!hasVal(os.titel)) continue;
+    const blocks=[paraBlocks(os.tekst)];
+    const tb=A(os.tabel).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
+    if(tb.length) blocks.push(kvBlocks(tb));
+    add(os.titel,'Overig',os.titel,blocks);
+  }
+
   /* 13 · Risicoanalyse */
   {
     const risks=A(zr.risicomatrix).filter(x=>hasVal(x?.risico));
@@ -1216,27 +1238,54 @@ function renderReport(r){
 
   const sections=buildSections(r,ctx);
   const pages=layoutPages(sections);
-  const tot=pages.length+1;
+  const tot=pages.length+2;
+  const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
-  const contents=[...new Set(pages.map(p=>p.label.replace(/ — vervolg$/,'')))].join('  ·  ');
+  const kc=r.financieringsopzet?.kerncijfers||{};
+  const coverKpis=[
+    isNum(kc.gevraagde_financiering)&&['Gevraagde financiering',money(kc.gevraagde_financiering)],
+    isNum(kc.totale_investering)&&['Totale investering',money(kc.totale_investering)],
+    isNum(kc.eigen_inbreng)&&['Eigen inbreng',money(kc.eigen_inbreng)],
+    hasVal(kc.ltv)&&['Loan-to-value',kc.ltv],
+    (hasVal(kc.looptijd)||hasVal(kc.rente))&&['Looptijd / rente',[kc.looptijd,kc.rente].filter(hasVal).join(' · ')],
+    hasVal(kc.aflossing)&&['Aflossing',kc.aflossing],
+  ].filter(Boolean).slice(0,6);
+
   const cover=`<section class="report-page cover" data-screen-label="Voorblad">
+    <div class="cover-bar"></div>
     <div class="cover-inner">
-      <div class="cover-top"><img src="${WORD}" alt="Credion"><div class="cover-conf">Vertrouwelijk<br>${esc(status)}</div></div>
+      <div class="cover-top">
+        <div class="cover-logo"><img src="${MARK}" alt=""><span>credion</span></div>
+        <div class="cover-conf">Vertrouwelijk · ${esc(status)}</div>
+      </div>
       <div class="cover-mid">
         <div class="cover-eyebrow">${esc(titel)}</div>
         <div class="cover-name">${esc(naam)}</div>
         <div class="cover-goal">${safeText(md.financieringsdoel,'Financieringsdoel: nog vast te stellen op basis van aanvullende documentatie.')}</div>
+        <div class="cover-meta">
+          <div><div class="cm-l">Rapportdatum</div><div class="cm-v">${esc(datum)}</div></div>
+          ${docdatum?`<div><div class="cm-l">Documentdatum bron</div><div class="cm-v">${esc(docdatum)}</div></div>`:''}
+          ${kantoor?`<div><div class="cm-l">Kantoor / adviseur</div><div class="cm-v">${esc(kantoor)}</div></div>`:''}
+          <div><div class="cm-l">Status</div><div class="cm-v">${esc(status)}</div></div>
+        </div>
       </div>
-      <div class="cover-meta">
-        <div><div class="cm-l">Rapportdatum</div><div class="cm-v">${esc(datum)}</div></div>
-        ${docdatum?`<div><div class="cm-l">Documentdatum bron</div><div class="cm-v">${esc(docdatum)}</div></div>`:''}
-        <div><div class="cm-l">Rapporttype</div><div class="cm-v">${isIntake?'Intake & documentatie':'Financierings\u00admemorandum'}</div></div>
-        <div><div class="cm-l">Status</div><div class="cm-v">${esc(status)}</div></div>
-        <div><div class="cm-l">Datadekking</div><div class="cm-v" style="text-transform:capitalize">${esc(dek)}</div></div>
-      </div>
-      <div class="cover-contents"><b>Inhoud</b> — ${esc(contents)}</div>
-      <div class="cover-foot"><span>Credion · Financieringsrapport</span><span>Uitsluitend op basis van aangeleverde documentatie</span></div>
+      ${coverKpis.length>=2?`<div class="cover-kpis" style="grid-template-columns:repeat(${Math.min(coverKpis.length,3)},1fr)">${coverKpis.map(k=>`<div class="cover-kpi"><div class="ck-l">${esc(k[0])}</div><div class="ck-v">${esc(k[1])}</div></div>`).join('')}</div>`:''}
+      <div class="cover-foot"><span>${esc(kantoor?`Credion · ${kantoor}`:'Credion')}</span><span>Uitsluitend op basis van aangeleverde documentatie</span></div>
     </div>
+  </section>`;
+
+  const chapters=[];
+  pages.forEach((p,i)=>{const base=p.label.replace(/ — vervolg$/,'');if(!chapters.some(c=>c.label===base))chapters.push({label:base,page:i+3});});
+  const toc=`<section class="report-page" data-screen-label="Inhoudsopgave">
+    <header class="rp-head"><img src="${WORD}" alt="Credion"><div class="rp-head-right">Inhoudsopgave</div></header>
+    <div class="rp-body">
+      <div class="chap"><div class="pt-eyebrow">Overzicht</div><h2 class="pt-title">Inhoudsopgave</h2><div class="pt-rule"></div></div>
+      <div class="toc">${chapters.map((c,i)=>`<div class="toc-row"><span class="toc-num">${String(i+1).padStart(2,'0')}</span><span class="toc-name">${esc(c.label)}</span><span class="toc-dots"></span><span class="toc-page">${c.page}</span></div>`).join('')}</div>
+    </div>
+    <footer class="rp-foot">
+      <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(naam)} — Vertrouwelijk</div>
+      <div class="rp-foot-r">${esc(datum)} &nbsp;·&nbsp; <b>Pagina 2 van ${tot}</b></div>
+    </footer>
   </section>`;
 
   const chrome=(p,i)=>`<section class="report-page" data-screen-label="${esc(p.label)}">
@@ -1244,11 +1293,11 @@ function renderReport(r){
     <div class="rp-body">${p.html}</div>
     <footer class="rp-foot">
       <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(naam)} — Vertrouwelijk</div>
-      <div class="rp-foot-r">${esc(datum)} &nbsp;·&nbsp; <b>Pagina ${i+2} van ${tot}</b></div>
+      <div class="rp-foot-r">${esc(datum)} &nbsp;·&nbsp; <b>Pagina ${i+3} van ${tot}</b></div>
     </footer>
   </section>`;
 
-  el.stage.innerHTML = cover + pages.map(chrome).join('');
+  el.stage.innerHTML = cover + toc + pages.map(chrome).join('');
   document.body.classList.add('report-mode');
   drawOrganograms(el.stage);
 }
