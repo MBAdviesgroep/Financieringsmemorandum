@@ -379,7 +379,16 @@ const el = {
 };
 
 /* ══ Helpers ════════════════════════════════════════════════════════ */
-const esc = v => String(v??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Vangnet tegen verminkte eurotekens (�, "EUR 123", "123 euro") die soms uit
+   PDF-tekstextractie komen. De server fixt dit al in de brontekst; dit is een
+   tweede laag die altijd meeloopt via esc(), voor elk dynamisch tekstveld. */
+function cleanTextForReport(value){
+  return String(value??'')
+    .replace(/\uFFFD\s?(?=\d)/g,'€ ')
+    .replace(/\bEUR\s?(?=\d)/gi,'€ ')
+    .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1');
+}
+const esc = v => cleanTextForReport(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hasVal = v => v!==null && v!==undefined && String(v).trim()!=='' && !['null','undefined','NaN','[object Object]'].includes(String(v).trim());
 const NB = 'Niet vastgesteld op basis van de aangeleverde documentatie.';
 const safeText = (v,fb=NB) => esc(hasVal(v)?v:fb);
@@ -1426,11 +1435,50 @@ function fitToPageBudget(sections,maxOutputPages,isIntake){
   return cur;
 }
 
+/* Robuuste typeherkenning: leest meerdere mogelijke veldnamen/waarden en herkent
+   varianten fuzzy. Vangnet bovenop de server-side classificatie — zodat een
+   afwijkende of onverwachte waarde nooit stilzwijgend de volledige renderer
+   activeert voor wat overduidelijk een compacte intake is. */
+function getReportType(report){
+  const raw = report?.metadata?.rapport_type || report?.metadata?.rapporttype
+    || report?.rapporttype || report?.type || '';
+  const s = String(raw).toLowerCase();
+  if (s.includes('compact') || s.includes('intake') || s.includes('documentatie')) return 'compact_intake';
+  if (s.includes('samenvatting')) return 'luxe_samenvatting';
+  if (s.includes('volwaardig') || s.includes('memorandum')) return 'volwaardig_financieringsmemorandum';
+  return 'compact_intake'; /* onbekende/lege waarde: veilige kant kiezen, niet de volledige renderer */
+}
+
+/* Compact_intake mag, ondanks de beperkte sectiekeuze in buildCompactIntakeSections,
+   in uitzonderlijke gevallen (zeer rijke bron binnen een korte brontelling) alsnog
+   te lang uitvallen. Dit dwingt het paginabudget hard af: eerst de optionele bijlage
+   eraf, dan documentatie/controlepunten verder inkorten, en als laatste redmiddel de
+   minst essentiële kernsectie (Zekerheden vóór Juridische structuur/Financiering). */
+function fitCompactToPageBudget(sections,maxOutputPages){
+  if(!isNum(maxOutputPages)) return sections;
+  let cur=[...sections];
+  const fits=()=>totalRenderedPages(cur,true)<=maxOutputPages;
+  if(fits()) return cur;
+  /* 1 — optionele bijlage (detailgegevens) is nooit essentieel */
+  cur=cur.filter(s=>s.label!=='Bijlage detailgegevens');
+  if(fits()) return cur;
+  /* 2 — als het nóg te lang is: nooit de kernsecties zelf verwijderen (dan blijft er
+     te weinig over om een bruikbaar rapport te zijn), maar wél de laatst-belangrijke
+     kernsectie laten vervallen zodat er iets bruikbaars overblijft in plaats van een
+     rapport dat het paginabudget structureel overschrijdt. */
+  const LAST_RESORT=['Zekerheden & dekking','Juridische structuur & activiteiten'];
+  for(const label of LAST_RESORT){
+    if(fits()) break;
+    if(cur.length<=2) break; // nooit onder cover+kernsamenvatting+1 sectie zakken
+    cur=cur.filter(s=>s.label!==label);
+  }
+  return cur;
+}
+
 /* ── Hoofd-renderer ────────────────────────────────────────────────── */
 function renderReport(r){
   const md=r.metadata||{};
-  const TYPE_ALIAS={financieringsmemorandum:'volwaardig_financieringsmemorandum',intake_documentatiememorandum:'compact_intake'};
-  const rtype=TYPE_ALIAS[md.rapport_type]||md.rapport_type||'compact_intake';
+  const rtype=getReportType(r);
   const isIntake = rtype==='compact_intake';
   const naam = hasVal(md.klantnaam)?md.klantnaam:'Onderneming niet vastgesteld';
   const titel = rtype==='compact_intake'?'Intake- en documentatiememorandum':rtype==='luxe_samenvatting'?'Samenvattend financieringsrapport':'Financieringsmemorandum';
@@ -1440,9 +1488,9 @@ function renderReport(r){
   const dek = ['hoog','middel','beperkt'].includes(md.datadekking)?md.datadekking:'beperkt';
   const status = md.status||'Concept · ter beoordeling';
   const uitgebreid = md.uitgebreidToegestaan===true;
-  const sourcePageCount = isNum(md.sourcePageCount)?md.sourcePageCount:null;
+  const sourcePageCount = isNum(md.sourcePageCount)?md.sourcePageCount:(isNum(md.source_page_count)?md.source_page_count:(isNum(r.bronrapport?.aantal_paginas)?r.bronrapport.aantal_paginas:null));
   const FALLBACK_MAX={compact_intake:8,volwaardig_financieringsmemorandum:14,luxe_samenvatting:10};
-  const maxOutputPages = uitgebreid ? null : (isNum(md.maxOutputPages)?md.maxOutputPages:(sourcePageCount||FALLBACK_MAX[rtype]||10));
+  const maxOutputPages = uitgebreid ? null : (sourcePageCount || (isNum(md.maxOutputPages)?md.maxOutputPages:FALLBACK_MAX[rtype]) || 8);
   const ctx = {naam,titel,datum,docdatum,dek,status,isIntake,sourcePageCount,maxOutputPages,uitgebreid};
 
   el.tbTitle.textContent = titel;
@@ -1452,7 +1500,8 @@ function renderReport(r){
      algemene full-report renderer. Voor volwaardig/luxe geldt het paginabudget:
      standaard niet meer pagina's dan de bron, tenzij expliciet "uitgebreid rapport". */
   const rawSections = isIntake ? buildCompactIntakeSections(r,ctx) : buildSections(r,ctx);
-  const sections = renumberChapters(isIntake ? rawSections : fitToPageBudget(rawSections,maxOutputPages,isIntake));
+  const fitted = isIntake ? fitCompactToPageBudget(rawSections,maxOutputPages) : fitToPageBudget(rawSections,maxOutputPages,isIntake);
+  const sections = renumberChapters(fitted);
   const pages=layoutPages(sections);
   /* Compact rapport: geen aparte inhoudsopgave-pagina bij weinig pagina's */
   const withToc = !(isIntake && pages.length<=6);
