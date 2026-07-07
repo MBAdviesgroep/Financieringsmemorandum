@@ -101,6 +101,8 @@ body.report-mode .up-view,body.report-mode .loading-view{display:none}
 .tb-sub{font-size:10.5px;color:rgba(255,255,255,.6)}
 .tb-actions{display:flex;gap:9px;flex-wrap:wrap}
 .btn-ghost{height:40px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.25);border-radius:9px;font-size:12.5px;font-weight:700;padding:0 16px;transition:.15s}
+#downloadJson{display:none}
+body.show-json #downloadJson{display:inline-block}
 .btn-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.5)}
 .btn-orange{height:40px;background:var(--orange);color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:700;padding:0 18px;transition:.15s}
 .btn-orange:hover{background:#E67C00}
@@ -597,11 +599,15 @@ function validateReportBeforeRender(r){
     const a=A(r.visualisaties?.[k]);
     if(a.length===1) errs.push(`Visualisatie ${k} heeft slechts één datapunt.`);
   }
-  /* bronnen/aanwendingen: harde classificatieregels */
+  /* bronnen/aanwendingen: alleen blokkeren bij éénduidige misclassificatie.
+     Gemengde labels (bijv. "Eigen inbreng btw/kosten koper") zijn toegestaan
+     als bron: de eigen inbreng dekt dan een aanwending. */
+  const BRONW=/eigen inbreng|eigen middelen|eigen vermogen|\binbreng\b|\blening\b|\bkrediet\b|hypothe|bouwdepot|\bdepot\b|subsidie|btw[- ]?(teruggave|financiering)|vendor/;
+  const AANWW=/koopsom|aanneemsom|aankoopprijs|kosten koper|bouwkosten|verbouwing|renovatie|notaris|taxatiekosten|advieskosten|afsluitprovisie|overdrachtsbelasting|onvoorzien|werkkapitaal|herfinanciering/;
   for(const row of A(r.financieringsopzet?.bronnen_en_aanwendingen)){
     const l=String(row?.label||'').toLowerCase();
-    if(row?.type==='aanwending'&&/eigen inbreng|eigen middelen/.test(l)) errs.push(`"${row.label}" staat onder aanwendingen maar is een bron.`);
-    if(row?.type==='bron'&&/koopsom|aanneemsom|kosten koper/.test(l)) errs.push(`"${row.label}" staat onder bronnen maar is een aanwending.`);
+    if(row?.type==='aanwending'&&BRONW.test(l)&&!AANWW.test(l)) errs.push(`"${row.label}" staat onder aanwendingen maar is een financieringsbron.`);
+    if(row?.type==='bron'&&AANWW.test(l)&&!BRONW.test(l)) errs.push(`"${row.label}" staat onder bronnen maar is een aanwending.`);
   }
   /* render-vervuiling in strings */
   const scan=(node)=>{
@@ -616,6 +622,7 @@ function validateReportBeforeRender(r){
   return [...new Set(errs)];
 }
 function renderValidationError(problems){
+  document.body.classList.add('show-json');
   el.tbTitle.textContent='Rapport niet betrouwbaar'; el.tbSub.textContent='Validatie mislukt';
   el.stage.innerHTML = `<article class="errpage">
     <div class="pt-eyebrow">Kwaliteitscontrole</div>
@@ -1247,6 +1254,8 @@ function renderReport(r){
 }
 
 /* ══ Toolbar ════════════════════════════════════════════════════════ */
+/* Verborgen: dubbelklik op de Credion-titel in de toolbar toont de JSON-download */
+document.querySelector('.tb-brand').addEventListener('dblclick',()=>document.body.classList.toggle('show-json'));
 $('#printReport').addEventListener('click',()=>window.print());
 $('#downloadJson').addEventListener('click',()=>{
   if(!state.data) return;
