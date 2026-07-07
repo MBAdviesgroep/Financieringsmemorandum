@@ -41,12 +41,12 @@ const PRIO = en('hoog', 'middel', 'laag');
 const factItem = obj({ label: s, waarde: s, bedrag: nN, bron_document: s, bron_fragment: s, confidence: CONF });
 const kpiCard = obj({ label: s, waarde: s, subtekst: s });
 const partijRow = obj({ naam: s, rol: s, rechtsvorm: s, kvk: s, toelichting: s });
-const bnaRow = obj({ label: s, type: en('bron', 'aanwending'), bedrag: nN, toelichting: s });
+const bnaRow = obj({ label: s, type: en('bron', 'aanwending'), bedrag: nN, totaalregel: b, toelichting: s });
 const finRow = obj({ label: s, bedrag: nN, condities: s, toelichting: s });
 const cijferRow = obj({ label: s, periode: s, bedrag: nN });
 const ratioRow = obj({ ratio: s, periode: s, waarde: s, norm: s, toelichting: s });
 const riskRow = obj({ risico: s, kans: PRIO, impact: PRIO, mitigant: s });
-const zekerRow = obj({ zekerheid: s, waarde: nN, toelichting: s });
+const zekerRow = obj({ zekerheid: s, waarde: nN, status: s, toelichting: s });
 const docRow = obj({ document: s, status: en('ontvangen', 'in bron opgenomen', 'te controleren', 'onvolledig'), toelichting: s });
 const missRow = obj({ item: s, prioriteit: PRIO, toelichting: s });
 const mixPoint = obj({ label: s, waarde: nN });
@@ -67,7 +67,7 @@ const orgSchema = obj({ aanwezig: b, titel: s, toelichting: s, entiteiten: arr(o
 
 const REPORT_SCHEMA = obj({
   metadata: obj({
-    rapport_type: en('financieringsmemorandum', 'intake_documentatiememorandum'),
+    rapport_type: en('volwaardig_financieringsmemorandum', 'compact_intake', 'luxe_samenvatting'),
     klantnaam: s,
     financieringsdoel: s,
     documentdatum: s,
@@ -251,8 +251,15 @@ Stap 1: lees het volledige brondocument. Vul "bronrapport" in: geschat aantal pa
 Stap 2: verantwoord per bronhoofdstuk wat ermee gebeurt in "coverage_check": zet elk hoofdstuk in precies één van de lijsten opgenomen_in_rapport (volledig verwerkt), samengevat, of weggelaten_met_reden (formaat "hoofdstuk — reden"; alleen bij echte duplicatie of niet-besluitvormingsrelevante inhoud). Twijfel = meenemen. Kopieer de volledige hoofdstukkenlijst ook naar coverage_check.bronhoofdstukken.
 Stap 3: extraheer bronfeiten. Stap 4: schrijf pas daarna de rapportsecties.
 
-LENGTE — PROPORTIONEEL AAN DE BRON
-Het rapport groeit mee met de bron: een bron van 5 pagina's rechtvaardigt circa 5 pagina's output, een bron van 20 pagina's circa 15-20 pagina's. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is; comprimeer NIET kunstmatig tot een korte samenvatting. Laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
+RAPPORTTYPE EN LENGTE — NIET OPBLAZEN
+Kies eerst, op basis van de broninhoud, één rapporttype (metadata.rapport_type):
+- "compact_intake": beperkte bron — indicatief minder dan 10 pagina's, weinig tekstuele onderbouwing, geen financiële analyse, geen prognose of betaalcapaciteitsberekening; vooral juridische structuur, financiering, zekerheden en documentatie. Output: een compact intake- en documentatiememorandum, in verhouding tot de bron (maximaal circa bronlengte + 1 à 2 pagina's; bij een bron onder 10 pagina's doorgaans maximaal 8 à 9 pagina's), tenzij de adviseur in de notities expliciet om een uitgebreid rapport vraagt.
+- "volwaardig_financieringsmemorandum": alleen als de bron dit inhoudelijk draagt — onderneming en activiteiten beschreven, financieringsopzet én zekerheden aanwezig, financiële analyse of prognose aanwezig, betaalcapaciteit of kasstroom aanwezig. Output mag langer zijn dan de bron als de bron rijk is aan informatie, maar nooit kunstmatig opgeblazen.
+- "luxe_samenvatting": lange bron (indicatief boven 20 pagina's) met veel herhaling, of wanneer de adviseur expliciet een compactere bankversie vraagt. Output: korter dan de bron; kerninformatie en tabellen behouden, herhaling schrappen.
+Paginarem: een compact rapport streeft naar maximaal 125% van het aantal bronpagina's; een luxe samenvatting is korter dan de bron. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is. Laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
+
+SECTIESELECTIE — ALLEEN WAT DE BRON DRAAGT
+Vul geen sectie voor onderwerpen die niet werkelijk in de bron staan: geen financiële analyse zonder cijfers; geen betaalcapaciteit zonder kasstroom, DSCR of rente-/aflossingsgegevens; geen marktsectie als de bron alleen operationele activiteiten noemt; geen object-/vastgoedsectie als vastgoed slechts zijdelings als bestaande zekerheid voorkomt; geen privésectie zonder relevante privéanalyse; geen lange conclusie zonder data. Laat zulke velden en arrays leeg. Maak nooit inhoud die alleen uit "niet opgenomen in bron" bestaat; ontbrekende maar relevante onderdelen benoem je kort als controlepunt (coverage_check.waarschuwingen) of vervolgvraag. Voeg geen standaardtekst toe om een sectie te vullen: het rapport moet mooier zijn dan de bron, niet langer dan de bron rechtvaardigt.
 Sectieteksten (tekst-velden): volledige, afgeronde alinea's, zo lang als de broninhoud rechtvaardigt (typisch 60-300 woorden per veld). Gebruik lege regels tussen alinea's. Schrijf ALTIJD volledige zinnen; breek nooit een zin af en eindig nooit met "..." of "…". Tabellen: alle relevante rijen uit de bron (tot 24 per tabel). Bullets: tot 10 per lijst, alleen met echte informatie.
 
 SECTIES (vul alleen wat de bron ondersteunt)
@@ -267,10 +274,10 @@ SECTIES (vul alleen wat de bron ondersteunt)
 - financiele_analyse: historische cijfers én prognose. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode.
 - betaalcapaciteit: historische en genormaliseerde betaalcapaciteit, correcties, privéonttrekkingen/privébehoefte, rente- en aflossingsverplichtingen, DSCR, Debt/EBITDA, overgangsjaar versus structurele situatie. Tabel als {label, periode, bedrag}; DSCR/Debt-EBITDA als kengetallen-rijen.
 - inkomen_vermogen_prive: alleen indien de bron dit bevat: inkomen ondernemer, partnerinkomen, woningwaarde, hypotheek, vermogen, privébehoefte — als posten {label, waarde} — plus relevantie voor de financiering.
-- zekerheden_en_risico: alle zekerheden met waarde, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten.
+- zekerheden_en_risico: alle zekerheden met waarde en status, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten. Neem het juridische zekerheidslabel EXACT over uit de bron: hoofdelijke aansprakelijkheid is geen borgstelling en omgekeerd. status: volg de bron — "gevestigd", "te vestigen", "aangeboden", "voorwaardelijk", "nog te controleren" of leeg indien onbekend; presenteer een voorwaardelijke, "indien nodig" of nog te vestigen zekerheid nooit als definitief gevestigd. Marktwaarde/WOZ-waarde, hypotheekschuld en overwaarde zijn aparte gegevens: maak van overwaarde of hypotheekschuld geen zekerheidswaarde tenzij de bron dat expliciet zo presenteert.
 
 BRONNEN EN AANWENDINGEN
-Neem de tabel letterlijk uit de bron over. Bronnen = waar het geld vandaan komt (hypothecaire/bancaire lening, eigen inbreng, achtergestelde lening, vendor loan, subsidie, btw-financiering). Aanwendingen = waar het geld naartoe gaat (koop-/aanneemsom, btw, notaris, taxatie, financierings- en advieskosten, onvoorzien, werkkapitaal, herfinanciering). Eigen inbreng of een lening hoort niet onder aanwendingen; een koop-/aanneemsom of kosten koper hoort niet onder bronnen — wijkt de bron hiervan af, volg dan de bron en neem een controlepunt op. Bouwdepottermijnen tellen niet mee als bron (regel 8). Als de bron sluit (investering = financiering), moeten jouw totalen exact gelijk zijn; sluit de bron zelf niet, benoem het verschil dan in een toelichting.
+Neem de tabel letterlijk uit de bron over. Bronnen = waar het geld vandaan komt (hypothecaire/bancaire lening, eigen inbreng, achtergestelde lening, vendor loan, subsidie, btw-financiering). Aanwendingen = waar het geld naartoe gaat (koop-/aanneemsom, btw, notaris, taxatie, financierings- en advieskosten, onvoorzien, werkkapitaal, herfinanciering). Eigen inbreng of een lening hoort niet onder aanwendingen; een koop-/aanneemsom of kosten koper hoort niet onder bronnen — wijkt de bron hiervan af, volg dan de bron en neem een controlepunt op. Bouwdepottermijnen tellen niet mee als bron (regel 8). Als de bron sluit (investering = financiering), moeten jouw totalen exact gelijk zijn; sluit de bron zelf niet, benoem het verschil dan in een toelichting. Markeer totaal-, subtotaal- en saldoregels (zoals "Totaal investering", "Totale financiering", "Totaal bronnen", "Financieringsbehoefte", "Subtotaal", "Eindtotaal") met totaalregel=true: een totaalregel is nooit een detailpost en telt nooit mee in een optelling. Staat er een brontotaal, gebruik dan dat brontotaal en bereken geen nieuw totaal daarbovenop; alleen als de bron géén totaal geeft mag je detailregels optellen, met "berekend op basis van bronregels" in de toelichting.
 
 DATUMREGELS
 metadata.documentdatum: de datum van het brondocument zelf (voorblad, "opgesteld op", documentmetadata) in Nederlandse notatie; leeg als die niet vaststaat. metadata.rapportdatum: de datum van dít rapport — gebruik de actuele datum. Gebruik NOOIT een geboortedatum, oprichtingsdatum of taxatiedatum als document- of rapportdatum. Bij twijfel: documentdatum leeg laten en toelichten in datum_toelichting.
@@ -279,7 +286,7 @@ AFBEELDINGEN UIT DE BRON
 Je kunt beeldmateriaal uit een PDF niet als afbeelding opnieuw aanleveren. Registreer daarom elk relevant beeld (rendering, objectfoto, plattegrond, bouwplanning, grafiek, schema) in bronrapport.gevonden_afbeeldingen met een korte, concrete omschrijving. Organogrammen reconstrueer je als data (zie boven). Feitelijke informatie die alleen in beelden staat (adres op een rendering, oppervlaktes op een plattegrond) verwerk je in de betreffende sectie als tekst of kenmerk.
 
 SCHRIJFSTIJL
-Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld. Schrijf uitsluitend Nederlands: geen Engelse restwoorden zoals "expected", "fluctuations", "report", "source" of "business case" — gebruik "verwacht", "schommelingen", enzovoort. Let op correcte vaktermen ("verzwaring" of "tijdelijke druk", nooit "verzuring"). Vermijd "circa" waar het exacte broncijfer beschikbaar is.
+Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld. Schrijf uitsluitend Nederlands: geen Engelse restwoorden zoals "expected", "fluctuations", "report", "source" of "business case" — gebruik "verwacht", "schommelingen", enzovoort. Verboden in de output: "undefined", "null", "NaN", "deelnemers wordt aanbevolen", "goedgekeurd de aanvraag", "verifiren" (schrijf "verifiëren"), "persoonlijke borgstelling" als de bron alleen hoofdelijke aansprakelijkheid noemt, "volledig in gebruik" bij nieuwbouw als de bron een latere oplevering noemt. Geen dubbele koppen: herhaal een hoofdstuktitel niet als eerste zin van de sectietekst. Let op correcte accenten in Nederlandse woorden (financiële, privé, ratio's). Let op correcte vaktermen ("verzwaring" of "tijdelijke druk", nooit "verzuring"). Vermijd "circa" waar het exacte broncijfer beschikbaar is.
 
 CONCLUSIEBELEID
 Volg de conclusie en toonzetting van de bron; voeg geen eigen oordeel toe dat niet uit de bron volgt. Een aanvullende observatie markeer je expliciet als adviseursoordeel. Wees voorzichtig en professioneel. Gebruik nuance: "voorlopig", "op basis van de aangeleverde informatie", "mits", "na adviseurscontrole", "onder voorbehoud van verificatie", "liquiditeit monitoren".
@@ -301,8 +308,8 @@ DOCUMENTATIECHECK — EERLIJK
 - ontbrekend: stukken die voor besluitvorming nodig zijn maar nergens blijken.
 Claim NOOIT dat stukken los ontvangen zijn als ze alleen in het bronmemorandum staan. Formuleer maximaal 6 gerichte vervolgvragen.
 
-RAPPORTTYPE
-"financieringsmemorandum" alleen als minimaal bekend zijn: kredietnemer, financieringsdoel, financieringsbedrag (of duidelijke behoefte) én concrete financiële cijfers. Anders "intake_documentatiememorandum": een eerlijk intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap).
+RAPPORTTYPE — MINIMUMEISEN
+"volwaardig_financieringsmemorandum" alleen als minimaal bekend zijn: kredietnemer, financieringsdoel, financieringsbedrag (of duidelijke behoefte) én concrete financiële cijfers. "luxe_samenvatting" alleen bij een rijke, lange bron waarvoor een compactere bankversie gewenst is. Anders "compact_intake": een eerlijk, compact intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap) — dwing geen volwaardig kredietrapport af als de bron daar onvoldoende inhoud voor bevat.
 
 METADATA
 klantnaam: de kredietnemer/onderneming zoals in de bron. financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". kantoor_adviseur: het Credion-kantoor en/of de adviseur zoals vermeld in de bron; leeg indien onbekend. datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
@@ -402,30 +409,45 @@ function enforceDates(r, warnings, vandaag) {
   if (!hasTxt(md.rapportdatum)) md.rapportdatum = vandaag;
 }
 
-/* Bronnen/aanwendingen: evidente classificatiefouten herstellen */
+/* Bronnen/aanwendingen: totaalregels herkennen; classificatie alleen corrigeren als dat de opzet aantoonbaar sluitend maakt */
 const BRON_PAT = /(eigen\s+(inbreng|middelen|vermogen)|\binbreng\b|hypothecaire\s+(lening|financiering)|bancaire?\s+(lening|financiering)|achtergestelde?\s+lening|vendor\s?loan|verkopersl?ening|\bsubsidie\b|btw[- ]?(teruggave|financiering)|\blening\b|\bkrediet\b)/i;
 const AANW_PAT = /(koopsom|aanneemsom|aankoopprijs|\baankoop\b|kosten\s+koper|bouwkosten|verbouwing|renovatie|nieuwbouwkosten|notaris|taxatiekosten|advieskosten|financieringskosten|afsluitprovisie|onvoorzien|werkkapitaal|inventaris|installaties|leges|overdrachtsbelasting|herfinanciering)/i;
+const TOTAL_PAT = /^\s*((sub|eind)?totaal\b|totale\s|financieringsbehoefte\b|saldo\b|netto[ -]?investering\b|bruto[ -]?investering\b)/i;
 
 function enforceBnA(fo, warnings) {
-  for (const row of A(fo.bronnen_en_aanwendingen)) {
+  const rows = A(fo.bronnen_en_aanwendingen);
+
+  /* 1 — totaalregels markeren: nooit als detailpost meetellen */
+  for (const row of rows) {
+    if (row && !row.totaalregel && TOTAL_PAT.test(String(row.label || ''))) row.totaalregel = true;
+  }
+  const detailSum = (type) =>
+    rows.filter((x) => x?.type === type && !x?.totaalregel && num(x?.bedrag) !== null).reduce((t, x) => t + x.bedrag, 0);
+
+  /* 2 — classificatie: bron is leidend; alleen verplaatsen als de verplaatsing de opzet aantoonbaar sluitend maakt */
+  for (const row of rows) {
     const l = String(row?.label || '');
-    if (!l) continue;
-    if (row.type === 'aanwending' && BRON_PAT.test(l) && !AANW_PAT.test(l)) {
-      row.type = 'bron';
-      warnings.push(`"${l}" stond onder aanwendingen en is verplaatst naar bronnen (classificatieregel).`);
-    } else if (row.type === 'bron' && AANW_PAT.test(l) && !BRON_PAT.test(l)) {
-      row.type = 'aanwending';
-      warnings.push(`"${l}" stond onder bronnen en is verplaatst naar aanwendingen (classificatieregel).`);
+    if (!l || row?.totaalregel || num(row?.bedrag) === null) continue;
+    const misAlsAanw = row.type === 'aanwending' && BRON_PAT.test(l) && !AANW_PAT.test(l);
+    const misAlsBron = row.type === 'bron' && AANW_PAT.test(l) && !BRON_PAT.test(l);
+    if (!misAlsAanw && !misAlsBron) continue;
+    const voor = Math.abs(detailSum('bron') - detailSum('aanwending'));
+    row.type = misAlsAanw ? 'bron' : 'aanwending';
+    const na = Math.abs(detailSum('bron') - detailSum('aanwending'));
+    if (na < voor - 0.5 && na <= Math.max(detailSum('aanwending'), 1) * 0.02) {
+      warnings.push(`"${l}" is geherclassificeerd (${misAlsAanw ? 'aanwending → bron' : 'bron → aanwending'}); hiermee sluit de opzet weer op de bron.`);
+    } else {
+      row.type = misAlsAanw ? 'aanwending' : 'bron';
+      warnings.push(`Controlepunt: "${l}" staat in de bron onder ${misAlsAanw ? 'aanwendingen' : 'bronnen'}, terwijl het label het omgekeerde suggereert; de bron is gevolgd.`);
     }
   }
 
-  /* Bouwdepot/opnametermijnen zijn een opnameplanning van de lening, geen extra bron */
+  /* 3 — Bouwdepot/opnametermijnen zijn een opnameplanning van de lening, geen extra bron */
   const DEPOT_PAT = /(bouwdepot|opnametermijn|\btermijn\s*\d)/i;
-  const rows = A(fo.bronnen_en_aanwendingen);
-  const depotRows = rows.filter((x) => x?.type === 'bron' && DEPOT_PAT.test(String(x?.label || '')));
+  const depotRows = rows.filter((x) => x?.type === 'bron' && !x?.totaalregel && DEPOT_PAT.test(String(x?.label || '')));
   if (depotRows.length) {
-    const tb = rows.filter((x) => x?.type === 'bron' && num(x?.bedrag) !== null).reduce((t, x) => t + x.bedrag, 0);
-    const ta = rows.filter((x) => x?.type === 'aanwending' && num(x?.bedrag) !== null).reduce((t, x) => t + x.bedrag, 0);
+    const tb = detailSum('bron');
+    const ta = detailSum('aanwending');
     const depotSum = depotRows.reduce((t, x) => t + (num(x?.bedrag) || 0), 0);
     if (ta > 0 && Math.abs(tb - ta) > ta * 0.02 && Math.abs(tb - depotSum - ta) <= ta * 0.02) {
       fo.bronnen_en_aanwendingen = rows.filter((x) => !depotRows.includes(x));
@@ -476,7 +498,15 @@ function cleanRatios(r, warnings) {
   for (const row of A(r.betaalcapaciteit?.kengetallen)) { fix(row, 'waarde'); fix(row, 'norm'); }
 }
 
-const EN_FIXES = [['expected', 'verwacht'], ['fluctuations', 'schommelingen'], ['fluctuation', 'schommeling'], ['verzuring', 'verzwaring']];
+const EN_FIXES = [
+  ['expected', 'verwacht'],
+  ['fluctuations', 'schommelingen'],
+  ['fluctuation', 'schommeling'],
+  ['business case', 'financieringscasus'],
+  ['verzuring', 'verzwaring'],
+  ['verifiren', 'verifiëren'],
+  ['goedgekeurd de aanvraag', 'de aanvraag goedgekeurd'],
+];
 
 /* Afgekapte tekst en render-vervuiling opruimen */
 function deepCleanStrings(node, warnings, path = '') {
@@ -568,15 +598,27 @@ function enforceQuality(r, vandaag) {
   const zr = (r.zekerheden_en_risico = r.zekerheden_en_risico || {});
   zr.zekerheden = A(zr.zekerheden).map((row) => ({ ...row, waarde: zero(row?.waarde) }));
 
-  /* 2 — bronnen/aanwendingen: classificatie + sluitcheck */
+  /* 2 — bronnen/aanwendingen: totaalregels, classificatie + sluitcheck */
   enforceBnA(fo, warnings);
   cleanRatios(r, warnings);
-  const bronnen = A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === 'bron' && num(x.bedrag) !== null);
-  const aanw = A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === 'aanwending' && num(x.bedrag) !== null);
-  if (bronnen.length && aanw.length) {
-    const tb = bronnen.reduce((t, x) => t + x.bedrag, 0);
-    const ta = aanw.reduce((t, x) => t + x.bedrag, 0);
-    if (Math.abs(tb - ta) > Math.max(tb, ta) * 0.02) {
+  const bnaSide = (type) => A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === type && num(x.bedrag) !== null);
+  const sideTotals = (type) => {
+    const all = bnaSide(type);
+    const detail = all.filter((x) => !x.totaalregel);
+    const totRow = all.find((x) => x.totaalregel);
+    return { detail: detail.reduce((t, x) => t + x.bedrag, 0), n: detail.length, bronTotaal: totRow ? totRow.bedrag : null };
+  };
+  const sB = sideTotals('bron');
+  const sA = sideTotals('aanwending');
+  for (const [kant, t] of [['bronnen', sB], ['aanwendingen', sA]]) {
+    if (t.bronTotaal !== null && t.n >= 2 && Math.abs(t.detail - t.bronTotaal) > Math.max(Math.abs(t.bronTotaal), 1) * 0.02) {
+      warnings.push(`Detailregels ${kant} (€ ${Math.round(t.detail).toLocaleString('nl-NL')}) wijken af van het brontotaal (€ ${Math.round(t.bronTotaal).toLocaleString('nl-NL')}); verifieer met de bron.`);
+    }
+  }
+  const tb = sB.bronTotaal !== null ? sB.bronTotaal : sB.detail;
+  const ta = sA.bronTotaal !== null ? sA.bronTotaal : sA.detail;
+  if ((sB.n || sB.bronTotaal !== null) && (sA.n || sA.bronTotaal !== null)) {
+    if (tb > 0 && ta > 0 && Math.abs(tb - ta) > Math.max(tb, ta) * 0.02) {
       warnings.push(`Bronnen (€ ${Math.round(tb).toLocaleString('nl-NL')}) en aanwendingen (€ ${Math.round(ta).toLocaleString('nl-NL')}) sluiten niet; verifieer met de bron.`);
     }
   }
@@ -596,10 +638,14 @@ function enforceQuality(r, vandaag) {
   /* 5 — datadekking en rapporttype server-side */
   const dd = computeDekking(r);
   r.metadata = r.metadata || {};
-  const aiType = r.metadata.rapport_type;
-  r.metadata.rapport_type = dd.volwaardig ? (aiType || 'financieringsmemorandum') : 'intake_documentatiememorandum';
-  if (aiType === 'financieringsmemorandum' && r.metadata.rapport_type === 'intake_documentatiememorandum') {
-    warnings.push('Rapporttype teruggezet naar intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig financieringsmemorandum.');
+  const TYPE_ALIAS = { financieringsmemorandum: 'volwaardig_financieringsmemorandum', intake_documentatiememorandum: 'compact_intake' };
+  const GELDIGE_TYPES = ['volwaardig_financieringsmemorandum', 'compact_intake', 'luxe_samenvatting'];
+  const aiType = TYPE_ALIAS[r.metadata.rapport_type] || r.metadata.rapport_type;
+  r.metadata.rapport_type = dd.volwaardig
+    ? (GELDIGE_TYPES.includes(aiType) ? aiType : 'volwaardig_financieringsmemorandum')
+    : 'compact_intake';
+  if (aiType !== 'compact_intake' && r.metadata.rapport_type === 'compact_intake') {
+    warnings.push('Rapporttype teruggezet naar compact intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig rapport.');
   }
   r.metadata.datadekking = dd.niveau;
   r.metadata.status = 'Concept · ter beoordeling';
