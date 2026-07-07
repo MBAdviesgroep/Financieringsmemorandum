@@ -263,7 +263,7 @@ TRANSFORMATIE-MODUS — VOLG DE BRON
 6. Neem bedragen exact over. Tel niets zelf op, tenzij het totaal letterlijk in de bron staat. Als een brontabel sluit, sluit jouw tabel ook — exact hetzelfde totaal.
 7. Herclassificeer geen posten en verplaats geen bedragen tussen bronnen en aanwendingen. Neem bronnen-en-aanwendingentabellen letterlijk over zoals de bron ze presenteert, met de labels uit de bron.
 8. Een bouwdepot of opnametermijnen (termijn 1 t/m n) zijn een opnameplanning/uitsplitsing van de lening — NOOIT een extra financieringsbron naast die lening, tenzij de bron dit expliciet zo presenteert. Zet de fasering in bouwdepot_fasering.
-9. Ratio's zijn geen geldbedragen. DSCR als "3,11" of "3,11x" (nooit "€ 3"), LTV als percentage ("84,7%"), Debt/EBITDA als ratio ("5,90x").
+9. Ratio's zijn geen geldbedragen. DSCR als "3,11" of "3,11x" (nooit "€ 3"), LTV als percentage ("84,7%"), Debt/EBITDA als ratio ("5,90x"). Neem het aantal decimalen exact over uit de bron: staat er "3,11", schrijf dan "3,11" en rond dit nooit af naar "3". Gebruik de "x"-notatie consistent: als de bron "17,40x" geeft, schrijf geen "17,4" zonder x.
 10. Gebruik voor resultaatposten de exacte labels uit de bron: onderscheid bedrijfsresultaat, resultaat voor belastingen en resultaat na belastingen; verwissel deze nooit.
 11. Behoud de hoofdstukstructuur van de bron: hoofdstukken niet onnodig samenvoegen of splitsen. Bronhoofdstukken die niet in het schema passen (bijv. detailgegevens van betrokken personen of rechtspersonen) zet je in overige_secties, elk met titel, tekst en eventueel een tabel met {label, waarde}-rijen.
 12. Bij twijfel: volg de bron letterlijk en neem een controlepunt op in coverage_check.waarschuwingen.
@@ -299,7 +299,7 @@ SECTIES (vul alleen wat de bron ondersteunt)
 - financiele_analyse: historische cijfers én prognose. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode.
 - betaalcapaciteit: historische en genormaliseerde betaalcapaciteit, correcties, privéonttrekkingen/privébehoefte, rente- en aflossingsverplichtingen, DSCR, Debt/EBITDA, overgangsjaar versus structurele situatie. Tabel als {label, periode, bedrag}; DSCR/Debt-EBITDA als kengetallen-rijen.
 - inkomen_vermogen_prive: alleen indien de bron dit bevat: inkomen ondernemer, partnerinkomen, woningwaarde, hypotheek, vermogen, privébehoefte — als posten {label, waarde} — plus relevantie voor de financiering.
-- zekerheden_en_risico: alle zekerheden met waarde en status, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten. Neem het juridische zekerheidslabel EXACT over uit de bron: hoofdelijke aansprakelijkheid is geen borgstelling en omgekeerd. status: volg de bron — "gevestigd", "te vestigen", "aangeboden", "voorwaardelijk", "nog te controleren" of leeg indien onbekend; presenteer een voorwaardelijke, "indien nodig" of nog te vestigen zekerheid nooit als definitief gevestigd. Marktwaarde/WOZ-waarde, hypotheekschuld en overwaarde zijn aparte gegevens: maak van overwaarde of hypotheekschuld geen zekerheidswaarde tenzij de bron dat expliciet zo presenteert.
+- zekerheden_en_risico: alle zekerheden met waarde en status, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten. Neem het juridische zekerheidslabel EXACT over uit de bron: maak van hoofdelijke aansprakelijkheid nooit een borgstelling en omgekeerd; maak van een mogelijke of "indien nodig aan te reiken" zekerheid nooit een definitief gevestigde zekerheid. status: volg de bron en gebruik één van — "gevestigd", "bestaand", "te vestigen", "aangeboden", "mogelijk aan te reiken", "nog te formaliseren", "voorwaardelijk", "nog te controleren", of leeg indien onbekend. Bestaande zekerheden (van een lopende financiering) gelden niet automatisch ook voor de nieuwe aanvraag, tenzij de bron dat expliciet zo zegt. Marktwaarde/WOZ-waarde, hypotheekschuld en overwaarde zijn aparte gegevens: maak van overwaarde of hypotheekschuld geen zekerheidswaarde tenzij de bron dat expliciet zo presenteert; noemt de bron overwaarde van een privéwoning slechts als mogelijke aanvullende zekerheid, neem dit dan ook zo terughoudend op — niet als reeds gevestigd onderdeel van de zekerhedenmix. Voorbeeld van de juiste toon: "De primaire zekerheid bestaat uit een eerste hypotheekrecht op het bedrijfspand. Een tweede hypotheek op de privéwoning is in de bron genoemd als mogelijk aan te reiken aanvullende zekerheid indien dit de financieringspositie verbetert." Formuleer de dekkingspositie nooit positiever dan de bron toelaat wanneer aanvullende zekerheden nog niet definitief zijn.
 
 BRONNEN EN AANWENDINGEN
 Neem de tabel letterlijk uit de bron over. Bronnen = waar het geld vandaan komt (hypothecaire/bancaire lening, eigen inbreng, achtergestelde lening, vendor loan, subsidie, btw-financiering). Aanwendingen = waar het geld naartoe gaat (koop-/aanneemsom, btw, notaris, taxatie, financierings- en advieskosten, onvoorzien, werkkapitaal, herfinanciering). Eigen inbreng of een lening hoort niet onder aanwendingen; een koop-/aanneemsom of kosten koper hoort niet onder bronnen — wijkt de bron hiervan af, volg dan de bron en neem een controlepunt op. Bouwdepottermijnen tellen niet mee als bron (regel 8). Als de bron sluit (investering = financiering), moeten jouw totalen exact gelijk zijn; sluit de bron zelf niet, benoem het verschil dan in een toelichting. Markeer totaal-, subtotaal- en saldoregels (zoals "Totaal investering", "Totale financiering", "Totaal bronnen", "Financieringsbehoefte", "Subtotaal", "Eindtotaal") met totaalregel=true: een totaalregel is nooit een detailpost en telt nooit mee in een optelling. Staat er een brontotaal, gebruik dan dat brontotaal en bereken geen nieuw totaal daarbovenop; alleen als de bron géén totaal geeft mag je detailregels optellen, met "berekend op basis van bronregels" in de toelichting.
@@ -311,12 +311,12 @@ AFBEELDINGEN UIT DE BRON
 Je kunt beeldmateriaal uit een PDF niet als afbeelding opnieuw aanleveren. Registreer daarom elk relevant beeld (rendering, objectfoto, plattegrond, bouwplanning, grafiek, schema) in bronrapport.gevonden_afbeeldingen met een korte, concrete omschrijving. Organogrammen reconstrueer je als data (zie boven). Feitelijke informatie die alleen in beelden staat (adres op een rendering, oppervlaktes op een plattegrond) verwerk je in de betreffende sectie als tekst of kenmerk.
 
 SCHRIJFSTIJL
-Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld. Schrijf uitsluitend Nederlands: geen Engelse restwoorden zoals "expected", "fluctuations", "report", "source" of "business case" — gebruik "verwacht", "schommelingen", enzovoort. Verboden in de output: "undefined", "null", "NaN", "deelnemers wordt aanbevolen", "goedgekeurd de aanvraag", "verifiren" (schrijf "verifiëren"), "persoonlijke borgstelling" als de bron alleen hoofdelijke aansprakelijkheid noemt, "volledig in gebruik" bij nieuwbouw als de bron een latere oplevering noemt. Geen dubbele koppen: herhaal een hoofdstuktitel niet als eerste zin van de sectietekst. Let op correcte accenten in Nederlandse woorden (financiële, privé, ratio's). Let op correcte vaktermen ("verzwaring" of "tijdelijke druk", nooit "verzuring"). Vermijd "circa" waar het exacte broncijfer beschikbaar is.
+Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld. Schrijf uitsluitend Nederlands: geen Engelse restwoorden zoals "expected", "fluctuations", "report", "source" of "business case" — gebruik "verwacht", "schommelingen", enzovoort. Verboden in de output: "undefined", "null", "NaN", "deelnemers wordt aanbevolen", "goedgekeurd de aanvraag", "verifiren" (schrijf "verifiëren"), "persoonlijke borgstelling" als de bron alleen hoofdelijke aansprakelijkheid noemt, "volledig in gebruik" bij nieuwbouw als de bron een latere oplevering noemt. Gebruik voor bouwdepot-opnames de term uit de bron (meestal "afgeroepen worden voor verzending/uitbetaling"); vervang dit nooit door "verpand worden" — verpanding is een zekerheidsrecht en betekent iets heel anders dan het opvragen/afroepen van een bouwdepottermijn. Geen dubbele koppen: herhaal een hoofdstuktitel niet als eerste zin van de sectietekst. Let op correcte accenten in Nederlandse woorden (financiële, privé, ratio's). Let op correcte vaktermen ("verzwaring" of "tijdelijke druk", nooit "verzuring"). Vermijd "circa" waar het exacte broncijfer beschikbaar is.
 
 CONCLUSIEBELEID
 Volg de conclusie en toonzetting van de bron; voeg geen eigen oordeel toe dat niet uit de bron volgt. Een aanvullende observatie markeer je expliciet als adviseursoordeel. Wees voorzichtig en professioneel. Gebruik nuance: "voorlopig", "op basis van de aangeleverde informatie", "mits", "na adviseurscontrole", "onder voorbehoud van verificatie", "liquiditeit monitoren".
-- Sterke brondata → oordeel "voorzichtig positief": financieel verdedigbaar, mits de uitgangspunten uit de prognose worden gerealiseerd en de onderliggende stukken door de adviseur worden gecontroleerd.
-- Beperkte data → oordeel "onvoldoende data": nog geen definitief oordeel mogelijk; aanvullende informatie benodigd.
+- Sterke brondata → oordeel "voorzichtig positief": bijvoorbeeld in de trant van "Op basis van de aangeleverde informatie lijkt de aanvraag verdedigbaar, mits de prognoses worden gerealiseerd, de liquiditeit gedurende de bouw- en overgangsfase wordt bewaakt en de zekerheden definitief worden vastgelegd." Schrijf nooit "zekerheidstelling is adequaat" als een aanvullende zekerheid nog mogelijk/aan te reiken is, en nooit "solide", "gezond" of "geborgd" als dit niet duidelijk uit de bron volgt.
+- Beperkte data (geen financiële analyse, prognose of betaalcapaciteitsberekening in de bron) → oordeel "onvoldoende data": gebruik dan letterlijk "Op basis van de beschikbare informatie kan nog geen definitief oordeel worden gevormd. Aanvullende bankopgaven en financiële onderbouwing zijn noodzakelijk voor verdere beoordeling." Schrijf in dat geval nooit "voorlopig positief", "passend geacht", "financiering verantwoord" of "gezonde structuur".
 - VERBODEN zonder volledige onderbouwing: "de financiering is verantwoord en betaalbaar", "kan zonder meer worden verstrekt", "bankwaardig", "sterk onderbouwd", "duurzaam draagbaar", "geen noemenswaardige risico's", "definitief akkoord".
 - conclusie.extern_deelbaar: één zin met advies of het rapport na adviseurscontrole extern deelbaar is.
 
@@ -417,24 +417,27 @@ function collectSuspectDates(r, pattern) {
   return out;
 }
 
-function enforceDates(r, warnings, vandaag) {
+function enforceDates(r, internal, vandaag) {
   const md = (r.metadata = r.metadata || {});
   const births = collectSuspectDates(r, /geboor|geboren/i);
   const oprichting = collectSuspectDates(r, /opgericht|oprichtingsdatum/i);
   const taxatie = collectSuspectDates(r, /taxatie/i);
   const isTaxatierapport = /taxatie/i.test(String(r.bronrapport?.type || ''));
 
+  /* Dit zijn technische tool-correcties (verkeerd overgenomen datumveld), geen
+     zakelijke controlepunten voor de adviseur — dus altijd naar `internal`,
+     nooit naar de extern zichtbare waarschuwingen/controlepunten. */
   const check = (field, label) => {
     const p = parseNLDate(md[field]);
     if (!p) return;
     if (births.some((x) => sameDate(x, p))) {
-      warnings.push(`${label} was gelijk aan een geboortedatum uit de bron en is gecorrigeerd.`);
+      internal.push(`${label} was gelijk aan een geboortedatum uit de bron en is gecorrigeerd.`);
       md[field] = '';
     } else if (oprichting.some((x) => sameDate(x, p)) && field === 'rapportdatum') {
-      warnings.push(`Rapportdatum was gelijk aan een oprichtingsdatum en is gecorrigeerd.`);
+      internal.push(`Rapportdatum was gelijk aan een oprichtingsdatum en is gecorrigeerd.`);
       md[field] = '';
     } else if (taxatie.some((x) => sameDate(x, p)) && field === 'rapportdatum' && !isTaxatierapport) {
-      warnings.push(`Rapportdatum was gelijk aan een taxatiedatum en is gecorrigeerd.`);
+      internal.push(`Rapportdatum was gelijk aan een taxatiedatum en is gecorrigeerd.`);
       md[field] = '';
     }
   };
@@ -494,10 +497,14 @@ function enforceBnA(fo, warnings) {
   }
 }
 
-/* Coverage: elk bronhoofdstuk verwerkt of gemotiveerd weggelaten */
-function enforceCoverage(r, warnings) {
+/* Coverage: elk bronhoofdstuk verwerkt of gemotiveerd weggelaten.
+   De "niet expliciet verwerkt"-melding is een interne kwaliteitscheck voor de
+   ontwikkelaar (staat letterlijk op de verbodslijst voor externe controlepunten)
+   en gaat daarom naar `internal`, nooit naar `warnings`/coverage_check.waarschuwingen.
+   Een ontbrekend organogram is wél een zakelijk relevant controlepunt en blijft extern. */
+function enforceCoverage(r, warnings, internal) {
   const cv = (r.coverage_check = r.coverage_check || {});
-  cv.waarschuwingen = A(cv.waarschuwingen);
+  cv.waarschuwingen = A(cv.waarschuwingen).filter(hasTxt);
   const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9à-ÿ]+/g, ' ').trim();
   const hoofdstukken = A(r.bronrapport?.hoofdstukken).filter(hasTxt);
   if (!A(cv.bronhoofdstukken).length) cv.bronhoofdstukken = [...hoofdstukken];
@@ -506,15 +513,18 @@ function enforceCoverage(r, warnings) {
     const n = norm(h);
     if (!n) continue;
     const hit = covered.some((c) => c.includes(n.slice(0, Math.min(n.length, 18))) || n.includes(c.slice(0, Math.min(c.length, 18))));
-    if (!hit) cv.waarschuwingen.push(`Bronhoofdstuk "${h}" is niet expliciet verwerkt of gemotiveerd weggelaten; door adviseur te controleren.`);
+    if (!hit) internal.push(`Bronhoofdstuk "${h}" is niet expliciet verwerkt of gemotiveerd weggelaten; door ontwikkelaar te controleren.`);
   }
   const orgFound = A(r.bronrapport?.gevonden_organogrammen).filter(hasTxt).length;
   const orgIncluded =
     r.juridische_structuur?.organogram_bestaand?.aanwezig === true ||
     r.juridische_structuur?.organogram_nieuw?.aanwezig === true;
   if (orgFound && !orgIncluded) {
-    cv.waarschuwingen.push('De bron bevat een organogram/structuurplaatje dat niet in het rapport is gereconstrueerd; door adviseur aan te vullen.');
+    warnings.push('De bron bevat een organogram/structuurplaatje dat niet in het rapport is gereconstrueerd; door adviseur aan te vullen.');
   }
+  /* AI-eigen coverage-opmerkingen (cv.waarschuwingen) blijven staan als zakelijke
+     toelichting op samenvoeging/weglating; de client-side filter vangt eventuele
+     interne formuleringen die de AI daar zelf toch in zou schrijven. */
   warnings.push(...cv.waarschuwingen.filter((w) => !warnings.includes(w)));
 }
 
@@ -540,6 +550,17 @@ const EN_FIXES = [
   ['verzuring', 'verzwaring'],
   ['verifiren', 'verifiëren'],
   ['goedgekeurd de aanvraag', 'de aanvraag goedgekeurd'],
+];
+
+/* Foutieve vaktermen die de AI soms voor de juiste bronterm invult. Let op:
+   "verpand(ing)" is elders een correcte, gangbare zekerheidsterm (bijv. verpanding
+   van voorraden/vorderingen) — daarom NOOIT een kale \b-woordvervanging op "verpand",
+   alleen deze specifieke, foutgevoelige woordcombinaties vervangen. */
+const PHRASE_FIXES = [
+  [/\bverpand(?:en|t)?\s+(?:worden|word(?:t)?|zijn)\s+voor\s+verzending\b/gi, 'afgeroepen worden voor verzending'],
+  [/\bverpakking\s+verpanding\b/gi, 'Vestiging van verpanding'],
+  [/\beffecte\b/gi, 'effecten'],
+  [/\bnieuw\s+financial\s+lease\b/gi, 'nieuwe financial lease'],
 ];
 
 /* Eurotekens die door PDF-tekstextractie zijn verminkt (bijv. bij Type3/custom-font
@@ -575,6 +596,17 @@ function deepCleanStrings(node, warnings, path = '') {
       if (re.test(v)) {
         v = v.replace(re, nl);
         const w = 'Engelse of foutieve restterm gecorrigeerd in de rapporttekst; door adviseur te controleren.';
+        if (!warnings.includes(w)) warnings.push(w);
+      }
+    }
+    for (const [re, nl] of PHRASE_FIXES) {
+      /* .replace() met een /g-regex begint altijd bij index 0 (self-resettend),
+         in tegenstelling tot .test() op een gedeeld /g-regex-object — dat zou
+         lastIndex laten "doorlekken" naar de volgende string in deze recursie. */
+      const before = v;
+      v = v.replace(re, nl);
+      if (v !== before) {
+        const w = 'Foutieve vakterm gecorrigeerd in de rapporttekst; door adviseur te controleren.';
         if (!warnings.includes(w)) warnings.push(w);
       }
     }
@@ -617,7 +649,7 @@ function computeDekking(r) {
 }
 
 const CONCL_ONVOLDOENDE =
-  'Nog geen definitief oordeel mogelijk op basis van de aangeleverde informatie. Aanvullende bankopgaven en financiële onderbouwing zijn noodzakelijk.';
+  'Op basis van de beschikbare informatie kan nog geen definitief oordeel worden gevormd. Aanvullende bankopgaven en financiële onderbouwing zijn noodzakelijk voor verdere beoordeling.';
 
 const FORBIDDEN_CLAIMS =
   /(verantwoord en betaalbaar|zonder meer worden verstrekt|bankwaardig rapport|sterk onderbouwd|duurzaam draagbaar|geen noemenswaardige risico'?s|financiering kan worden verstrekt|definitief akkoord)/i;
@@ -699,8 +731,8 @@ function enforceQuality(r, vandaag, opts = {}) {
   vis.ratioontwikkeling = A(vis.ratioontwikkeling).filter((x) => num(x?.waarde) !== null && hasTxt(x?.periode));
   if (vis.ratioontwikkeling.length < 2) vis.ratioontwikkeling = [];
 
-  /* 4 — datumregels */
-  enforceDates(r, warnings, vandaag);
+  /* 4 — datumregels (technische correctie → intern, geen extern controlepunt) */
+  enforceDates(r, internal, vandaag);
 
   /* 5 — paginabudget ééRST bepalen: sourcePageCount is de belangrijkste harde rem
      op de typebepaling hieronder. bytesPageCount (gemeten aan de echte PDF-bytes)
@@ -799,7 +831,7 @@ function enforceQuality(r, vandaag, opts = {}) {
   dc.separaat_te_controleren = A(dc.separaat_te_controleren).filter(hasTxt).slice(0, 6);
 
   /* 9 — coverage */
-  enforceCoverage(r, warnings);
+  enforceCoverage(r, warnings, internal);
 
   /* 10 — kwaliteitscontrole bijwerken: uitsluitend advisorWarnings naar buiten.
      internalWarnings (tool-/debugcorrecties) gaan nooit mee in het rapport of de
