@@ -603,26 +603,10 @@ function validateReportBeforeRender(r){
   const errs=[];
   if(!r||typeof r!=='object') return ['Geen rapportdata ontvangen.'];
   if(!r.metadata) errs.push('metadata ontbreekt.');
-  if(!['financieringsmemorandum','intake_documentatiememorandum'].includes(r.metadata?.rapport_type)) errs.push('Onbekend rapporttype.');
-  if(!['hoog','middel','beperkt'].includes(r.metadata?.datadekking)) errs.push('Datadekking ontbreekt of is ongeldig.');
-  const kc=r.financieringsopzet?.kerncijfers||{};
-  for(const k of ['totale_investering','gevraagde_financiering','eigen_inbreng','overige_financiering'])
-    if(kc[k]===0) errs.push(`kerncijfers.${k} is 0 zonder bron (moet null zijn).`);
-  for(const k of ['financieringsmix','zekerhedenmix']){
-    const a=A(r.visualisaties?.[k]);
-    if(a.length===1) errs.push(`Visualisatie ${k} heeft slechts één datapunt.`);
-  }
-  /* bronnen/aanwendingen: alleen blokkeren bij éénduidige misclassificatie.
-     Gemengde labels (bijv. "Eigen inbreng btw/kosten koper") zijn toegestaan
-     als bron: de eigen inbreng dekt dan een aanwending. */
-  const BRONW=/eigen inbreng|eigen middelen|eigen vermogen|\binbreng\b|\blening\b|\bkrediet\b|hypothe|bouwdepot|\bdepot\b|subsidie|btw[- ]?(teruggave|financiering)|vendor/;
-  const AANWW=/koopsom|aanneemsom|aankoopprijs|kosten koper|bouwkosten|verbouwing|renovatie|notaris|taxatiekosten|advieskosten|afsluitprovisie|overdrachtsbelasting|onvoorzien|werkkapitaal|herfinanciering/;
-  for(const row of A(r.financieringsopzet?.bronnen_en_aanwendingen)){
-    const l=String(row?.label||'').toLowerCase();
-    if(row?.type==='aanwending'&&BRONW.test(l)&&!AANWW.test(l)) errs.push(`"${row.label}" staat onder aanwendingen maar is een financieringsbron.`);
-    if(row?.type==='bron'&&AANWW.test(l)&&!BRONW.test(l)) errs.push(`"${row.label}" staat onder bronnen maar is een aanwending.`);
-  }
-  /* render-vervuiling in strings */
+  /* Classificatie-, totaal- en visualisatiekwesties worden server-side en bij het
+     renderen gecorrigeerd of als controlepunt in het rapport getoond; ze blokkeren
+     de rendering niet. Een fout in de eigen verwerking mag nooit als foutmelding
+     richting de gebruiker verschijnen alsof de bron fout is. */
   const scan=(node)=>{
     if(typeof node==='string'){
       if(/^(undefined|\[object Object\])$/i.test(node.trim())) errs.push('Rapportdata bevat ongeldige tekstwaarden (undefined / [object Object]).');
@@ -838,7 +822,7 @@ function buildSections(r,ctx){
   const add=(label,eyebrow,title,blocks)=>{
     const bs=A(blocks).flat(Infinity).filter(x=>typeof x==='string'&&x.trim());
     if(!bs.length) return;
-    S.push({label,blocks:[chap(`Hoofdstuk ${String(S.length+1).padStart(2,'0')}`,title),...bs]});
+    S.push({label,blocks:[chap('Hoofdstuk @@NUM@@',title),...bs]});
   };
 
   /* 1 · Managementsamenvatting */
@@ -965,12 +949,19 @@ function buildSections(r,ctx){
       hasVal(kc.rente)&&['Rente',kc.rente],
       hasVal(kc.ltv)&&['LTV',kc.ltv],
     ].filter(Boolean)));
+    const TOTAL_ROW=/^\s*((sub|eind)?totaal\b|totale\s|financieringsbehoefte\b|saldo\b)/i;
     const side=(rows,label)=>{
       if(!rows.length) return '';
-      const tot=rows.every(x=>isNum(x.bedrag))?rows.reduce((s,x)=>s+x.bedrag,0):null;
+      const isTot=x=>x.totaalregel===true||TOTAL_ROW.test(String(x.label||''));
+      const detail=rows.filter(x=>!isTot(x));
+      const totRow=rows.find(isTot);
+      const computed=detail.length&&detail.every(x=>isNum(x.bedrag))?detail.reduce((s,x)=>s+x.bedrag,0):null;
+      const totVal=totRow&&isNum(totRow.bedrag)?totRow.bedrag:computed;
+      const totLbl=totRow&&hasVal(totRow.label)?totRow.label:'Totaal';
+      const totSub=totRow?'':'berekend op basis van bronregels';
       return `<div><table class="t"><thead><tr><th>${esc(label)}</th><th class="num">Bedrag</th></tr></thead><tbody>${
-        rows.map(x=>`<tr><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td></tr>`).join('')
-      }${isNum(tot)?`<tr class="total"><td>Totaal</td><td class="num">${money(tot)}</td></tr>`:''}</tbody></table></div>`;
+        detail.map(x=>`<tr><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td></tr>`).join('')
+      }${isNum(totVal)?`<tr class="total"><td>${esc(totLbl)}${totSub?`<div class="sub">${totSub}</div>`:''}</td><td class="num">${money(totVal)}</td></tr>`:''}</tbody></table></div>`;
     };
     if(aanw.length||bron.length){
       blocks.push(secbarB('Bronnen en aanwendingen'));
@@ -1011,8 +1002,10 @@ function buildSections(r,ctx){
     const blocks=[paraBlocks(zr.tekst)];
     if(zeker.length){
       blocks.push(secbarB('Zekerheden'));
-      blocks.push(tableBlocks([{label:'Zekerheid'},{label:'Waarde',num:true},{label:'Toelichting'}],
-        zeker.map(x=>`<tr><td>${esc(x.zekerheid)}</td><td class="num">${mcell(x.waarde)}</td><td>${cell(x.toelichting)}</td></tr>`)));
+      const withStatus=zeker.some(x=>hasVal(x?.status));
+      const heads=[{label:'Zekerheid'},{label:'Waarde',num:true},...(withStatus?[{label:'Status'}]:[]),{label:'Toelichting'}];
+      blocks.push(tableBlocks(heads,
+        zeker.map(x=>`<tr><td>${esc(x.zekerheid)}</td><td class="num">${mcell(x.waarde)}</td>${withStatus?`<td>${cell(x.status)}</td>`:''}<td>${cell(x.toelichting)}</td></tr>`)));
     }
     if(hasVal(zr.dekkingspositie)) blocks.push(panel('Dekkingspositie',zr.dekkingspositie));
     const mix=donut(r.visualisaties?.zekerhedenmix,'Zekerhedenmix');
@@ -1102,11 +1095,14 @@ function buildSections(r,ctx){
     const blocks=[
       `<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${chip}</div>${cparas}</div>`,
     ];
-    /* Ontbrekende kernsecties eerlijk benoemen */
+    /* Ontbrekende kernsecties: alleen bij een volwaardig rapport kort benoemen —
+       een compact intake-memorandum wordt niet opgeblazen met "ontbreekt"-teksten */
     const missing=[];
-    if(!S.some(x=>x.label==='Financiële analyse')) missing.push('Financiële analyse: geen betrouwbare cijfers geëxtraheerd uit de aangeleverde documentatie.');
-    if(!S.some(x=>x.label==='Zekerheden')) missing.push('Zekerheden: niet vastgesteld op basis van de aangeleverde documentatie.');
-    if(!S.some(x=>x.label==='Financieringsopzet')) missing.push('Financieringsopzet: niet vastgesteld op basis van de aangeleverde documentatie.');
+    if(!ctx.isIntake){
+      if(!S.some(x=>x.label==='Financiële analyse')) missing.push('Financiële analyse: geen betrouwbare cijfers geëxtraheerd uit de aangeleverde documentatie.');
+      if(!S.some(x=>x.label==='Zekerheden')) missing.push('Zekerheden: niet vastgesteld op basis van de aangeleverde documentatie.');
+      if(!S.some(x=>x.label==='Financieringsopzet')) missing.push('Financieringsopzet: niet vastgesteld op basis van de aangeleverde documentatie.');
+    }
     if(missing.length) blocks.push(noviz(missing.join(' ')));
     const aand=A(ms.aandachtspunten).filter(hasVal);
     if(aand.length){ blocks.push(secbarB('Belangrijkste aandachtspunten')); blocks.push(bulletBlocks(aand,'orange')); }
@@ -1169,6 +1165,24 @@ function buildSections(r,ctx){
     add('Documentatie & bijlagen','Documentatie','Documentatie en bijlagen',blocks);
   }
 
+  /* Dunne secties samenvoegen: geen aparte hoofdstukken zonder echte broninhoud */
+  const KERN=new Set(['Managementsamenvatting','Financieringsopzet','Conclusie & advies','Documentatie & bijlagen']);
+  const isThin=sec=>{
+    const body=sec.blocks.slice(1).join('');
+    return !KERN.has(sec.label)&&body.length<700&&!/<table|class="kpis|orgcard|chart-card|kvgrid|verdict/.test(body);
+  };
+  const thin=S.filter(isThin);
+  if(thin.length>=2){
+    const merged={label:'Overige informatie',blocks:[chap('Hoofdstuk @@NUM@@','Overige informatie uit de bron'),...thin.flatMap(t=>[secbarB(t.label),...t.blocks.slice(1)])]};
+    const rest=S.filter(s=>!thin.includes(s));
+    let at=rest.findIndex(s=>s.label==='Conclusie & advies');
+    if(at<0) at=rest.findIndex(s=>s.label==='Documentatie & bijlagen');
+    if(at<0) at=rest.length;
+    rest.splice(at,0,merged);
+    S.length=0; S.push(...rest);
+  }
+  S.forEach((sec,i)=>{sec.blocks[0]=sec.blocks[0].replace('Hoofdstuk @@NUM@@',`Hoofdstuk ${String(i+1).padStart(2,'0')}`)});
+
   return S;
 }
 
@@ -1223,9 +1237,11 @@ function layoutPages(sections){
 /* ── Hoofd-renderer ────────────────────────────────────────────────── */
 function renderReport(r){
   const md=r.metadata||{};
-  const isIntake = md.rapport_type==='intake_documentatiememorandum';
+  const TYPE_ALIAS={financieringsmemorandum:'volwaardig_financieringsmemorandum',intake_documentatiememorandum:'compact_intake'};
+  const rtype=TYPE_ALIAS[md.rapport_type]||md.rapport_type||'compact_intake';
+  const isIntake = rtype==='compact_intake';
   const naam = hasVal(md.klantnaam)?md.klantnaam:'Onderneming niet vastgesteld';
-  const titel = isIntake?'Intake- en documentatiememorandum':'Financieringsmemorandum';
+  const titel = rtype==='compact_intake'?'Intake- en documentatiememorandum':rtype==='luxe_samenvatting'?'Samenvattend financieringsrapport':'Financieringsmemorandum';
   const vandaag = new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
   const datum = hasVal(md.rapportdatum)?md.rapportdatum:(hasVal(md.datum)?md.datum:vandaag);
   const docdatum = hasVal(md.documentdatum)&&md.documentdatum!==datum?md.documentdatum:'';
@@ -1238,7 +1254,10 @@ function renderReport(r){
 
   const sections=buildSections(r,ctx);
   const pages=layoutPages(sections);
-  const tot=pages.length+2;
+  /* Compact rapport: geen aparte inhoudsopgave-pagina bij weinig pagina's */
+  const withToc = !(isIntake && pages.length<=6);
+  const bodyStart = withToc?3:2;
+  const tot=pages.length+bodyStart-1;
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
   const kc=r.financieringsopzet?.kerncijfers||{};
@@ -1275,7 +1294,7 @@ function renderReport(r){
   </section>`;
 
   const chapters=[];
-  pages.forEach((p,i)=>{const base=p.label.replace(/ — vervolg$/,'');if(!chapters.some(c=>c.label===base))chapters.push({label:base,page:i+3});});
+  pages.forEach((p,i)=>{const base=p.label.replace(/ — vervolg$/,'');if(!chapters.some(c=>c.label===base))chapters.push({label:base,page:i+bodyStart});});
   const toc=`<section class="report-page" data-screen-label="Inhoudsopgave">
     <header class="rp-head"><img src="${WORD}" alt="Credion"><div class="rp-head-right">Inhoudsopgave</div></header>
     <div class="rp-body">
@@ -1293,11 +1312,11 @@ function renderReport(r){
     <div class="rp-body">${p.html}</div>
     <footer class="rp-foot">
       <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(naam)} — Vertrouwelijk</div>
-      <div class="rp-foot-r">${esc(datum)} &nbsp;·&nbsp; <b>Pagina ${i+3} van ${tot}</b></div>
+      <div class="rp-foot-r">${esc(datum)} &nbsp;·&nbsp; <b>Pagina ${i+bodyStart} van ${tot}</b></div>
     </footer>
   </section>`;
 
-  el.stage.innerHTML = cover + toc + pages.map(chrome).join('');
+  el.stage.innerHTML = cover + (withToc?toc:'') + pages.map(chrome).join('');
   document.body.classList.add('report-mode');
   drawOrganograms(el.stage);
 }
