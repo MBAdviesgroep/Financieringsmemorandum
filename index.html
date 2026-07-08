@@ -494,7 +494,7 @@ const mcell = v => isNum(v)?money(v):'—';
 /* Zekerheden splitsen: definitief/gevestigd blijft in de hoofdtabel, een
    mogelijke/aan te reiken/nog te formaliseren zekerheid komt apart onder
    "Aanvullend mogelijk" te staan — nooit gemengd gepresenteerd als vaststaand. */
-const CONDITIONAL_STATUS_PAT = /mogelijk|aan te reiken|te vestigen|aangeboden|voorwaardelijk|nog te formaliseren|nog te controleren/i;
+const CONDITIONAL_STATUS_PAT = /mogelijk|aan te reiken|aan te bieden|te vestigen|aangeboden|voorwaardelijk|nog te formaliseren|nog te controleren/i;
 function splitZekerheden(list){
   const vast=[], mogelijk=[];
   for(const x of A(list)){ (CONDITIONAL_STATUS_PAT.test(String(x?.status||''))?mogelijk:vast).push(x); }
@@ -977,8 +977,7 @@ function buildCompactIntakeSections(r,ctx){
     if(hasVal(av.besluitvormingsvraag)) blocks.push(panel('Besluitvormingsvraag',av.besluitvormingsvraag));
     const oordeelTekst=hasVal(ms.voorlopig_oordeel)?ms.voorlopig_oordeel:(hasVal(cc.tekst)?cc.tekst:'');
     if(hasVal(oordeelTekst)){
-      const chip=`<span class="chip ${OORDEEL_CHIP[cc.oordeel]||''}">${esc(cc.oordeel||'onvoldoende data')}</span>`;
-      blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${chip}</div><p>${esc(oordeelTekst)}</p></div>`);
+      blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div><p>${esc(oordeelTekst)}</p></div>`);
     }
     const aand=A(ms.aandachtspunten).filter(hasVal).slice(0,5);
     if(aand.length){ blocks.push(secbarB('Aandachtspunten')); blocks.push(bulletBlocks(aand,'orange')); }
@@ -1139,7 +1138,7 @@ function buildSections(r,ctx){
       </div>`);
     }
     if(hasVal(ms.voorlopig_oordeel)){
-      blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${dekChip(ctx.dek)}</div><p>${esc(ms.voorlopig_oordeel)}</p></div>`);
+      blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span>${dekChip(ctx.dek)}</div><p>${esc(ms.voorlopig_oordeel)}</p></div>`);
     }
     add('Managementsamenvatting','Managementsamenvatting','Samenvatting van de financieringscasus',blocks);
   }
@@ -1381,10 +1380,9 @@ function buildSections(r,ctx){
   /* 14 · Conclusie en advies */
   {
     const cc=r.conclusie||{};
-    const chip=`<span class="chip ${OORDEEL_CHIP[cc.oordeel]||''}">${esc(cc.oordeel||'onvoldoende data')}</span>`;
     const cparas=hasVal(cc.tekst)?String(cc.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):`<p>${esc(NB)}</p>`;
     const blocks=[
-      `<div class="verdict"><div class="verdict-top"><span class="verdict-l">Voorlopig oordeel</span>${chip}</div>${cparas}</div>`,
+      `<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div>${cparas}</div>`,
     ];
     /* Geen apart "niet vastgesteld"-blok voor ontbrekende kernsecties: ontbrekende
        onderdelen komen al naar voren doordat de sectie zelf niet wordt gerenderd,
@@ -1396,7 +1394,7 @@ function buildSections(r,ctx){
     const ap=A(cc.actiepunten).filter(hasVal);
     if(ap.length){ blocks.push(secbarB('Actiepunten voor de adviseur')); blocks.push(bulletBlocks(ap)); }
     blocks.push(`<div class="panel tint"><div class="panel-h">Extern delen</div><p class="para">${safeText(cc.extern_deelbaar,'Nog niet extern delen; eerst adviseurscontrole.')}</p></div>`);
-    add('Conclusie & advies','Conclusie','Conclusie en advies',blocks);
+    add('Financieringssamenvatting','Conclusie','Financieringssamenvatting & advies',blocks);
   }
 
   /* 15 · Documentatie en bijlagen */
@@ -1442,7 +1440,7 @@ function buildSections(r,ctx){
   /* Dunne secties samenvoegen: geen aparte hoofdstukken zonder echte broninhoud.
      Een generieke "Overige informatie"-dumpsectie is niet toegestaan; dunne secties
      worden daarom in een bestaand kernhoofdstuk gevouwen (nooit een nieuw hoofdstuk). */
-  const KERN=new Set(['Managementsamenvatting','Financieringsopzet','Conclusie & advies','Documentatie & bijlagen']);
+  const KERN=new Set(['Managementsamenvatting','Financieringsopzet','Financieringssamenvatting','Documentatie & bijlagen']);
   const isThin=sec=>{
     const body=sec.blocks.slice(1).join('');
     return !KERN.has(sec.label)&&body.length<700&&!/<table|class="kpis|orgcard|chart-card|kvgrid|verdict/.test(body);
@@ -1450,7 +1448,7 @@ function buildSections(r,ctx){
   const thin=S.filter(isThin);
   if(thin.length>=2){
     const rest=S.filter(s=>!thin.includes(s));
-    let host=rest.find(s=>s.label==='Documentatie & bijlagen')||rest.find(s=>s.label==='Conclusie & advies');
+    let host=rest.find(s=>s.label==='Documentatie & bijlagen')||rest.find(s=>s.label==='Financieringssamenvatting');
     const extra=thin.flatMap(t=>[secbarB(t.label),...t.blocks.slice(1)]);
     if(host){
       host.blocks.push(...extra);
@@ -1519,8 +1517,7 @@ function layoutPages(sections){
 /* Totaal aantal fysieke pagina's inclusief cover en (optionele) inhoudsopgave */
 function totalRenderedPages(sections,isIntake){
   const pages=layoutPages(sections);
-  const withToc=!(isIntake&&pages.length<=6);
-  return pages.length+(withToc?3:2);
+  return pages.length+3; /* cover + inhoudsopgave + achterblad */
 }
 
 /* Paginabudget afdwingen: het rapport is ALTIJD maximaal HARD_MAX_PAGES pagina's,
@@ -1530,8 +1527,8 @@ function totalRenderedPages(sections,isIntake){
    Bronspecifieke hoofdstukken buiten het vaste schema (overige_secties) hebben
    de laagste prioriteit en verdwijnen als eerste. */
 const HARD_MAX_PAGES = 10;
-const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur','Financieringsopzet','Zekerheden','Documentatie & bijlagen']);
-const DROP_PRIORITY=['Inkomen & vermogen privé','Markt & omgeving','Management & organisatie','Object & vastgoed',"Risico's, mitiganten & aandachtspunten",'Betaalcapaciteit','Financiële analyse','Activiteiten onderneming','Aanvraag & transactie','Conclusie & advies'];
+const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur','Activiteiten onderneming','Financieringsopzet','Object & vastgoed','Zekerheden','Financiële analyse','Betaalcapaciteit',"Risico's, mitiganten & aandachtspunten",'Financieringssamenvatting','Documentatie & bijlagen']);
+const DROP_PRIORITY=['Inkomen & vermogen privé','Markt & omgeving','Management & organisatie','Aanvraag & transactie'];
 function fitToPageBudget(sections,maxOutputPages,isIntake){
   if(!isNum(maxOutputPages)) maxOutputPages=HARD_MAX_PAGES; // altijd een harde limiet
   let cur=[...sections];
@@ -1546,8 +1543,9 @@ function fitToPageBudget(sections,maxOutputPages,isIntake){
   }
   /* Laatste redmiddel: als alleen kernhoofdstukken over zijn en het budget nog
      wordt overschreden, vervallen de minst kritieke kernsecties één voor één.
-     Managementsamenvatting en Financieringsopzet blijven altijd staan. */
-  const LAST_RESORT_FULL=['Documentatie & bijlagen','Zekerheden','Juridische structuur'];
+     Financiële analyse, betaalcapaciteit, aandachtspunten, financieringssamenvatting
+     en documentatie blijven altijd staan. */
+  const LAST_RESORT_FULL=['Object & vastgoed','Activiteiten onderneming','Juridische structuur'];
   for(const label of LAST_RESORT_FULL){
     if(totalRenderedPages(cur,isIntake)<=maxOutputPages) break;
     if(cur.length<=2) break;
@@ -1628,8 +1626,8 @@ function renderReport(r){
   const fitted = isIntake ? fitCompactToPageBudget(rawSections,maxOutputPages) : fitToPageBudget(rawSections,maxOutputPages,isIntake);
   const sections = renumberChapters(fitted);
   const pages=layoutPages(sections);
-  /* Compact rapport: geen aparte inhoudsopgave-pagina bij weinig pagina's */
-  const withToc = !(isIntake && pages.length<=6);
+  /* Inhoudsopgave altijd opnemen: financiers moeten in één oogopslag zien waar alles staat */
+  const withToc = true;
   const bodyStart = withToc?3:2;
   const tot=pages.length+bodyStart;
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
