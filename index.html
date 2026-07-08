@@ -434,12 +434,12 @@ const el = {
 };
 
 /* ══ Helpers ════════════════════════════════════════════════════════ */
-/* Vangnet tegen verminkte eurotekens ( , "EUR 123", "123 euro") die soms uit
+/* Vangnet tegen verminkte eurotekens (�, "EUR 123", "123 euro") die soms uit
    PDF-tekstextractie komen. De server fixt dit al in de brontekst; dit is een
    tweede laag die altijd meeloopt via esc(), voor elk dynamisch tekstveld. */
 function cleanTextForReport(value){
   return String(value??'')
-    .replace(/ 9\s?(?=\d)/g,'€ ')
+    .replace(/�9\s?(?=\d)/g,'€ ')
     .replace(/\uFFFD\s?(?=\d)/g,'€ ')
     .replace(/\bEUR\s?(?=\d)/gi,'€ ')
     .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1')
@@ -1523,16 +1523,17 @@ function totalRenderedPages(sections,isIntake){
   return pages.length+(withToc?3:2);
 }
 
-/* Paginabudget afdwingen voor volwaardig_financieringsmemorandum en luxe_samenvatting:
-   de output mag standaard niet meer pagina's hebben dan de bron. Bij "uitgebreid
-   rapport" (maxOutputPages=null) geldt geen limiet. Niet-essentiële hoofdstukken
-   worden in vaste prioriteitsvolgorde verwijderd; de kernhoofdstukken blijven altijd
-   staan. Bronspecifieke hoofdstukken buiten het vaste schema (overige_secties) hebben
+/* Paginabudget afdwingen: het rapport is ALTIJD maximaal HARD_MAX_PAGES pagina's,
+   inclusief voorblad, (optionele) inhoudsopgave en achterblad — die drie blijven
+   altijd staan. Niet-essentiële hoofdstukken worden in vaste prioriteitsvolgorde
+   verwijderd; pas als laatste redmiddel vervallen de minst kritieke kernhoofdstukken.
+   Bronspecifieke hoofdstukken buiten het vaste schema (overige_secties) hebben
    de laagste prioriteit en verdwijnen als eerste. */
+const HARD_MAX_PAGES = 10;
 const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur','Financieringsopzet','Zekerheden','Documentatie & bijlagen']);
 const DROP_PRIORITY=['Inkomen & vermogen privé','Markt & omgeving','Management & organisatie','Object & vastgoed','Risicoanalyse','Betaalcapaciteit','Financiële analyse','Activiteiten onderneming','Aanvraag & transactie','Conclusie & advies'];
 function fitToPageBudget(sections,maxOutputPages,isIntake){
-  if(!isNum(maxOutputPages)) return sections; // uitgebreid rapport: geen harde limiet
+  if(!isNum(maxOutputPages)) maxOutputPages=HARD_MAX_PAGES; // altijd een harde limiet
   let cur=[...sections];
   if(totalRenderedPages(cur,isIntake)<=maxOutputPages) return cur;
   const rank=s=>{ const i=DROP_PRIORITY.indexOf(s.label); return i===-1?-1:i; };
@@ -1542,6 +1543,15 @@ function fitToPageBudget(sections,maxOutputPages,isIntake){
     candidates.sort((a,b)=>rank(a)-rank(b));
     const drop=candidates[0];
     cur=cur.filter(s=>s!==drop);
+  }
+  /* Laatste redmiddel: als alleen kernhoofdstukken over zijn en het budget nog
+     wordt overschreden, vervallen de minst kritieke kernsecties één voor één.
+     Managementsamenvatting en Financieringsopzet blijven altijd staan. */
+  const LAST_RESORT_FULL=['Documentatie & bijlagen','Zekerheden','Juridische structuur'];
+  for(const label of LAST_RESORT_FULL){
+    if(totalRenderedPages(cur,isIntake)<=maxOutputPages) break;
+    if(cur.length<=2) break;
+    cur=cur.filter(s=>s.label!==label);
   }
   return cur;
 }
@@ -1600,16 +1610,20 @@ function renderReport(r){
   const status = md.status||'Concept · ter beoordeling';
   const uitgebreid = md.uitgebreidToegestaan===true;
   const sourcePageCount = isNum(md.sourcePageCount)?md.sourcePageCount:(isNum(md.source_page_count)?md.source_page_count:(isNum(r.bronrapport?.aantal_paginas)?r.bronrapport.aantal_paginas:null));
-  const FALLBACK_MAX={compact_intake:8,volwaardig_financieringsmemorandum:14,luxe_samenvatting:10};
-  const maxOutputPages = uitgebreid ? null : (sourcePageCount || (isNum(md.maxOutputPages)?md.maxOutputPages:FALLBACK_MAX[rtype]) || 8);
+  const FALLBACK_MAX={compact_intake:8,volwaardig_financieringsmemorandum:10,luxe_samenvatting:10};
+  /* Harde bovengrens: nooit meer dan HARD_MAX_PAGES pagina's (incl. voor- en
+     achterblad), óók bij lange bronnen en óók als "uitgebreid" is toegestaan.
+     Een kortere bron mag wel een kleiner budget opleveren. */
+  const budgetRaw = sourcePageCount || (isNum(md.maxOutputPages)?md.maxOutputPages:FALLBACK_MAX[rtype]) || 8;
+  const maxOutputPages = Math.min(HARD_MAX_PAGES, budgetRaw);
   const ctx = {naam,titel,datum,docdatum,dek,status,isIntake,sourcePageCount,maxOutputPages,uitgebreid};
 
   el.tbTitle.textContent = titel;
   el.tbSub.textContent = `${naam} · ${status}`;
 
   /* compact_intake gebruikt uitsluitend zijn eigen, compacte renderer — nooit de
-     algemene full-report renderer. Voor volwaardig/luxe geldt het paginabudget:
-     standaard niet meer pagina's dan de bron, tenzij expliciet "uitgebreid rapport". */
+     algemene full-report renderer. Voor alle typen geldt het harde paginabudget
+     van maximaal HARD_MAX_PAGES pagina's, inclusief voor- en achterblad. */
   const rawSections = isIntake ? buildCompactIntakeSections(r,ctx) : buildSections(r,ctx);
   const fitted = isIntake ? fitCompactToPageBudget(rawSections,maxOutputPages) : fitToPageBudget(rawSections,maxOutputPages,isIntake);
   const sections = renumberChapters(fitted);
