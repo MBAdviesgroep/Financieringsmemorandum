@@ -1371,11 +1371,11 @@ function buildSections(r,ctx){
     const blocks=[];
     if(risks.length){
       blocks.push(secbarB('Risicomatrix'));
-      blocks.push(tableBlocks([{label:'Risico'},{label:'Kans'},{label:'Impact'},{label:'Mitigerende factor'}],
+      blocks.push(tableBlocks([{label:'Aandachtspunt'},{label:'Kans'},{label:'Impact'},{label:'Mitigerende factor / vervolgstap'}],
         risks.map(x=>`<tr><td>${esc(x.risico)}</td><td>${prioStat(x.kans)}</td><td>${prioStat(x.impact)}</td><td>${cell(x.mitigant)}</td></tr>`)));
     }
     if(aand.length){ blocks.push(secbarB('Bancaire aandachtspunten')); blocks.push(bulletBlocks(aand,'orange')); }
-    add('Risicoanalyse','Risicoanalyse','Risicoanalyse en mitiganten',blocks);
+    add("Risico's, mitiganten & aandachtspunten",'Risicoanalyse',"Risico's, mitiganten & aandachtspunten",blocks);
   }
 
   /* 14 · Conclusie en advies */
@@ -1531,7 +1531,7 @@ function totalRenderedPages(sections,isIntake){
    de laagste prioriteit en verdwijnen als eerste. */
 const HARD_MAX_PAGES = 10;
 const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur','Financieringsopzet','Zekerheden','Documentatie & bijlagen']);
-const DROP_PRIORITY=['Inkomen & vermogen privé','Markt & omgeving','Management & organisatie','Object & vastgoed','Risicoanalyse','Betaalcapaciteit','Financiële analyse','Activiteiten onderneming','Aanvraag & transactie','Conclusie & advies'];
+const DROP_PRIORITY=['Inkomen & vermogen privé','Markt & omgeving','Management & organisatie','Object & vastgoed',"Risico's, mitiganten & aandachtspunten",'Betaalcapaciteit','Financiële analyse','Activiteiten onderneming','Aanvraag & transactie','Conclusie & advies'];
 function fitToPageBudget(sections,maxOutputPages,isIntake){
   if(!isNum(maxOutputPages)) maxOutputPages=HARD_MAX_PAGES; // altijd een harde limiet
   let cur=[...sections];
