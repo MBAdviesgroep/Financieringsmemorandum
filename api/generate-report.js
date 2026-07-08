@@ -274,14 +274,14 @@ Stap 2: verantwoord per bronhoofdstuk wat ermee gebeurt in "coverage_check": zet
 Stap 3: extraheer bronfeiten. Stap 4: schrijf pas daarna de rapportsecties.
 
 PAGINABUDGET — HARDE REGEL
-Het aantal outputpagina's mag standaard niet groter zijn dan het aantal pagina's van de bron-PDF. Je moet informatie daarom samenvatten, samenvoegen en prioriteren. Ontbrekende onderdelen worden kort onder controlepunten genoemd en nooit als losse secties of pagina's uitgewerkt. Als de bron kort is, blijft de output kort. Je bent een transformatietool, geen uitbreidtool. Bij compact_intake wint paginabeperking boven volledige bronstructuur: twijfelgevallen worden samengevat onder controlepunten of weggelaten, niet als losse sectie gerenderd. Alleen als de adviseursnotities expliciet "uitgebreid rapport" vragen, mag de output langer worden dan de bron.
+Het eindrapport is ALTIJD maximaal 10 pagina's, inclusief voorblad en achterblad (dus maximaal circa 7 à 8 inhoudspagina's). Dit geldt ongeacht de lengte van de bron: bij een bron van 20+ pagina's moet je actief samenvatten, samenvoegen en keuzes maken. Liever 7 tot 9 sterke pagina's dan een vol rapport dat niemand leest. Is de bron korter, dan blijft de output ook korter dan 10 — forceer geen extra pagina's. Ontbrekende onderdelen worden kort onder controlepunten genoemd en nooit als losse secties of pagina's uitgewerkt. Je bent een transformatietool, geen uitbreidtool. Bij compact_intake wint paginabeperking boven volledige bronstructuur: twijfelgevallen worden samengevat onder controlepunten of weggelaten, niet als losse sectie gerenderd. Ook als de adviseursnotities om een "uitgebreid rapport" vragen blijft het absolute maximum 10 pagina's.
 
 RAPPORTTYPE EN LENGTE — NIET OPBLAZEN
 Kies eerst, op basis van de broninhoud, één rapporttype (metadata.rapport_type):
 - "compact_intake": beperkte bron — indicatief minder dan 10 pagina's, weinig tekstuele onderbouwing, geen financiële analyse, geen prognose of betaalcapaciteitsberekening; vooral juridische structuur, financiering, zekerheden en documentatie. Output: een compact intake- en documentatiememorandum, in verhouding tot de bron (maximaal circa bronlengte + 1 à 2 pagina's; bij een bron onder 10 pagina's doorgaans maximaal 8 à 9 pagina's), tenzij de adviseur in de notities expliciet om een uitgebreid rapport vraagt.
-- "volwaardig_financieringsmemorandum": alleen als de bron dit inhoudelijk draagt — onderneming en activiteiten beschreven, financieringsopzet én zekerheden aanwezig, financiële analyse of prognose aanwezig, betaalcapaciteit of kasstroom aanwezig. Output mag langer zijn dan de bron als de bron rijk is aan informatie, maar nooit kunstmatig opgeblazen.
+- "volwaardig_financieringsmemorandum": alleen als de bron dit inhoudelijk draagt — onderneming en activiteiten beschreven, financieringsopzet én zekerheden aanwezig, financiële analyse of prognose aanwezig, betaalcapaciteit of kasstroom aanwezig. Output: compact en volledig binnen het maximum van 10 pagina's; nooit kunstmatig opgeblazen.
 - "luxe_samenvatting": lange bron (indicatief boven 20 pagina's) met veel herhaling, of wanneer de adviseur expliciet een compactere bankversie vraagt. Output: korter dan de bron; kerninformatie en tabellen behouden, herhaling schrappen.
-Paginarem: een compact rapport streeft naar maximaal 125% van het aantal bronpagina's; een luxe samenvatting is korter dan de bron. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is. Laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
+Paginarem: elk rapporttype blijft binnen het absolute maximum van 10 pagina's; een luxe samenvatting en een compact rapport zijn bovendien korter dan de bron. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is. Laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
 
 SECTIESELECTIE — ALLEEN WAT DE BRON DRAAGT
 Vul geen sectie voor onderwerpen die niet werkelijk in de bron staan: geen financiële analyse zonder cijfers; geen betaalcapaciteit zonder kasstroom, DSCR of rente-/aflossingsgegevens; geen marktsectie als de bron alleen operationele activiteiten noemt; geen object-/vastgoedsectie als vastgoed slechts zijdelings als bestaande zekerheid voorkomt; geen privésectie zonder relevante privéanalyse; geen lange conclusie zonder data. Laat zulke velden en arrays leeg. Maak nooit inhoud die alleen uit "niet opgenomen in bron" bestaat; ontbrekende maar relevante onderdelen benoem je kort als controlepunt (coverage_check.waarschuwingen) of vervolgvraag. Voeg geen standaardtekst toe om een sectie te vullen: het rapport moet mooier zijn dan de bron, niet langer dan de bron rechtvaardigt.
@@ -343,11 +343,14 @@ OUTPUT
 Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
 
 function buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid }) {
-  const budgetLine = uitgebreid
-    ? 'De adviseur heeft expliciet om een UITGEBREID rapport gevraagd: de standaard paginabeperking (maximaal de bronomvang) vervalt voor deze aanvraag.'
-    : bytesPageCount
-    ? `De aangeleverde bron-PDF telt ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}. Het rapport mag in omvang niet groter zijn dan ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}: wees beknopt, voeg samen en prioriteer.`
-    : 'Het exacte aantal bronpagina\'s kon niet automatisch worden bepaald: vul bronrapport.aantal_paginas zo nauwkeurig mogelijk in en houd de output in omvang gelijk aan of korter dan de bron.';
+  const HARD_MAX = 10;
+  const base = bytesPageCount
+    ? `De aangeleverde bron-PDF telt ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}. `
+    : "Het exacte aantal bronpagina's kon niet automatisch worden bepaald: vul bronrapport.aantal_paginas zo nauwkeurig mogelijk in. ";
+  const cap = bytesPageCount && bytesPageCount < HARD_MAX ? bytesPageCount : HARD_MAX;
+  const budgetLine = base
+    + `Het rapport is maximaal ${cap} pagina's inclusief voorblad en achterblad. Wees beknopt, voeg samen en prioriteer; forceer geen extra pagina's als minder volstaat.`
+    + (uitgebreid ? ' De adviseur vroeg om een uitgebreid rapport: benut het maximum, maar overschrijd de 10 pagina\'s nooit.' : '');
 
   return `${SYSTEM_BASE}
 
@@ -794,13 +797,16 @@ function enforceQuality(r, vandaag, opts = {}) {
   r.metadata.datadekking = dd.niveau;
   r.metadata.status = 'Concept · ter beoordeling';
 
-  /* 6b — paginabudget vastleggen in metadata (nu na de definitieve typebepaling) */
-  const FALLBACK_MAX_PAGES = { compact_intake: 8, volwaardig_financieringsmemorandum: 14, luxe_samenvatting: 10 };
+  /* 6b — paginabudget vastleggen in metadata (nu na de definitieve typebepaling).
+     Absolute bovengrens: 10 pagina's incl. voor- en achterblad — óók bij "uitgebreid". */
+  const HARD_MAX_PAGES = 10;
+  const FALLBACK_MAX_PAGES = { compact_intake: 8, volwaardig_financieringsmemorandum: 10, luxe_samenvatting: 10 };
   r.metadata.sourcePageCount = sourcePageCount;
   r.metadata.uitgebreidToegestaan = !!uitgebreid;
-  r.metadata.maxOutputPages = uitgebreid
-    ? null
-    : sourcePageCount || FALLBACK_MAX_PAGES[r.metadata.rapport_type] || 8;
+  r.metadata.maxOutputPages = Math.min(
+    HARD_MAX_PAGES,
+    sourcePageCount || FALLBACK_MAX_PAGES[r.metadata.rapport_type] || 8
+  );
 
   /* 7 — conclusiebeleid.
      Bij compact_intake zonder financiële analyse/prognose mag het oordeel nooit
