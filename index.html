@@ -443,6 +443,20 @@ function cleanTextForReport(value){
     .replace(/\uFFFD\s?(?=\d)/g,'€ ')
     .replace(/\bEUR\s?(?=\d)/gi,'€ ')
     .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1')
+    .replace(/([A-Za-zÀ-ÿ])\uFFFD9/g,'$1é')
+    .replace(/Priv[eé]\s?9/g,'Privé')
+    .replace(/priv[eé]\s?9/g,'privé')
+    .replace(/\bfinancie\s?9le\b/gi,'financiële')
+    .replace(/\bRisicos\b/g,"Risico's")
+    .replace(/\brisicos\b/g,"risico's")
+    .replace(/\bContinuiteit\b/g,'Continuïteit')
+    .replace(/\bcontinuiteit\b/g,'continuïteit')
+    .replace(/\bRealizatie\b/g,'Realisatie')
+    .replace(/\brealizatie\b/g,'realisatie')
+    .replace(/\bverifiren\b/gi,'verifiëren')
+    .replace(/\bsamenwerking\s+van\s+(?=huur)/gi,'samenloop van ')
+    .replace(/\bsamenwerking\s+(?=huur)/gi,'samenloop van ')
+    .replace(/\bgeconstrueerde(?=\s+bouw)/gi,'gefaseerde')
     .replace(/\bverpand(?:en|t)?\s+(?:worden|word(?:t)?|zijn)\s+voor\s+verzending\b/gi,'afgeroepen worden voor verzending')
     .replace(/\bverpakking\s+verpanding\b/gi,'Vestiging van verpanding')
     .replace(/\beffecte\b/gi,'effecten')
@@ -1001,7 +1015,8 @@ function buildCompactIntakeSections(r,ctx){
     if(on) blocks.push(on);
     if(!ob&&!on){
       const stx=A(ju.structuur_tekstueel).filter(hasVal);
-      if(stx.length){ blocks.push(secbarB('Structuurschema','tekstuele weergave')); blocks.push(bulletBlocks(stx)); }
+      const schema=stx.length?stx:A(ju.aandeelhouders_ubo).filter(hasVal);
+      if(schema.length){ blocks.push(secbarB('Structuurschema','tekstuele weergave')); blocks.push(bulletBlocks(schema)); }
     }
     const mgTeam=A(mg.team).filter(x=>hasVal(x?.naam));
     if(mgTeam.length){ blocks.push(secbarB('Management')); blocks.push(bulletBlocks(mgTeam.map(x=>[x.naam,x.rol,x.achtergrond].filter(hasVal).join(' — ')))); }
@@ -1171,17 +1186,19 @@ function buildSections(r,ctx){
     const bes=A(ju.bestuur_en_tekenbevoegdheid).filter(hasVal);
     if(bes.length){ blocks.push(secbarB('Bestuur en tekenbevoegdheid')); blocks.push(bulletBlocks(bes)); }
     const ubo=A(ju.aandeelhouders_ubo).filter(hasVal);
-    if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO\u2019s')); blocks.push(bulletBlocks(ubo)); }
     const stx=A(ju.structuur_tekstueel).filter(hasVal);
     const ob=orgBlock(ju.organogram_bestaand,'Organogram — bestaande structuur');
     const on=orgBlock(ju.organogram_nieuw,'Organogram — nieuwe structuur');
     if(ob||on){
+      if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO\u2019s')); blocks.push(bulletBlocks(ubo)); }
       blocks.push(secbarB('Structuur','gereconstrueerd uit de bron'));
       if(ob) blocks.push(ob);
       if(on) blocks.push(on);
-    } else if(stx.length){
-      blocks.push(secbarB('Structuurschema','tekstuele weergave'));
-      blocks.push(bulletBlocks(stx));
+    } else {
+      /* Geen net visueel organogram: dan ALTIJD een tekstueel structuurschema —
+         bij voorkeur structuur_tekstueel, anders de aandeelhouders-/UBO-regels. */
+      const schema=stx.length?stx:ubo;
+      if(schema.length){ blocks.push(secbarB('Structuurschema','tekstuele weergave')); blocks.push(bulletBlocks(schema)); }
     }
     add('Juridische structuur','Juridische structuur','Juridische structuur & betrokken partijen',blocks);
   }
@@ -1236,14 +1253,15 @@ function buildSections(r,ctx){
     const nieuw=A(fo.nieuwe_financieringen).filter(x=>hasVal(x?.label));
     const voorw=A(fo.voorwaarden).filter(hasVal);
     const blocks=[paraBlocks(fo.tekst)];
-    blocks.push(kpiBlock([
-      isNum(kc.totale_investering)&&['Totale investering',money(kc.totale_investering)],
-      isNum(kc.gevraagde_financiering)&&['Gevraagde financiering',money(kc.gevraagde_financiering)],
-      isNum(kc.eigen_inbreng)&&['Eigen inbreng',money(kc.eigen_inbreng)],
-      hasVal(kc.looptijd)&&['Looptijd',kc.looptijd],
-      hasVal(kc.rente)&&['Rente',kc.rente],
-      hasVal(kc.ltv)&&['LTV',kc.ltv],
-    ].filter(Boolean)));
+    /* Geen groot KPI-blok: de bedragen staan al op de cover, in de samenvatting en in
+       de bronnen/aanwendingen-tabel. Alleen de condities compact als kenmerken. */
+    const kvKern=[
+      hasVal(kc.looptijd)&&{label:'Looptijd',waarde:kc.looptijd},
+      hasVal(kc.rente)&&{label:'Rente',waarde:kc.rente},
+      hasVal(kc.aflossing)&&{label:'Aflossing',waarde:kc.aflossing},
+      hasVal(kc.ltv)&&{label:'Loan-to-value',waarde:kc.ltv},
+    ].filter(Boolean);
+    if(kvKern.length) blocks.push(kvBlocks(kvKern));
     const TOTAL_ROW=/^\s*((sub|eind)?totaal\b|totale\s|financieringsbehoefte\b|saldo\b)/i;
     const side=(rows,label)=>{
       if(!rows.length) return '';
@@ -1405,16 +1423,26 @@ function buildSections(r,ctx){
     const cc2=r.conclusie||{};
     const dc2=r.documentatiecheck||{};
     const rows=[
+      ...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>({item:x.item,type:'Op te vragen',stat:prioStat(x.prioriteit),note:x.toelichting})),
       ...A(cc2.voorwaarden).filter(hasVal).map(x=>({item:x,type:'Voorwaarde'})),
       ...A(cc2.actiepunten).filter(hasVal).map(x=>({item:x,type:'Actiepunt'})),
-      ...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>({item:x.item,type:'Op te vragen',stat:prioStat(x.prioriteit),note:x.toelichting})),
       ...A(dc2.separaat_te_controleren).filter(hasVal).map(x=>({item:x,type:'Te controleren'})),
       ...A(dc2.vervolgvragen).filter(hasVal).map(x=>({item:x,type:'Vervolgvraag'})),
     ];
-    if(rows.length){
+    /* Ontdubbelen: dezelfde kwestie (huurovereenkomst, eigen inbreng, taxatie, …)
+       mag maar één keer voorkomen — niet als voorwaarde én actiepunt én vraag. */
+    const normV=t=>String(t).toLowerCase().replace(/[^a-z0-9à-ÿ]+/g,' ').trim();
+    const seen=[]; const uniq=[];
+    for(const row of rows){
+      const k=normV(row.item);
+      if(!k) continue;
+      if(seen.some(s=>s.slice(0,26)===k.slice(0,26)||s.includes(k.slice(0,24))||k.includes(s.slice(0,24)))) continue;
+      seen.push(k); uniq.push(row);
+    }
+    if(uniq.length){
       add('Voorwaarden & actiepunten','Vervolgstappen','Voorwaarden, actiepunten & op te vragen stukken',[
-        tableBlocks([{label:'Onderdeel'},{label:'Type'},{label:'Prioriteit / toelichting'}],
-          rows.map(x=>`<tr><td>${esc(x.item)}</td><td style="white-space:nowrap">${esc(x.type)}</td><td>${x.stat?x.stat+(hasVal(x.note)?`<div class="sub">${esc(x.note)}</div>`:''):cell(x.note)}</td></tr>`)),
+        tableBlocks([{label:'Onderdeel'},{label:'Type'},{label:'Prioriteit'},{label:'Toelichting'}],
+          uniq.map(x=>`<tr><td>${esc(x.item)}</td><td style="white-space:nowrap">${esc(x.type)}</td><td>${x.stat||'—'}</td><td>${cell(x.note)}</td></tr>`)),
       ]);
     }
   }
@@ -1523,12 +1551,12 @@ function layoutPages(sections){
   const isHeading=h=>/^<div class="(secbar|chap)/.test(h);
 
   const pages=[]; let cur=null;
-  const open=label=>{ cur={label,html:'',h:0}; };
+  const open=label=>{ cur={labels:[label],html:'',h:0}; };
   const close=()=>{ if(cur&&cur.html) pages.push(cur); cur=null; };
 
   for(const sec of sections){
     if(cur&&(budget-cur.h)<minSection) close();
-    if(cur){ cur.html+='<div style="height:8mm"></div>'; cur.h+=8*MMpx; }
+    if(cur){ cur.html+='<div style="height:8mm"></div>'; cur.h+=8*MMpx; cur.labels.push(sec.label); }
     if(!cur) open(sec.label);
     let placed=false;
     for(const bl of sec.blocks){
@@ -1546,10 +1574,16 @@ function layoutPages(sections){
   return pages;
 }
 
-/* Totaal aantal fysieke pagina's inclusief cover en (optionele) inhoudsopgave */
-function totalRenderedPages(sections,isIntake){
-  const pages=layoutPages(sections);
-  return pages.length+3; /* cover + inhoudsopgave + achterblad */
+/* Totaal aantal fysieke pagina's: cover + inhoudsopgave + body + (optioneel) achterblad */
+function totalRenderedPages(sections,includeBack=true){
+  return layoutPages(sections).length+2+(includeBack?1:0);
+}
+
+/* Grafiekblokken schrappen als compressiestap: tabellen en organogrammen blijven staan. */
+function stripChartBlocks(sections){
+  return sections
+    .map(s=>({label:s.label,blocks:s.blocks.filter(b=>!(/^<div class="charts2"/.test(b)||/^<div class="chart-card"/.test(b)))}))
+    .filter(s=>s.blocks.length>1);
 }
 
 /* Paginabudget afdwingen: het rapport is ALTIJD maximaal HARD_MAX_PAGES pagina's,
@@ -1561,29 +1595,32 @@ function totalRenderedPages(sections,isIntake){
 const HARD_MAX_PAGES = 10;
 const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur','Activiteiten & verdienmodel','Financieringsopzet','Object & vastgoed','Zekerheden & dekking','Financiële analyse',"Betaalcapaciteit & ratio's",'Voorwaarden & actiepunten',"Risico's, mitiganten & aandachtspunten",'Financieringssamenvatting','Documentatie & bijlagen']);
 const DROP_PRIORITY=['Inkomen & vermogen privé','Markt & omgeving','Management & organisatie','Aanvraag & transactie'];
-function fitToPageBudget(sections,maxOutputPages,isIntake){
-  if(!isNum(maxOutputPages)) maxOutputPages=HARD_MAX_PAGES; // altijd een harde limiet
-  let cur=[...sections];
-  if(totalRenderedPages(cur,isIntake)<=maxOutputPages) return cur;
+function fitToPageBudget(sections,maxOutputPages){
+  maxOutputPages=Math.min(isNum(maxOutputPages)?maxOutputPages:HARD_MAX_PAGES,HARD_MAX_PAGES);
+  let cur=[...sections]; let includeBack=true;
+  const total=()=>totalRenderedPages(cur,includeBack);
   const rank=s=>{ const i=DROP_PRIORITY.indexOf(s.label); return i===-1?-1:i; };
-  while(cur.length>1&&totalRenderedPages(cur,isIntake)>maxOutputPages){
+  /* 1 — niet-essentiële hoofdstukken laten vervallen */
+  while(cur.length>1&&total()>maxOutputPages){
     const candidates=cur.filter(s=>!ESSENTIAL_LABELS.has(s.label));
     if(!candidates.length) break;
     candidates.sort((a,b)=>rank(a)-rank(b));
-    const drop=candidates[0];
-    cur=cur.filter(s=>s!==drop);
+    cur=cur.filter(s=>s!==candidates[0]);
   }
-  /* Laatste redmiddel: als alleen kernhoofdstukken over zijn en het budget nog
-     wordt overschreden, vervallen de minst kritieke kernsecties één voor één.
-     Financiële analyse, betaalcapaciteit, aandachtspunten, financieringssamenvatting
-     en documentatie blijven altijd staan. */
-  const LAST_RESORT_FULL=['Object & vastgoed','Activiteiten & verdienmodel','Juridische structuur'];
-  for(const label of LAST_RESORT_FULL){
-    if(totalRenderedPages(cur,isIntake)<=maxOutputPages) break;
-    if(cur.length<=2) break;
-    cur=cur.filter(s=>s.label!==label);
+  /* 2 — grafiekblokken schrappen; de tabellen bevatten dezelfde cijfers */
+  if(total()>maxOutputPages) cur=stripChartBlocks(cur);
+  /* 3 — achterblad vervalt vóórdat inhoud vervalt */
+  if(total()>maxOutputPages) includeBack=false;
+  /* 4 — laatste redmiddel: hoofdstukken samenvoegen in plaats van verwijderen.
+     Objectgegevens schuiven in Zekerheden & dekking, Activiteiten in Juridische
+     structuur — conform de compressieregels. Kernhoofdstukken verdwijnen nooit. */
+  const MERGE_INTO=[['Object & vastgoed','Zekerheden & dekking'],['Activiteiten & verdienmodel','Juridische structuur']];
+  for(const [from,to] of MERGE_INTO){
+    if(total()<=maxOutputPages) break;
+    const f=cur.find(s=>s.label===from); const t=cur.find(s=>s.label===to);
+    if(f&&t){ t.blocks.push(secbarB(f.label),...f.blocks.slice(1)); cur=cur.filter(s=>s!==f); }
   }
-  return cur;
+  return {sections:cur,includeBack};
 }
 
 /* Robuuste typeherkenning: leest meerdere mogelijke veldnamen/waarden en herkent
@@ -1606,24 +1643,25 @@ function getReportType(report){
    eraf, dan documentatie/controlepunten verder inkorten, en als laatste redmiddel de
    minst essentiële kernsectie (Zekerheden vóór Juridische structuur/Financiering). */
 function fitCompactToPageBudget(sections,maxOutputPages){
-  if(!isNum(maxOutputPages)) return sections;
-  let cur=[...sections];
-  const fits=()=>totalRenderedPages(cur,true)<=maxOutputPages;
-  if(fits()) return cur;
+  maxOutputPages=Math.min(isNum(maxOutputPages)?maxOutputPages:HARD_MAX_PAGES,HARD_MAX_PAGES);
+  let cur=[...sections]; let includeBack=true;
+  const total=()=>totalRenderedPages(cur,includeBack);
+  if(total()<=maxOutputPages) return {sections:cur,includeBack};
   /* 1 — optionele bijlage (detailgegevens) is nooit essentieel */
   cur=cur.filter(s=>s.label!=='Bijlage detailgegevens');
-  if(fits()) return cur;
-  /* 2 — als het nóg te lang is: nooit de kernsecties zelf verwijderen (dan blijft er
-     te weinig over om een bruikbaar rapport te zijn), maar wél de laatst-belangrijke
-     kernsectie laten vervallen zodat er iets bruikbaars overblijft in plaats van een
-     rapport dat het paginabudget structureel overschrijdt. */
+  /* 2 — grafiekblokken schrappen */
+  if(total()>maxOutputPages) cur=stripChartBlocks(cur);
+  /* 3 — achterblad vervalt vóórdat inhoud vervalt */
+  if(total()>maxOutputPages) includeBack=false;
+  /* 4 — als het nóg te lang is: de laatst-belangrijke kernsectie laten vervallen zodat
+     er iets bruikbaars overblijft in plaats van een structureel te lang rapport. */
   const LAST_RESORT=['Zekerheden & dekking','Juridische structuur & activiteiten'];
   for(const label of LAST_RESORT){
-    if(fits()) break;
+    if(total()<=maxOutputPages) break;
     if(cur.length<=2) break; // nooit onder cover+kernsamenvatting+1 sectie zakken
     cur=cur.filter(s=>s.label!==label);
   }
-  return cur;
+  return {sections:cur,includeBack};
 }
 
 /* ── Hoofd-renderer ────────────────────────────────────────────────── */
@@ -1655,13 +1693,14 @@ function renderReport(r){
      algemene full-report renderer. Voor alle typen geldt het harde paginabudget
      van maximaal HARD_MAX_PAGES pagina's, inclusief voor- en achterblad. */
   const rawSections = isIntake ? buildCompactIntakeSections(r,ctx) : buildSections(r,ctx);
-  const fitted = isIntake ? fitCompactToPageBudget(rawSections,maxOutputPages) : fitToPageBudget(rawSections,maxOutputPages,isIntake);
-  const sections = renumberChapters(fitted);
+  const fitRes = isIntake ? fitCompactToPageBudget(rawSections,maxOutputPages) : fitToPageBudget(rawSections,maxOutputPages);
+  const sections = renumberChapters(fitRes.sections);
+  const includeBack = fitRes.includeBack;
   const pages=layoutPages(sections);
   /* Inhoudsopgave altijd opnemen: financiers moeten in één oogopslag zien waar alles staat */
   const withToc = true;
   const bodyStart = withToc?3:2;
-  const tot=pages.length+bodyStart;
+  const tot=pages.length+(bodyStart-1)+(includeBack?1:0);
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
   const kc=r.financieringsopzet?.kerncijfers||{};
@@ -1712,7 +1751,7 @@ function renderReport(r){
   </section>`;
 
   const chapters=[];
-  pages.forEach((p,i)=>{const base=p.label.replace(/ — vervolg$/,'');if(!chapters.some(c=>c.label===base))chapters.push({label:base,page:i+bodyStart});});
+  pages.forEach((p,i)=>{for(const l of p.labels){const base=l.replace(/ — vervolg$/,'');if(!chapters.some(c=>c.label===base))chapters.push({label:base,page:i+bodyStart});}});
   const headBar=(right)=>`<header class="rp-head">
     <svg class="rp-head-rings" viewBox="0 0 260 60" preserveAspectRatio="xMaxYMid slice" fill="none" aria-hidden="true">
       <circle cx="260" cy="-18" r="64" stroke="#FFFFFF" stroke-opacity=".12" stroke-width="1"/>
@@ -1741,8 +1780,13 @@ function renderReport(r){
     </footer>
   </section>`;
 
-  const chrome=(p,i)=>`<section class="report-page" data-screen-label="${esc(p.label)}">
-    ${headBar(p.label)}
+  const pageTitle=p=>{
+    const bases=[...new Set(p.labels.map(l=>l.replace(/ — vervolg$/,'')))];
+    const cont=p.labels.length===1&&/ — vervolg$/.test(p.labels[0]);
+    return bases.slice(0,2).join(' · ')+(bases.length>2?' · …':'')+(cont?' — vervolg':'');
+  };
+  const chrome=(p,i)=>`<section class="report-page" data-screen-label="${esc(pageTitle(p))}">
+    ${headBar(pageTitle(p))}
     <div class="rp-body">${p.html}</div>
     <footer class="rp-foot">
       <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(naam)} — Vertrouwelijk</div>
@@ -1781,7 +1825,7 @@ function renderReport(r){
     </div>
   </section>`;
 
-  el.stage.innerHTML = cover + (withToc?toc:'') + pages.map(chrome).join('') + back;
+  el.stage.innerHTML = cover + (withToc?toc:'') + pages.map(chrome).join('') + (includeBack?back:'');
   document.body.classList.add('report-mode');
   drawOrganograms(el.stage);
 }
