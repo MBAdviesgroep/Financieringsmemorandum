@@ -297,7 +297,7 @@ SECTIES (vul alleen wat de bron ondersteunt)
 - managementsamenvatting: maximaal één pagina — kernboodschap (korte omschrijving onderneming, doel financiering, financieringsbehoefte), belangrijkste sterktes, belangrijkste risico's en belangrijkste voorwaarden/mitsen (aandachtspunten). Het veld voorlopig_oordeel wordt in het rapport getoond als "Financieringssamenvatting": schrijf het als financieringsgerichte samenvatting, NIET als kredietoordeel — bijv. "De aanvraag biedt voldoende aanknopingspunten voor verdere beoordeling door financiers. De combinatie van eigen inbreng, beschikbare zekerheden, positieve historische resultaten en onderbouwde prognose vormt de basis voor het opvragen van passende financieringsvoorstellen. De belangrijkste aandachtspunten zijn …"
 - aanvraag_en_transactie: aanleiding, financieringsdoel, investering, timing, gewenste structuur en de besluitvormingsvraag.
 - juridische_structuur: alle betrokken rechtspersonen en privépersonen (rol, rechtsvorm, KvK), bestuur en tekenbevoegdheid, aandeelhouders/UBO's. Vul structuur_tekstueel ALTIJD met een compact tekstueel structuurschema: korte, feitelijke bulletzinnen, één relatie per regel (bijv. "M.A. van Duinen is uiteindelijk belanghebbende.", "MAVD B.V. houdt 100% van de aandelen in Matrading B.V.", "Matvastgoed B.V. i.o. koopt en verhuurt het bedrijfspand zakelijk aan Matrading B.V."). Dit is de weergave in het rapport wanneer geen net organogram mogelijk is.
-- ORGANOGRAMMEN: als de bron een organogram, structuurplaatje of groepsstructuur bevat (bestaand en/of nieuw), reconstrueer die VOLLEDIG in organogram_bestaand / organogram_nieuw: aanwezig=true; titel; entiteiten met uniek kort id (bijv. "e1"), naam, type (privepersoon | holding | werkmaatschappij | vastgoed_bv | stak | in_oprichting | overig) en rol (bijv. "Kredietnemer", "Mede-kredietnemer", "Zekerheidssteller"); relaties van eigenaar ("van") naar deelneming ("naar") met label voor het percentage of de relatie (bijv. "100%", "60%", "certificaten"). Een structuurplaatje uit de bron mag NOOIT verdwijnen. Een structuur die alleen in tekst beschreven staat mag je ook zo reconstrueren. Reconstrueer alleen wat eenduidig uit de bron volgt: geen dubbele of tegenstrijdige percentages, geen onduidelijke blokken. Regels voor een net organogram: toon iedere persoon of entiteit maximaal één keer, toon percentages slechts één keer per relatie, geen dubbele 100%-labels of dubbele blokken. Is de structuur te onduidelijk voor een net organogram, laat aanwezig dan op false — het rapport toont dan het tekstuele structuurschema (structuur_tekstueel). Een helder tekstueel structuurschema is beter dan een rommelig organogram.
+- ORGANOGRAMMEN: als de bron een organogram, structuurplaatje of groepsstructuur bevat (bestaand en/of nieuw), reconstrueer die VOLLEDIG in organogram_bestaand / organogram_nieuw: aanwezig=true; titel; entiteiten met uniek kort id (bijv. "e1"), naam, type (privepersoon | holding | werkmaatschappij | vastgoed_bv | stak | in_oprichting | overig) en rol (bijv. "Kredietnemer", "Mede-kredietnemer", "Zekerheidssteller"); relaties van eigenaar ("van") naar deelneming ("naar") met label voor het percentage of de relatie (bijv. "100%", "60%", "certificaten"). Een structuurplaatje uit de bron mag NOOIT verdwijnen. Bevat de bron een organogram of een eenduidig beschreven aandelenstructuur, dan is een gereconstrueerd organogram (aanwezig=true) of een volledig gevuld structuur_tekstueel VERPLICHT — het rapport mag nooit zonder structuurweergave verschijnen. Een structuur die alleen in tekst beschreven staat mag je ook zo reconstrueren. Reconstrueer alleen wat eenduidig uit de bron volgt: geen dubbele of tegenstrijdige percentages, geen onduidelijke blokken. Regels voor een net organogram: toon iedere persoon of entiteit maximaal één keer, toon percentages slechts één keer per relatie, geen dubbele 100%-labels of dubbele blokken. Is de structuur te onduidelijk voor een net organogram, laat aanwezig dan op false — het rapport toont dan het tekstuele structuurschema (structuur_tekstueel). Een helder tekstueel structuurschema is beter dan een rommelig organogram.
 - activiteiten_onderneming: historie, bedrijfsactiviteiten, verdienmodel, strategie, omzetstromen, operationele aandachtspunten.
 - markt_en_omgeving: marktpositie, concurrentie, trends, afnemers, leveranciers, afhankelijkheden, seizoenspatroon, debiteuren-/crediteurenrisico.
 - management_en_organisatie: ondernemer(s) en team met rol en achtergrond/ervaring, externe adviseurs, KPI's/rapportages.
@@ -347,7 +347,7 @@ DOCUMENTATIECHECK — EERLIJK
 - in_bron_opgenomen: informatie of stukken die in het bronmemorandum zijn opgenomen of daarin worden genoemd (status "in bron opgenomen").
 - separaat_te_controleren: onderliggende stukken die in de bron worden genoemd maar niet los zijn aangeleverd.
 - ontbrekend: stukken die voor besluitvorming nodig zijn maar nergens blijken.
-Claim NOOIT dat stukken los ontvangen zijn als ze alleen in het bronmemorandum staan. Formuleer maximaal 6 gerichte vervolgvragen.
+Claim NOOIT dat stukken los ontvangen zijn als ze alleen in het bronmemorandum staan. Formuleer maximaal 6 gerichte vervolgvragen. Elke kwestie komt in het hele rapport precies één keer voor als vervolgpunt: neem hetzelfde onderwerp (bijv. definitieve huurovereenkomst, bewijs eigen inbreng, taxatierapport, oprichting vastgoed-B.V., liquiditeitsmonitoring) nooit dubbel op als voorwaarde én actiepunt én ontbrekend stuk én vervolgvraag — kies per kwestie de meest passende categorie. Vervolgvragen zijn alleen nodig als ze echt nieuwe informatie toevoegen.
 
 RAPPORTTYPE — MINIMUMEISEN
 "volwaardig_financieringsmemorandum" alleen als minimaal bekend zijn: kredietnemer, financieringsdoel, financieringsbedrag (of duidelijke behoefte) én concrete financiële cijfers. "luxe_samenvatting" alleen bij een rijke, lange bron waarvoor een compactere bankversie gewenst is. Anders "compact_intake": een eerlijk, compact intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap) — dwing geen volwaardig kredietrapport af als de bron daar onvoldoende inhoud voor bevat.
@@ -607,6 +607,19 @@ const PHRASE_FIXES = [
   [/\bnieuw\s+financial\s+lease\b/gi, 'nieuwe financial lease'],
   [/\bStructurele\s+dubbel(?:e)?\s+woonlasten\b/gi, 'Tijdelijke dubbele huisvestingslasten'],
   [/\bverschil\s+btw-teruggave\s+en\s+financieringsbedrag\s+woning\b/gi, 'verwerking van btw-teruggave binnen de financieringsopzet'],
+  [/\bRisicos\b/g, "Risico's"],
+  [/\brisicos\b/g, "risico's"],
+  [/\bContinuiteit\b/g, 'Continuïteit'],
+  [/\bcontinuiteit\b/g, 'continuïteit'],
+  [/\bRealizatie\b/g, 'Realisatie'],
+  [/\brealizatie\b/g, 'realisatie'],
+  [/Priv[eé]\s?9/g, 'Privé'],
+  [/priv[eé]\s?9/g, 'privé'],
+  [/([A-Za-zÀ-ÿ])\uFFFD9/g, '$1é'],
+  [/\bfinancie\s?9le\b/gi, 'financiële'],
+  [/\bsamenwerking\s+van\s+(?=huur)/gi, 'samenloop van '],
+  [/\bsamenwerking\s+(?=huur)/gi, 'samenloop van '],
+  [/\bgeconstrueerde(?=\s+bouw)/gi, 'gefaseerde'],
 ];
 
 /* Eurotekens die door PDF-tekstextractie zijn verminkt (bijv. bij Type3/custom-font
