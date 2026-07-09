@@ -708,6 +708,11 @@ const numFmt = v => isNum(v) ? v.toLocaleString('nl-NL',{maximumFractionDigits:2
 const A = v => Array.isArray(v)?v:[];
 const cell = v => hasVal(v)?esc(v):'—';
 const mcell = v => isNum(v)?money(v):'—';
+/* KvK-kolom mag nooit een datum tonen (oprichtings-/geboortedatum die per
+   ongeluk in het kvk-veld terechtkomt); extra client-side vangnet naast de
+   server-side sanitatie in generate-report.js. */
+const DATE_LIKE = /^\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}$/;
+const kvkCell = v => (hasVal(v)&&!DATE_LIKE.test(String(v).trim())) ? esc(v) : '—';
 
 /* Zekerheden splitsen: definitief/gevestigd blijft in de hoofdtabel, een
    mogelijke/aan te reiken/nog te formaliseren zekerheid komt apart onder
@@ -1044,13 +1049,13 @@ function panel(title,text,tint=true){
   const ps=String(text).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p class="para">${esc(x)}</p>`).join('');
   return `<div class="panel${tint?' tint':''}"><div class="panel-h">${esc(title)}</div>${ps}</div>`;
 }
-function tableBlocks(headers,rowHtmls,{total='',chunk=14}={}){
+function tableBlocks(headers,rowHtmls,{total='',chunk=14,protect=false}={}){
   if(!rowHtmls.length) return [];
   const ths=headers.map(h=>`<th class="${h.num?'num':''}">${esc(h.label)}</th>`).join('');
   const out=[];
   for(let i=0;i<rowHtmls.length;i+=chunk){
     const last=i+chunk>=rowHtmls.length;
-    out.push(`<table class="t"><thead><tr>${ths}</tr></thead><tbody>${rowHtmls.slice(i,i+chunk).join('')}${last?total:''}</tbody></table>`);
+    out.push(`<table class="t${protect?' protect':''}"><thead><tr>${ths}</tr></thead><tbody>${rowHtmls.slice(i,i+chunk).join('')}${last?total:''}</tbody></table>`);
   }
   return out;
 }
@@ -1146,7 +1151,7 @@ function finYearTable(fa){
     }).join('');
     return `<tr><td style="white-space:nowrap">${esc(p)}</td>${cells}</tr>`;
   });
-  return tableBlocks([{label:'Jaar'},...used.map(m=>({label:m.label,num:true}))],trs);
+  return tableBlocks([{label:'Jaar'},...used.map(m=>({label:m.label,num:true}))],trs,{protect:true});
 }
 
 /* Grafieken */
@@ -1363,7 +1368,8 @@ function buildCompactIntakeSections(r,ctx){
       blocks.push(secbarB('Betrokken partijen'));
       blocks.push(tableBlocks(
         [{label:'Partij'},{label:'Rol'},{label:'Rechtsvorm'},{label:'KvK'}],
-        partijen.map(x=>`<tr><td>${esc(x.naam)}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${cell(x.kvk)}</td></tr>`)
+        partijen.map(x=>`<tr><td>${esc(x.naam)}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${kvkCell(x.kvk)}</td></tr>`),
+        {protect:true}
       ));
     }
     const structImg=structImageBlock();
@@ -1470,6 +1476,13 @@ function buildCompactIntakeSections(r,ctx){
       blocks.push(secbarB('Documentatie'));
       blocks.push(bulletBlocks([...ontv.map(d=>`${d.document} (ontvangen)`),...inbron.map(d=>`${d.document} (in bron opgenomen)`)]));
     }
+    /* metadata.bron_documenten: de brondocumenten die aan dit rapport ten
+       grondslag liggen — alleen tonen wat nog niet al in dezelfde lijst staat. */
+    {
+      const genoemd=new Set([...ontv,...inbron].map(d=>d.document));
+      const extraBron=A(r.metadata?.bron_documenten).filter(hasVal).filter(d=>!genoemd.has(d));
+      if(extraBron.length) blocks.push(bulletBlocks(extraBron));
+    }
     if(ontbr.length){ blocks.push(secbarB('Nog te controleren / op te vragen')); blocks.push(bulletBlocks(ontbr.map(d=>d.item))); }
     let warns=sanitizeAdvisorNotes([...new Set([...A(cv.waarschuwingen),...A(r.kwaliteitscontrole?.waarschuwingen)])]).slice(0,5);
     if(warns.length){ blocks.push(secbarB('Controlepunten voor de adviseur')); blocks.push(bulletBlocks(warns,'orange')); }
@@ -1486,17 +1499,6 @@ function buildCompactIntakeSections(r,ctx){
       blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div><p>${esc(oordeelTekst)}</p></div>`);
     }
     blocks.push(`<div class="panel tint"><div class="panel-h">Extern delen</div><p class="para">${safeText(cc.extern_deelbaar,'Nog niet extern delen; eerst adviseurscontrole.')}</p></div>`);
-    /* Bijlage — bronnen van dit rapport: korte referentielijst van de documenten
-       die aan dit rapport ten grondslag liggen. Puur ter referentie (geen
-       statuscheck — dat staat al bij Documentatie hierboven); alleen tonen als
-       de AI dit daadwerkelijk heeft ingevuld. */
-    {
-      const bronDocs=A(r.metadata?.bron_documenten).filter(hasVal);
-      if(bronDocs.length){
-        blocks.push(secbarB('Bijlage — bronnen van dit rapport'));
-        blocks.push(bulletBlocks(bronDocs));
-      }
-    }
     const kantoorAdviseur=hasVal(r.metadata?.kantoor_adviseur)?r.metadata.kantoor_adviseur:'';
     const closingItems=[
       kantoorAdviseur&&{label:'Kantoor / adviseur',waarde:kantoorAdviseur},
@@ -1606,7 +1608,8 @@ function buildSections(r,ctx){
       blocks.push(secbarB('Betrokken partijen'));
       blocks.push(tableBlocks(
         [{label:'Partij'},{label:'Rol'},{label:'Rechtsvorm'},{label:'KvK'}],
-        partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${cell(x.kvk)}</td></tr>`)
+        partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${kvkCell(x.kvk)}</td></tr>`),
+        {protect:true}
       ));
     }
     if(bes.length){ blocks.push(secbarB('Bestuur en tekenbevoegdheid')); blocks.push(bulletBlocks(bes)); }
@@ -1829,6 +1832,11 @@ function buildSections(r,ctx){
         capped.map(x=>`<tr><td>${esc(x.item)}</td><td style="white-space:nowrap">${esc(x.status)}</td><td>${hasVal(x.note)?esc(x.note):'Relevant voor de financieringsbeoordeling.'}</td></tr>`)));
     }
     const ontv=[...A(dc2.ontvangen).filter(x=>hasVal(x?.document)),...A(dc2.in_bron_opgenomen).filter(x=>hasVal(x?.document))];
+    {
+      const genoemd=new Set(ontv.map(d=>d.document));
+      const extraBron=A(r.metadata?.bron_documenten).filter(hasVal).filter(d=>!genoemd.has(d));
+      if(extraBron.length) ontv.push(...extraBron.map(d=>({document:d})));
+    }
     if(ontv.length){ blocks.push(secbarB('Ontvangen / gebruikt')); blocks.push(bulletBlocks(ontv.map(d=>d.document).slice(0,8))); }
     const teControleren=[...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>x.item),...A(dc2.separaat_te_controleren).filter(hasVal)];
     if(teControleren.length){ blocks.push(secbarB('Nog te controleren')); blocks.push(bulletBlocks(teControleren.slice(0,8))); }
@@ -1853,17 +1861,6 @@ function buildSections(r,ctx){
       blocks.push(paraBlocks(os.tekst));
       const tb=A(os.tabel).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
       if(tb.length) blocks.push(kvBlocks(tb));
-    }
-    /* Bijlage — bronnen van dit rapport: korte referentielijst van de documenten
-       die aan dit rapport ten grondslag liggen. Puur ter referentie (geen
-       statuscheck — dat staat al in hoofdstuk 08 Voorwaarden & documentatie);
-       alleen tonen als de AI dit daadwerkelijk heeft ingevuld. */
-    {
-      const bronDocs=A(r.metadata?.bron_documenten).filter(hasVal);
-      if(bronDocs.length){
-        blocks.push(secbarB('Bijlage — bronnen van dit rapport'));
-        blocks.push(bulletBlocks(bronDocs));
-      }
     }
     const kantoorAdviseur=hasVal(r.metadata?.kantoor_adviseur)?r.metadata.kantoor_adviseur:'';
     const closingItems=[
@@ -2135,6 +2132,10 @@ function trimBulletBlocks(sections,maxItems){
    rijen (class="total") blijven altijd staan zodat bronnen/aanwendingen kloppend blijft. */
 function capTableRows(sections,maxRows){
   return sections.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
+    /* class="t protect" tables (financiële-analyse jaartabel, partijentabel)
+       bevatten kernfeiten die nooit als noodgreep mogen sneuvelen om een
+       hoofdstuk op één pagina te persen \u2014 die worden hier overgeslagen; het
+       hoofdstuk loopt in het uiterste geval liever door op een vervolgpagina. */
     if(!/^<table class="t">/.test(b)) return b;
     return b.replace(/<tbody>([\s\S]*?)<\/tbody>/,(full,body)=>{
       const rows=body.match(/<tr[\s\S]*?<\/tr>/g)||[];
