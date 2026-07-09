@@ -776,7 +776,12 @@ const noviz=(msg='Geen betrouwbare brondata beschikbaar voor visualisatie.')=>`<
 function paraBlocks(t){
   if(!hasVal(t)) return [];
   const out=[];
-  for(const p of String(t).split(/\n+/).map(x=>x.trim()).filter(Boolean)){
+  /* Alleen een dubbele regelafbreking (of meer) is een echte alinea-grens. Eén
+     losse \n is vrijwel altijd een toevallige regelafbreking uit de brontekst
+     (bijv. rond een bedrag als "€ 210.000") en wordt samengevoegd tot lopende
+     tekst — anders valt een zin midden doormidden in twee losse alinea's. */
+  for(const raw of String(t).split(/\n{2,}/).map(x=>x.trim()).filter(Boolean)){
+    const p=raw.replace(/(\d)([.,]?)[ \t]*\n[ \t]*(\d)/g,'$1$2$3').replace(/\s*\n\s*/g,' ').replace(/\s{2,}/g,' ').trim();
     if(p.length<=900){ out.push(`<p class="para">${esc(p)}</p>`); continue; }
     let cur='';
     for(const sent of p.match(/[^.!?]+[.!?]+["']?\s*|[^.!?]+$/g)||[p]){
@@ -1511,7 +1516,8 @@ function mmPx(){
 }
 function layoutPages(sections){
   const MMpx=mmPx();
-  const budget=248*MMpx;        /* netto contenthoogte per pagina */
+  const budget=254*MMpx;        /* netto contenthoogte per pagina (koptekst 16mm + body-pad 8mm
+     + voettekst-reserve ~15mm laten ±258mm netto over; 254mm houdt een kleine veiligheidsmarge aan) */
   const minSection=55*MMpx;     /* minimale restruimte om een nieuw hoofdstuk te starten */
   const headReserve=26*MMpx;    /* kop nooit onderaan zonder inhoud eronder */
   const page=document.createElement('div');
@@ -1529,29 +1535,38 @@ function layoutPages(sections){
   const close=()=>{ if(cur&&cur.html) pages.push(cur); cur=null; };
 
   /* Elk hoofdstuk begint ALTIJD bovenaan een eigen, nieuwe pagina — hoofdstukken
-     worden nooit samengepakt op één pagina (dat gaf halverwege-de-pagina-starts
-     en onbetrouwbare paginanummers in de inhoudsopgave). Alleen als een hoofdstuk
-     écht te veel inhoud heeft voor één pagina, loopt het door op een "— vervolg"-
-     pagina. Bij een kleine overschrijding (grofweg tot 1,35x het budget) wordt het
-     hoofdstuk eerst lokaal compacter gemaakt zodat het alsnog op één nette pagina
-     past — dat voorkomt een bijna lege vervolgpagina. */
+     worden nooit samengepakt op één pagina. Een hoofdstuk mag NOOIT over twee
+     pagina's uitlopen: past het niet, dan wordt het net zo lang gecomprimeerd
+     (tekst inkorten, bullets/tabelrijen inperken) tot het wél op één pagina past.
+     Alleen als zelfs de zwaarste compressie nog niet genoeg is (in de praktijk
+     vrijwel nooit) loopt het alsnog door op een "— vervolg"-pagina, als uiterste
+     noodgreep. */
   const sectionHeight=blocks=>blocks.reduce((h,bl)=>h+measure(bl),0);
+  const fitsPage=blocks=>sectionHeight(blocks)+headReserve<=budget;
   for(const sec of sections){
     if(cur) close();
     let blocks=sec.blocks;
-    const total=sectionHeight(blocks)+headReserve;
-    if(total>budget&&total<=budget*1.35){
+    if(!fitsPage(blocks)){
       const tryFns=[
+        s=>shortenParagraphs([s],4)[0],
         s=>shortenParagraphs([s],3)[0],
+        s=>shortenParagraphs([s],2)[0],
         s=>shortenParagraphs([s],1)[0],
+        s=>trimBulletBlocks([s],5)[0],
+        s=>trimBulletBlocks([s],4)[0],
         s=>trimBulletBlocks([s],3)[0],
         s=>trimBulletBlocks([s],2)[0],
+        s=>capTableRows([s],10)[0],
+        s=>capTableRows([s],8)[0],
         s=>capTableRows([s],6)[0],
+        s=>capTableRows([s],4)[0],
+        s=>trimBulletBlocks([s],1)[0],
+        s=>capTableRows([s],2)[0],
       ];
       let candidate={label:sec.label,blocks};
       for(const fn of tryFns){
         candidate=fn(candidate);
-        if(sectionHeight(candidate.blocks)+headReserve<=budget) break;
+        if(fitsPage(candidate.blocks)) break;
       }
       blocks=candidate.blocks;
     }
