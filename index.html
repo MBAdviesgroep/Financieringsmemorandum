@@ -596,6 +596,7 @@ function wireStructImageInput(inputEl,previewEl,stateKey,btnEl,defaultText){
       if(btnEl){ btnEl.classList.add('has-file'); btnEl.querySelector('.file-btn-text').textContent=f.name; }
     }catch(err){
       console.error('Structuurschema-afbeelding kon niet worden gelezen:', err);
+      setError(translateFileReadError(err,f).message);
       state[stateKey]=null;
       previewEl?.classList.add('hidden');
       btnEl?.classList.remove('has-file'); if(btnEl) btnEl.querySelector('.file-btn-text').textContent=defaultText;
@@ -823,13 +824,13 @@ function addFiles(list){
     const err = validateFile(f);
     if(err){ setError(err); continue; }
     if(state.files.length>=MAX_FILES){ setError(`Maximaal ${MAX_FILES} bestanden per rapport.`); break; }
-    if(!state.files.some(x=>x.name===f.name&&x.size===f.size)) state.files.push(f);
+    if(!state.files.some(x=>x.name===f.name&&x.size===f.size)){ state.files.push(f); startFileRead(f); }
   }
   renderFiles();
 }
 el.input.addEventListener('change',e=>{ addFiles([...e.target.files]); el.input.value=''; });
 el.pickBtn.addEventListener('click',()=>el.input.click());
-el.fileList.addEventListener('click',e=>{ const b=e.target.closest('.file-del'); if(b){ state.files.splice(+b.dataset.i,1); renderFiles(); } });
+el.fileList.addEventListener('click',e=>{ const b=e.target.closest('.file-del'); if(b){ const [removed]=state.files.splice(+b.dataset.i,1); if(removed) fileReadCache.delete(removed); renderFiles(); } });
 ['dragenter','dragover'].forEach(ev=>el.dz.addEventListener(ev,e=>{e.preventDefault();el.dz.classList.add('drag')}));
 ['dragleave','drop'].forEach(ev=>el.dz.addEventListener(ev,e=>{e.preventDefault();el.dz.classList.remove('drag')}));
 el.dz.addEventListener('drop',e=>addFiles([...e.dataTransfer.files]));
@@ -846,6 +847,48 @@ function setStep(i){
 }
 
 /* ══ Genereren ══════════════════════════════════════════════════════ */
+/* Documenten worden DIRECT bij toevoegen ingelezen (base64/tekst) en in
+   fileReadCache bewaard, in plaats van pas bij het indienen van het
+   formulier. Wachten tot het indienen kan ertoe leiden dat de browser de
+   onderliggende bestandsreferentie niet meer kan lezen ("NotReadableError:
+   The requested file could not be read") als er tussen kiezen en indienen
+   te veel tijd verstrijkt — direct lezen voorkomt dat probleem. */
+const fileReadCache = new Map();
+function translateFileReadError(err,f){
+  const msg = String(err?.message||err||'');
+  if(err?.name==='NotReadableError'||/could not be read|permission problems/i.test(msg)){
+    return new Error(`“${f.name}” kon niet worden gelezen door de browser (bestandsreferentie verlopen). Verwijder het bestand en voeg het opnieuw toe, en genereer het rapport direct daarna.`);
+  }
+  return err instanceof Error ? err : new Error(msg||`“${f.name}” kon niet worden gelezen.`);
+}
+function startFileRead(f){
+  const kind = KIND[extOf(f)];
+  let p;
+  if(kind==='pdf'||kind==='image'){
+    p = fileToBase64(f).then(b64=>({kind,dataBase64:b64}));
+  } else if(kind==='text'){
+    p = fileToText(f).then(t=>({kind:'text',text:String(t||'').slice(0,200000)}));
+  } else if(kind==='docx'||kind==='xlsx'){
+    p = (kind==='docx'?docxText(f):xlsxText(f)).then(t=>{
+      if(!t) throw new Error(`“${f.name}” bevat geen leesbare tekst. Zet het bestand om naar PDF en probeer opnieuw.`);
+      return {kind:'text',text:t};
+    }).catch(err=>{
+      if(err instanceof Error && /leesbare tekst/.test(err.message)) throw err;
+      console.error(err);
+      throw new Error(`Uit “${f.name}” kon geen tekst worden gehaald. Zet het bestand om naar PDF en probeer opnieuw.`);
+    });
+  } else {
+    p = Promise.resolve({kind:kind||''});
+  }
+  p = p.catch(err=>{ throw translateFileReadError(err,f); });
+  fileReadCache.set(f,p);
+  p.catch(()=>{}); /* voorkomt ruis in de console als een bestand later weer wordt verwijderd zonder te zijn gebruikt */
+}
+function getFileRead(f){
+  if(!fileReadCache.has(f)) startFileRead(f);
+  return fileReadCache.get(f);
+}
+
 async function uploadDoc(file){
   const blob = await upload(`credion/${Date.now()}-${file.name}`, file, {
     access:'public', handleUploadUrl:'/api/upload',
@@ -857,19 +900,15 @@ async function uploadDoc(file){
 async function buildDocuments(){
   const docs=[]; let budget = INLINE_BUDGET;
   for(const f of state.files){
-    const kind = KIND[extOf(f)];
+    const cached = await getFileRead(f);
+    const kind = cached.kind;
     const d = { filename:f.name, mime:f.type||'', file:f };
     if(kind==='pdf'||kind==='image'){
       d.kind = kind;
-      const b64 = await fileToBase64(f);
+      const b64 = cached.dataBase64||'';
       if(b64.length<=budget){ d.dataBase64=b64; budget-=b64.length; } else { d.dataBase64=''; d.needsUrl=true; }
     } else if(kind==='text'){
-      d.kind='text'; d.text=(await fileToText(f)).slice(0,200000);
-    } else if(kind==='docx'||kind==='xlsx'){
-      d.kind='text';
-      try{ d.text = kind==='docx' ? await docxText(f) : await xlsxText(f); }
-      catch(err){ console.error(err); throw new Error(`Uit “${f.name}” kon geen tekst worden gehaald. Zet het bestand om naar PDF en probeer opnieuw.`); }
-      if(!d.text) throw new Error(`“${f.name}” bevat geen leesbare tekst. Zet het bestand om naar PDF en probeer opnieuw.`);
+      d.kind='text'; d.text=cached.text||'';
     }
     docs.push(d);
   }
@@ -2396,6 +2435,7 @@ $('#downloadJson').addEventListener('click',()=>{
 });
 $('#newReport').addEventListener('click',()=>{
   document.body.classList.remove('report-mode');
+  fileReadCache.clear();
   state.files=[]; state.data=null; el.notes.value=''; resetStructInput(); setError(''); renderFiles();
   el.stage.innerHTML=''; window.scrollTo({top:0});
 });
