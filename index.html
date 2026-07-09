@@ -1622,7 +1622,7 @@ function capTableRows(sections,maxRows){
    verwijderd; pas als laatste redmiddel vervallen de minst kritieke kernhoofdstukken.
    Bronspecifieke hoofdstukken buiten het vaste schema (overige_secties) hebben
    de laagste prioriteit en verdwijnen als eerste. */
-const HARD_MAX_PAGES = 10;
+const HARD_MAX_PAGES = 11;
 const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & financieringssamenvatting','Documentatie & bijlagen']);
 /* Alle 9 vaste hoofdstukken zijn essentieel (rapporttype B-structuur); alleen
    bronspecifieke overige_secties (buiten dit vaste schema) zijn droppable en
@@ -1644,9 +1644,9 @@ function fitToPageBudget(sections,maxOutputPages,opts={}){
   }
   /* 2 — grafiekblokken schrappen; de tabellen bevatten dezelfde cijfers */
   if(total()>maxOutputPages) cur=stripChartBlocks(cur);
-  /* 3 — organogram schrappen (tekstueel schema/toelichting blijft de structuur uitleggen) */
-  if(total()>maxOutputPages) cur=stripOrgDiagrams(cur);
-  /* 4 — samenvattingen verkorten: lopende tekst inkorten vóórdat hoofdstukken worden
+  /* Organogrammen en structuurschema's worden NOOIT automatisch geschrapt — dat is
+     kerninhoud, geen opvulling. Liever een extra pagina dan verlies van structuur. */
+  /* 3 — samenvattingen verkorten: lopende tekst inkorten vóórdat hoofdstukken worden
      samengevoegd of geschrapt — dit is meestal de grootste, minst schadelijke winst. */
   if(total()>maxOutputPages) cur=shortenParagraphs(cur,3);
   if(total()>maxOutputPages) cur=shortenParagraphs(cur,1);
@@ -1723,12 +1723,14 @@ function renderReport(r){
   const status = md.status||'Concept · ter beoordeling';
   const uitgebreid = md.uitgebreidToegestaan===true;
   const sourcePageCount = isNum(md.sourcePageCount)?md.sourcePageCount:(isNum(md.source_page_count)?md.source_page_count:(isNum(r.bronrapport?.aantal_paginas)?r.bronrapport.aantal_paginas:null));
-  const FALLBACK_MAX={compact_intake:7,volwaardig_financieringsmemorandum:10,luxe_samenvatting:10};
+  const FALLBACK_MAX={compact_intake:7,volwaardig_financieringsmemorandum:11,luxe_samenvatting:11};
   /* Harde bovengrens per rapporttype: type A (compact intake) maximaal 7 pagina's,
-     type B (volwaardig/luxe) maximaal 10 — incl. voor-, inhouds- en achterblad.
-     De bronlengte bepaalt het budget NIET: een korte vastgoedbron krijgt het
-     volledige type B-budget, een lange leasebron blijft binnen type A. */
-  const typeMax = isIntake?7:HARD_MAX_PAGES;
+     type B (volwaardig/luxe) maximaal 11 — cover + eigen inhoudsopgavepagina + 9
+     hoofdstukken. De inhoudsopgave krijgt ALTIJD een eigen pagina (nooit samengevoegd
+     met hoofdstuk 1) en volledigheid van de inhoud (zoals het structuurschema) weegt
+     zwaarder dan het paginabudget — liever één pagina extra dan verlies van inhoud.
+     De bronlengte bepaalt het budget NIET. */
+  const typeMax = isIntake?7:11;
   const budgetRaw = isNum(md.maxOutputPages)?md.maxOutputPages:FALLBACK_MAX[rtype];
   const maxOutputPages = Math.min(typeMax, budgetRaw||typeMax);
   const ctx = {naam,titel,datum,docdatum,dek,status,isIntake,sourcePageCount,maxOutputPages,uitgebreid};
@@ -1742,30 +1744,15 @@ function renderReport(r){
   const rawSections = isIntake ? buildCompactIntakeSections(r,ctx) : buildSections(r,ctx);
   const fitRes = isIntake
     ? fitCompactToPageBudget(rawSections,maxOutputPages)
-    : fitToPageBudget(rawSections,maxOutputPages,{tocSeparate:false,forceNoBack:true});
+    : fitToPageBudget(rawSections,maxOutputPages,{tocSeparate:true,forceNoBack:true});
   const sections = renumberChapters(fitRes.sections);
   let includeBack = fitRes.includeBack;
-  let pages, withToc, bodyStart;
-  if(isIntake){
-    /* Rapporttype A: inhoudsopgave als eigen pagina, optioneel achterblad — ongewijzigd. */
-    pages=layoutPages(sections);
-    withToc=true;
-    bodyStart=withToc?3:2;
-  } else {
-    /* Rapporttype B: vaste 10-pagina-indeling — inhoudsopgave samengevoegd met
-       hoofdstuk 1 (geen eigen pagina), nooit een achterblad. Eerste layoutpas
-       (zonder toc) levert de paginanummers op; de toc wordt daarna als compact
-       blok in hoofdstuk 1 gezet en een tweede pas levert de definitieve pagina's. */
-    withToc=false; bodyStart=2; includeBack=false;
-    const pre=layoutPages(sections);
-    const chaptersPre=[];
-    pre.forEach((p,i)=>{for(const l of p.labels){const base=l.replace(/ — vervolg$/,'');if(!chaptersPre.some(c=>c.label===base))chaptersPre.push({label:base,page:i+bodyStart});}});
-    if(sections[0]){
-      const tocInline=secbarB('Inhoudsopgave')+`<div class="toc compact">${chaptersPre.map((c,i)=>`<div class="toc-row"><span class="toc-num">${String(i+1).padStart(2,'0')}</span><span class="toc-name">${esc(c.label)}</span><span class="toc-dots"></span><span class="toc-page">${c.page}</span></div>`).join('')}</div>`;
-      sections[0]={label:sections[0].label,blocks:[sections[0].blocks[0],tocInline,...sections[0].blocks.slice(1)]};
-    }
-    pages=layoutPages(sections);
-  }
+  /* Inhoudsopgave krijgt ALTIJD een eigen pagina — voor beide rapporttypen —
+     zodat financiers in één oogopslag zien waar alles staat. Geeft dat een
+     iets langer rapport, dan is dat zo: volledigheid en leesbaarheid gaan voor. */
+  const pages=layoutPages(sections);
+  const withToc=true;
+  const bodyStart=3;
   const tot=pages.length+(bodyStart-1)+(includeBack?1:0);
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
