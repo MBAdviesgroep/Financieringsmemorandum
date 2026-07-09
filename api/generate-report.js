@@ -1059,6 +1059,11 @@ function buildDocumentContent(documents) {
   return { content, names };
 }
 
+/* Vercel's default functietimeout is te kort voor een PDF-analyse door het model.
+   Deze regel verlengt de limiet naar het maximum dat het Vercel-abonnement toelaat
+   (Hobby: 60s, Pro: 300s, Enterprise: 900s) — zet 'm hoger als het plan dat toestaat. */
+export const maxDuration = 60;
+
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     return res.status(200).json({ ok: true, endpoint: 'generate-report', method: 'POST required' });
