@@ -315,9 +315,14 @@ svg.chart{width:100%;height:auto;display:block}
 .org-legend i.l-opr{border-style:dashed}
 
 /* Structuurschema's naast elkaar (huidig vs. na wijziging) */
-.org-duo{display:flex;justify-content:center;align-items:flex-start;gap:14px;margin-bottom:4.5mm;break-inside:avoid}
+.org-duo{display:flex;justify-content:center;align-items:stretch;gap:14px;margin:2mm 0 4.5mm;break-inside:avoid}
 .org-duo-col{flex:0 1 45%;max-width:45%;min-width:0;display:flex;flex-direction:column}
-.org-duo-col .orgcard{margin-bottom:2.4mm}
+.org-duo-col .orgcard{margin-bottom:2.4mm;flex:1;display:flex;flex-direction:column}
+/* Beide schema's even groot: de kaarten worden gestretcht tot dezelfde hoogte
+   (align-items:stretch hierboven) en de diagram-/afbeeldinginhoud centreert
+   daarbinnen verticaal, zodat een korter schema niet half leeg oogt. */
+.org-duo-col .orgcard .org{flex:1;justify-content:center}
+.org-duo-col .struct-org-image img{flex:1;min-height:0;max-height:120mm}
 .org-duo-caption{font-size:7.8pt;color:var(--muted);line-height:1.5;text-align:center;padding:0 1mm}
 .org-duo-col .ch-h{font-size:6.6pt}
 .org-duo-col .org{gap:7mm}
@@ -1277,6 +1282,7 @@ function buildCompactIntakeSections(r,ctx){
          duo- of single-wrapper. */
       blocks.push(structImg);
     } else if(duo){
+      blocks.push(secbarB('Structuurschema','structuur vóór en na de wijziging, naast elkaar weergegeven'));
       blocks.push(duo);
     } else {
       if(ob) blocks.push(`<div class="org-single">${ob}</div>`);
@@ -1478,7 +1484,7 @@ function buildSections(r,ctx){
       blocks.push(structImg);
     } else if(duo){
       if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO’s')); blocks.push(bulletBlocks(ubo)); }
-      blocks.push(secbarB('Structuur','huidig en na wijziging'));
+      blocks.push(secbarB('Structuurschema','structuur vóór en na de wijziging, naast elkaar weergegeven'));
       blocks.push(duo);
     } else if(ob||on){
       if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO\u2019s')); blocks.push(bulletBlocks(ubo)); }
@@ -1666,14 +1672,12 @@ function buildSections(r,ctx){
   /* 12 · Inkomen & vermogen privé is geen eigen hoofdstuk meer: compact opgenomen
      in hoofdstuk 05 (Financiële analyse). */
 
-  /* 12b · Overige bronhoofdstukken (structuur van de bron volgen) */
-  for(const os of A(r.overige_secties)){
-    if(!os||!hasVal(os.titel)) continue;
-    const blocks=[paraBlocks(os.tekst)];
-    const tb=A(os.tabel).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
-    if(tb.length) blocks.push(kvBlocks(tb));
-    add(os.titel,'Overig',os.titel,blocks);
-  }
+  /* 12b · Overige bronhoofdstukken (bronspecifieke inhoud die niet in het vaste
+     schema past) krijgen bewust GEEN eigen tussenliggend hoofdstuk meer — dat
+     voelde als een willekeurige onderbreking tussen de kernhoofdstukken. In
+     plaats daarvan worden ze als extra sub-secties samengevoegd met de laatste
+     pagina (Financieringssamenvatting, zie hieronder), na de samenvattingskaart
+     en vóór het contactblok — scheelt bovendien een pagina. */
 
   /* 13 · Risico's, mitiganten & aandachtspunten — maximaal 5, altijd één vaste tabelvorm */
   {
@@ -1735,6 +1739,16 @@ function buildSections(r,ctx){
     const cparas=hasVal(cc2.tekst)?String(cc2.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):'';
     const blocks=[];
     if(cparas) blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div>${cparas}</div>`);
+    /* Overige bronhoofdstukken (bronspecifieke inhoud buiten het vaste schema,
+       bijv. detailgegevens van betrokken personen) staan hier als bijlage, vlak
+       vóór het contactblok — nooit meer als eigen tussenliggend hoofdstuk. */
+    for(const os of A(r.overige_secties)){
+      if(!os||!hasVal(os.titel)) continue;
+      blocks.push(secbarB(os.titel,'bijlage'));
+      blocks.push(paraBlocks(os.tekst));
+      const tb=A(os.tabel).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
+      if(tb.length) blocks.push(kvBlocks(tb));
+    }
     const kantoorAdviseur=hasVal(r.metadata?.kantoor_adviseur)?r.metadata.kantoor_adviseur:'';
     const closingItems=[
       kantoorAdviseur&&{label:'Kantoor / adviseur',waarde:kantoorAdviseur},
@@ -2020,8 +2034,9 @@ function capTableRows(sections,maxRows){
    inclusief voorblad, inhoudsopgave (altijd een eigen pagina) en achterblad —
    die blijven altijd staan. Niet-essentiële hoofdstukken worden in vaste
    prioriteitsvolgorde verwijderd; pas als laatste redmiddel vervallen de minst
-   kritieke kernhoofdstukken. Bronspecifieke hoofdstukken buiten het vaste schema
-   (overige_secties) hebben de laagste prioriteit en verdwijnen als eerste. */
+   kritieke kernhoofdstukken. Bronspecifieke inhoud buiten het vaste schema
+   (overige_secties) vormt geen eigen hoofdstuk meer — die wordt al samengevoegd
+   met de laatste pagina (Financieringssamenvatting) en telt dus niet apart mee. */
 const HARD_MAX_PAGES = 15;
 const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & documentatie','Financieringssamenvatting']);
 /* Alle 9 vaste hoofdstukken zijn essentieel (rapporttype B-structuur); alleen
