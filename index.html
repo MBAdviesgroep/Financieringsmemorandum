@@ -1202,7 +1202,7 @@ function buildSections(r,ctx){
     }
     blocks.push(kpiBlock(kpis));
     /* Geen sterktes/risico's-tweeluik en geen financieringssamenvatting-blok hier:
-       deze pagina deelt de ruimte met de inhoudsopgave (vaste 10-pagina-indeling),
+       deze pagina blijft compact (eigen pagina, los van de inhoudsopgave),
        en de financieringssamenvatting staat al in hoofdstuk 08 — nooit dubbel. */
     add('Managementsamenvatting','Managementsamenvatting','Samenvatting van de financieringscasus',blocks);
   }
@@ -1587,9 +1587,8 @@ function layoutPages(sections){
   return pages;
 }
 
-/* Totaal aantal fysieke pagina's: cover + (inhoudsopgave als eigen pagina, tenzij
-   samengevoegd met hoofdstuk 1) + body + (optioneel) achterblad. Rapporttype B
-   gebruikt een samengevoegde inhoudsopgave (tocSeparate=false) en geen achterblad. */
+/* Totaal aantal fysieke pagina's: cover + inhoudsopgave (altijd eigen pagina)
+   + body + (optioneel) achterblad. */
 function totalRenderedPages(sections,includeBack=true,tocSeparate=true){
   return layoutPages(sections).length+(tocSeparate?2:1)+(includeBack?1:0);
 }
@@ -1672,12 +1671,12 @@ function capTableRows(sections,maxRows){
 }
 
 /* Paginabudget afdwingen: het rapport is ALTIJD maximaal HARD_MAX_PAGES pagina's,
-   inclusief voorblad, (optionele) inhoudsopgave en achterblad — die drie blijven
-   altijd staan. Niet-essentiële hoofdstukken worden in vaste prioriteitsvolgorde
-   verwijderd; pas als laatste redmiddel vervallen de minst kritieke kernhoofdstukken.
-   Bronspecifieke hoofdstukken buiten het vaste schema (overige_secties) hebben
-   de laagste prioriteit en verdwijnen als eerste. */
-const HARD_MAX_PAGES = 14;
+   inclusief voorblad, inhoudsopgave (altijd een eigen pagina) en achterblad —
+   die blijven altijd staan. Niet-essentiële hoofdstukken worden in vaste
+   prioriteitsvolgorde verwijderd; pas als laatste redmiddel vervallen de minst
+   kritieke kernhoofdstukken. Bronspecifieke hoofdstukken buiten het vaste schema
+   (overige_secties) hebben de laagste prioriteit en verdwijnen als eerste. */
+const HARD_MAX_PAGES = 15;
 const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & documentatie','Financieringssamenvatting']);
 /* Alle 9 vaste hoofdstukken zijn essentieel (rapporttype B-structuur); alleen
    bronspecifieke overige_secties (buiten dit vaste schema) zijn droppable en
@@ -1781,13 +1780,15 @@ function renderReport(r){
   const status = md.status||'Concept · ter beoordeling';
   const uitgebreid = md.uitgebreidToegestaan===true;
   const sourcePageCount = isNum(md.sourcePageCount)?md.sourcePageCount:(isNum(md.source_page_count)?md.source_page_count:(isNum(r.bronrapport?.aantal_paginas)?r.bronrapport.aantal_paginas:null));
-  const FALLBACK_MAX={compact_intake:7,volwaardig_financieringsmemorandum:14,luxe_samenvatting:14};
-  /* Harde bovengrens per rapporttype: type A (compact intake) maximaal 7 pagina's,
-     type B (volwaardig/luxe) richtlengte 10-12, maximaal 14 — volledigheid (structuur,
+  const FALLBACK_MAX={compact_intake:8,volwaardig_financieringsmemorandum:15,luxe_samenvatting:15};
+  /* Harde bovengrens per rapporttype: type A (compact intake) maximaal 8 pagina's,
+     type B (volwaardig/luxe) richtlengte 11-13, maximaal 15 — volledigheid (structuur,
      financiële analyse, prognose, cijfers) weegt zwaarder dan een streng paginabudget;
-     liever een paar pagina's extra dan iets weglaten. Nooit meer dan 14.
+     liever een paar pagina's extra dan iets weglaten. Nooit meer dan 15.
+     (+1 pagina t.o.v. het oude budget omdat de inhoudsopgave nu altijd een eigen
+     pagina krijgt in plaats van samen te gaan met hoofdstuk 1.)
      De bronlengte bepaalt het budget NIET. */
-  const typeMax = isIntake?7:14;
+  const typeMax = isIntake?8:15;
   const budgetRaw = isNum(md.maxOutputPages)?md.maxOutputPages:FALLBACK_MAX[rtype];
   const maxOutputPages = Math.min(typeMax, budgetRaw||typeMax);
   const ctx = {naam,titel,datum,docdatum,dek,status,isIntake,sourcePageCount,maxOutputPages,uitgebreid};
@@ -1800,37 +1801,17 @@ function renderReport(r){
      van maximaal HARD_MAX_PAGES pagina's, inclusief voor- en achterblad. */
   const rawSections = isIntake ? buildCompactIntakeSections(r,ctx) : buildSections(r,ctx);
   const fitRes = isIntake
-    ? fitCompactToPageBudget(rawSections,maxOutputPages,{tocSeparate:false})
-    : fitToPageBudget(rawSections,maxOutputPages,{tocSeparate:false,forceNoBack:true});
+    ? fitCompactToPageBudget(rawSections,maxOutputPages)
+    : fitToPageBudget(rawSections,maxOutputPages,{forceNoBack:true});
   const sections = renumberChapters(fitRes.sections);
   let includeBack = fitRes.includeBack;
-  /* Inhoudsopgave wordt samengevoegd met hoofdstuk 1 op ÉÉN vaste pagina (geen
-     flow-meting nodig: hoofdstuk 1 is bewust kort genoeg om altijd samen met de
-     toc op één pagina te passen). Hoofdstukken 2+ worden onafhankelijk gepakt
-     vanaf pagina 3 — zo zijn de paginanummers in de inhoudsopgave altijd exact
-     gelijk aan de daadwerkelijk gerenderde pagina's, nooit een schatting. */
-  const withToc=false, bodyStart=2;
+  /* Inhoudsopgave krijgt altijd een eigen pagina (pagina 2, direct na het
+     voorblad). Elk hoofdstuk — inclusief het eerste — wordt daarna onafhankelijk
+     gepakt vanaf pagina 3, zo zijn de paginanummers in de inhoudsopgave altijd
+     exact gelijk aan de daadwerkelijk gerenderde pagina's, nooit een schatting. */
+  const withToc=true, bodyStart=3;
   if(!isIntake) includeBack=false;
-  const ch1=sections[0];
-  const restSections=sections.slice(1);
-  const restPages=restSections.length?layoutPages(restSections):[];
-  const chaptersFinal=ch1?[{label:ch1.label,page:2}]:[];
-  restPages.forEach((p,i)=>{for(const l of p.labels){const base=l.replace(/ — vervolg$/,'');if(!chaptersFinal.some(c=>c.label===base))chaptersFinal.push({label:base,page:i+3});}});
-  let pages;
-  if(ch1){
-    const tocInline=secbarB('Inhoudsopgave')+`<div class="toc compact">${chaptersFinal.map((c,i)=>`<div class="toc-row"><span class="toc-num">${String(i+1).padStart(2,'0')}</span><span class="toc-name">${esc(c.label)}</span><span class="toc-dots"></span><span class="toc-page">${c.page}</span></div>`).join('')}</div>`;
-    let ch1Blocks=ch1.blocks;
-    /* Veiligheidscheck: hoofdstuk 1 + toc moeten samen op één pagina passen
-       (budget 248mm netto). Past het net niet, kort dan eerst de lopende tekst
-       in — nooit de toc laten overlopen of hoofdstuk 2 laten verdwijnen. */
-    const fitsOnePage=()=>measureBlockHeight(ch1Blocks[0]+tocInline+ch1Blocks.slice(1).join(''))<=248;
-    if(!fitsOnePage()) ch1Blocks=shortenParagraphs([{label:ch1.label,blocks:ch1Blocks}],1)[0].blocks;
-    if(!fitsOnePage()) ch1Blocks=trimBulletBlocks([{label:ch1.label,blocks:ch1Blocks}],2)[0].blocks;
-    const page2={labels:[ch1.label],html:ch1Blocks[0]+tocInline+ch1Blocks.slice(1).join('')};
-    pages=[page2,...restPages];
-  } else {
-    pages=restPages;
-  }
+  const pages=sections.length?layoutPages(sections):[];
   const tot=pages.length+(bodyStart-1)+(includeBack?1:0);
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
@@ -1988,3 +1969,4 @@ window.__credionRender = async (r)=>{
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
