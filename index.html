@@ -1528,12 +1528,36 @@ function layoutPages(sections){
   const open=label=>{ cur={labels:[label],html:'',h:0}; };
   const close=()=>{ if(cur&&cur.html) pages.push(cur); cur=null; };
 
+  /* Elk hoofdstuk begint ALTIJD bovenaan een eigen, nieuwe pagina — hoofdstukken
+     worden nooit samengepakt op één pagina (dat gaf halverwege-de-pagina-starts
+     en onbetrouwbare paginanummers in de inhoudsopgave). Alleen als een hoofdstuk
+     écht te veel inhoud heeft voor één pagina, loopt het door op een "— vervolg"-
+     pagina. Bij een kleine overschrijding (grofweg tot 1,35x het budget) wordt het
+     hoofdstuk eerst lokaal compacter gemaakt zodat het alsnog op één nette pagina
+     past — dat voorkomt een bijna lege vervolgpagina. */
+  const sectionHeight=blocks=>blocks.reduce((h,bl)=>h+measure(bl),0);
   for(const sec of sections){
-    if(cur&&(budget-cur.h)<minSection) close();
-    if(cur){ cur.html+='<div style="height:8mm"></div>'; cur.h+=8*MMpx; cur.labels.push(sec.label); }
-    if(!cur) open(sec.label);
+    if(cur) close();
+    let blocks=sec.blocks;
+    const total=sectionHeight(blocks)+headReserve;
+    if(total>budget&&total<=budget*1.35){
+      const tryFns=[
+        s=>shortenParagraphs([s],3)[0],
+        s=>shortenParagraphs([s],1)[0],
+        s=>trimBulletBlocks([s],3)[0],
+        s=>trimBulletBlocks([s],2)[0],
+        s=>capTableRows([s],6)[0],
+      ];
+      let candidate={label:sec.label,blocks};
+      for(const fn of tryFns){
+        candidate=fn(candidate);
+        if(sectionHeight(candidate.blocks)+headReserve<=budget) break;
+      }
+      blocks=candidate.blocks;
+    }
+    open(sec.label);
     let placed=false;
-    for(const bl of sec.blocks){
+    for(const bl of blocks){
       const h=measure(bl);
       const reserve=isHeading(bl)?headReserve:0;
       if(cur.h>0&&cur.h+h+reserve>budget){
