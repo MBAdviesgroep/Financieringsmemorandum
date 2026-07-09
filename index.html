@@ -1393,7 +1393,7 @@ function buildSections(r,ctx){
       blocks.push(tableBlocks([{label:'Ratio'},{label:'Periode'},{label:'Waarde',num:true},{label:'Norm / toelichting'}],
         ken.map(x=>`<tr><td>${esc(x.ratio)}</td><td>${cell(x.periode)}</td><td class="num">${cell(x.waarde)}</td><td>${cell(x.toelichting||x.norm)}</td></tr>`)));
     }
-    const kp=A(bc.kernpunten).filter(hasVal).slice(0,5);
+    const kp=A(bc.kernpunten).filter(hasVal).slice(0,3);
     if(kp.length) blocks.push(bulletBlocks(kp));
     add("Betaalcapaciteit & ratio's",'Betaalcapaciteit',"Betaalcapaciteit & ratio's",blocks);
   }
@@ -1424,8 +1424,10 @@ function buildSections(r,ctx){
     add("Risico's, mitiganten & aandachtspunten",'Risicoanalyse',"Risico's, mitiganten & aandachtspunten",blocks);
   }
 
-  /* 13b · Voorwaarden voor verdere beoordeling & financieringssamenvatting —
-     één tabel van MAXIMAAL 7 rijen: Onderdeel | Status | Belang voor financier. */
+  /* 13b · Voorwaarden voor verdere beoordeling & documentatie —
+     één tabel van MAXIMAAL 7 rijen: Onderdeel | Status | Belang voor financier,
+     gevolgd door de documentatielijsten (Ontvangen/gebruikt · Nog te controleren).
+     De financieringssamenvatting staat als apart, laatste hoofdstuk (09). */
   {
     const cc2=r.conclusie||{};
     const dc2=r.documentatiecheck||{};
@@ -1450,32 +1452,29 @@ function buildSections(r,ctx){
     const blocks=[];
     if(capped.length){
       blocks.push(tableBlocks([{label:'Onderdeel'},{label:'Status'},{label:'Belang voor financier'}],
-        capped.map(x=>`<tr><td>${esc(x.item)}</td><td style="white-space:nowrap">${esc(x.status)}</td><td>${cell(x.note)||'—'}</td></tr>`)));
+        capped.map(x=>`<tr><td>${esc(x.item)}</td><td style="white-space:nowrap">${esc(x.status)}</td><td>${hasVal(x.note)?esc(x.note):'Relevant voor de financieringsbeoordeling.'}</td></tr>`)));
     }
-    /* Financieringssamenvatting hoort in ditzelfde hoofdstuk (08) — geen apart
-       conclusiehoofdstuk en geen herhaling van de aandachtspunten uit hoofdstuk 01. */
-    const cparas=hasVal(cc2.tekst)?String(cc2.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):'';
-    if(cparas) blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div>${cparas}</div>`);
-    add('Voorwaarden & financieringssamenvatting','Vervolgstappen','Voorwaarden, actiepunten & financieringssamenvatting',blocks);
+    const ontv=[...A(dc2.ontvangen).filter(x=>hasVal(x?.document)),...A(dc2.in_bron_opgenomen).filter(x=>hasVal(x?.document))];
+    if(ontv.length){ blocks.push(secbarB('Ontvangen / gebruikt')); blocks.push(bulletBlocks(ontv.map(d=>d.document).slice(0,8))); }
+    const teControleren=[...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>x.item),...A(dc2.separaat_te_controleren).filter(hasVal)];
+    if(teControleren.length){ blocks.push(secbarB('Nog te controleren')); blocks.push(bulletBlocks(teControleren.slice(0,8))); }
+    add('Voorwaarden & documentatie','Vervolgstappen','Voorwaarden voor verdere beoordeling & documentatie',blocks);
   }
 
-  /* 15 · Documentatie en bijlagen — maximaal één pagina, uitsluitend twee lijsten:
-     Ontvangen / gebruikt en Nog te controleren. Geen interne kwaliteitscontrole-
-     taal of QC-waarschuwingen in het externe rapport. */
+  /* 14 · Financieringssamenvatting — apart, laatste hoofdstuk (09); maximaal 8 regels,
+     geen hard oordeel. */
   {
-    const dc=r.documentatiecheck||{};
-    const ontv=[...A(dc.ontvangen).filter(x=>hasVal(x?.document)),...A(dc.in_bron_opgenomen).filter(x=>hasVal(x?.document))];
-    const teControleren=[...A(dc.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>x.item),...A(dc.separaat_te_controleren).filter(hasVal)];
+    const cc2=r.conclusie||{};
+    const cparas=hasVal(cc2.tekst)?String(cc2.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):'';
     const blocks=[];
-    if(ontv.length){ blocks.push(secbarB('Ontvangen / gebruikt')); blocks.push(bulletBlocks(ontv.map(d=>d.document).slice(0,8))); }
-    if(teControleren.length){ blocks.push(secbarB('Nog te controleren')); blocks.push(bulletBlocks(teControleren.slice(0,8))); }
-    add('Documentatie & bijlagen','Documentatie','Documentatie en bijlagen',blocks);
+    if(cparas) blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div>${cparas}</div>`);
+    add('Financieringssamenvatting','Financieringssamenvatting','Financieringssamenvatting',blocks);
   }
 
   /* Dunne secties samenvoegen: geen aparte hoofdstukken zonder echte broninhoud.
      Een generieke "Overige informatie"-dumpsectie is niet toegestaan; dunne secties
      worden daarom in een bestaand kernhoofdstuk gevouwen (nooit een nieuw hoofdstuk). */
-  const KERN=new Set(['Managementsamenvatting','Financieringsopzet','Voorwaarden & financieringssamenvatting','Documentatie & bijlagen']);
+  const KERN=new Set(['Managementsamenvatting','Financieringsopzet','Voorwaarden & documentatie','Financieringssamenvatting']);
   const isThin=sec=>{
     const body=sec.blocks.slice(1).join('');
     return !KERN.has(sec.label)&&body.length<700&&!/<table|class="kpis|orgcard|chart-card|kvgrid|verdict/.test(body);
@@ -1483,7 +1482,7 @@ function buildSections(r,ctx){
   const thin=S.filter(isThin);
   if(thin.length>=2){
     const rest=S.filter(s=>!thin.includes(s));
-    let host=rest.find(s=>s.label==='Documentatie & bijlagen')||rest.find(s=>s.label==='Voorwaarden & financieringssamenvatting');
+    let host=rest.find(s=>s.label==='Voorwaarden & documentatie')||rest.find(s=>s.label==='Financieringssamenvatting');
     const extra=thin.flatMap(t=>[secbarB(t.label),...t.blocks.slice(1)]);
     if(host){
       host.blocks.push(...extra);
@@ -1623,7 +1622,7 @@ function capTableRows(sections,maxRows){
    Bronspecifieke hoofdstukken buiten het vaste schema (overige_secties) hebben
    de laagste prioriteit en verdwijnen als eerste. */
 const HARD_MAX_PAGES = 11;
-const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & financieringssamenvatting','Documentatie & bijlagen']);
+const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & documentatie','Financieringssamenvatting']);
 /* Alle 9 vaste hoofdstukken zijn essentieel (rapporttype B-structuur); alleen
    bronspecifieke overige_secties (buiten dit vaste schema) zijn droppable en
    komen dus niet in ESSENTIAL_LABELS voor. Geen vaste prioriteitsvolgorde nodig. */
@@ -1652,12 +1651,14 @@ function fitToPageBudget(sections,maxOutputPages,opts={}){
   if(total()>maxOutputPages) cur=shortenParagraphs(cur,1);
   /* 5 — achterblad vervalt vóórdat inhoud vervalt (alleen als niet al geforceerd uit) */
   if(!forceNoBack&&total()>maxOutputPages) includeBack=false;
-  /* 6 — enige toegestane hoofdstuk-samenvoeging: voorwaarden en documentatie combineren.
-     Andere hoofdstukken worden NOOIT samengevoegd — dat verbergt hoofdstukken uit de
-     inhoudsopgave zonder de paginalengte echt te verkorten. */
+  /* 6 — laatste redmiddel: de financieringssamenvatting samenvoegen met het
+     voorwaarden/documentatiehoofdstuk (in plaats van een apart slothoofdstuk).
+     Andere hoofdstukken worden NOOIT samengevoegd — dat verbergt hoofdstukken uit
+     de inhoudsopgave zonder de paginalengte echt te verkorten. Bij het ruime
+     budget van 11 pagina's is dit zelden nodig. */
   if(total()>maxOutputPages){
-    const f=cur.find(s=>s.label==='Documentatie & bijlagen');
-    const t=cur.find(s=>s.label==='Voorwaarden & financieringssamenvatting');
+    const f=cur.find(s=>s.label==='Financieringssamenvatting');
+    const t=cur.find(s=>s.label==='Voorwaarden & documentatie');
     if(f&&t){ t.blocks.push(secbarB(f.label),...f.blocks.slice(1)); cur=cur.filter(s=>s!==f); }
   }
   /* 7 — bulletlijsten verder inkorten */
@@ -1687,10 +1688,11 @@ function getReportType(report){
    te lang uitvallen. Dit dwingt het paginabudget hard af: eerst de optionele bijlage
    eraf, dan documentatie/controlepunten verder inkorten, en als laatste redmiddel de
    minst essentiële kernsectie (Zekerheden vóór Juridische structuur/Financiering). */
-function fitCompactToPageBudget(sections,maxOutputPages){
+function fitCompactToPageBudget(sections,maxOutputPages,opts={}){
+  const tocSeparate=opts.tocSeparate!==false;
   maxOutputPages=Math.min(isNum(maxOutputPages)?maxOutputPages:HARD_MAX_PAGES,HARD_MAX_PAGES);
   let cur=[...sections]; let includeBack=true;
-  const total=()=>totalRenderedPages(cur,includeBack);
+  const total=()=>totalRenderedPages(cur,includeBack,tocSeparate);
   if(total()<=maxOutputPages) return {sections:cur,includeBack};
   /* 1 — optionele bijlage (detailgegevens) is nooit essentieel */
   cur=cur.filter(s=>s.label!=='Bijlage detailgegevens');
@@ -1743,16 +1745,25 @@ function renderReport(r){
      van maximaal HARD_MAX_PAGES pagina's, inclusief voor- en achterblad. */
   const rawSections = isIntake ? buildCompactIntakeSections(r,ctx) : buildSections(r,ctx);
   const fitRes = isIntake
-    ? fitCompactToPageBudget(rawSections,maxOutputPages)
-    : fitToPageBudget(rawSections,maxOutputPages,{tocSeparate:true,forceNoBack:true});
+    ? fitCompactToPageBudget(rawSections,maxOutputPages,{tocSeparate:false})
+    : fitToPageBudget(rawSections,maxOutputPages,{tocSeparate:false,forceNoBack:true});
   const sections = renumberChapters(fitRes.sections);
   let includeBack = fitRes.includeBack;
-  /* Inhoudsopgave krijgt ALTIJD een eigen pagina — voor beide rapporttypen —
-     zodat financiers in één oogopslag zien waar alles staat. Geeft dat een
-     iets langer rapport, dan is dat zo: volledigheid en leesbaarheid gaan voor. */
+  /* Inhoudsopgave wordt samengevoegd met hoofdstuk 1 (geen eigen pagina) — voor
+     beide rapporttypen. Eerste layoutpas (zonder toc) levert de paginanummers op;
+     de toc wordt daarna als compact blok in hoofdstuk 1 gezet en een tweede pas
+     levert de definitieve pagina's. Past inhoud niet, dan liever een extra
+     pagina (budget 7 resp. 11) dan verlies van inhoud. */
+  const withToc=false, bodyStart=2;
+  if(!isIntake) includeBack=false;
+  const pre=layoutPages(sections);
+  const chaptersPre=[];
+  pre.forEach((p,i)=>{for(const l of p.labels){const base=l.replace(/ — vervolg$/,'');if(!chaptersPre.some(c=>c.label===base))chaptersPre.push({label:base,page:i+bodyStart});}});
+  if(sections[0]){
+    const tocInline=secbarB('Inhoudsopgave')+`<div class="toc compact">${chaptersPre.map((c,i)=>`<div class="toc-row"><span class="toc-num">${String(i+1).padStart(2,'0')}</span><span class="toc-name">${esc(c.label)}</span><span class="toc-dots"></span><span class="toc-page">${c.page}</span></div>`).join('')}</div>`;
+    sections[0]={label:sections[0].label,blocks:[sections[0].blocks[0],tocInline,...sections[0].blocks.slice(1)]};
+  }
   const pages=layoutPages(sections);
-  const withToc=true;
-  const bodyStart=3;
   const tot=pages.length+(bodyStart-1)+(includeBack?1:0);
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
