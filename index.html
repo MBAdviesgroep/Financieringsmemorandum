@@ -1478,7 +1478,10 @@ function buildCompactIntakeSections(r,ctx){
     add('Bestaande financieringen & zekerheden','Bestaande financieringen en zekerheden',blocks);
   }
 
-  /* 5 · Documentatie, aandachtspunten & op te vragen stukken */
+  /* 5 · Documentatie & aandachtspunten — inclusief de financieringssamenvatting
+     als afsluiting van hetzelfde hoofdstuk. Nooit een apart, dun laatste
+     hoofdstuk/pagina met alleen documentatie of alleen een slotoordeel: beide
+     horen bij elkaar op de laatste inhoudelijke pagina. */
   {
     const blocks=[];
     const risks=A(zr.risicomatrix).filter(x=>hasVal(x?.risico)).slice(0,5);
@@ -1489,43 +1492,27 @@ function buildCompactIntakeSections(r,ctx){
     const ontv=A(dc.ontvangen).filter(x=>hasVal(x?.document));
     const inbron=A(dc.in_bron_opgenomen).filter(x=>hasVal(x?.document));
     const ontbr=A(dc.ontbrekend).filter(x=>hasVal(x?.item)).slice(0,5);
-    if(ontv.length||inbron.length){
-      blocks.push(secbarB('Documentatie'));
-      blocks.push(bulletBlocks([...ontv.map(d=>`${d.document} (ontvangen)`),...inbron.map(d=>`${d.document} (in bron opgenomen)`)]));
-    }
     /* metadata.bron_documenten: de brondocumenten die aan dit rapport ten
-       grondslag liggen — alleen tonen wat nog niet al in dezelfde lijst staat. */
-    {
-      const genoemd=new Set([...ontv,...inbron].map(d=>d.document));
-      const extraBron=A(r.metadata?.bron_documenten).filter(hasVal).filter(d=>!genoemd.has(d));
-      if(extraBron.length) blocks.push(bulletBlocks(extraBron));
+       grondslag liggen — in dezelfde lijst, niet als apart blok. */
+    const genoemd=new Set([...ontv,...inbron].map(d=>d.document));
+    const extraBron=A(r.metadata?.bron_documenten).filter(hasVal).filter(d=>!genoemd.has(d));
+    if(ontv.length||inbron.length||extraBron.length){
+      blocks.push(secbarB('Ontvangen / gebruikt'));
+      blocks.push(bulletBlocks([...ontv.map(d=>`${d.document} (ontvangen)`),...inbron.map(d=>`${d.document} (in bron opgenomen)`),...extraBron]));
     }
     if(ontbr.length){ blocks.push(secbarB('Nog te controleren / op te vragen')); blocks.push(bulletBlocks(ontbr.map(d=>d.item))); }
     let warns=sanitizeAdvisorNotes([...new Set([...A(cv.waarschuwingen),...A(r.kwaliteitscontrole?.waarschuwingen)])]).slice(0,5);
     if(warns.length){ blocks.push(secbarB('Controlepunten voor de adviseur')); blocks.push(bulletBlocks(warns,'orange')); }
     const vragen=A(dc.vervolgvragen).filter(hasVal).slice(0,5);
     if(vragen.length){ blocks.push(secbarB('Vervolgvragen')); blocks.push(bulletBlocks(vragen)); }
-    add('Documentatie & aandachtspunten','Documentatie, aandachtspunten en op te vragen stukken',blocks);
-  }
-
-  /* 6 · Financieringssamenvatting — slotblok (maximaal 8 regels, financieringsgericht) */
-  {
+    /* Financieringssamenvatting: de inhoudelijke afsluiting van het rapport,
+       onderaan ditzelfde hoofdstuk — geen apart slothoofdstuk of losse pagina. */
     const oordeelTekst=hasVal(ms.voorlopig_oordeel)?ms.voorlopig_oordeel:(hasVal(cc.tekst)?cc.tekst:'');
-    const blocks=[];
     if(hasVal(oordeelTekst)){
       blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div><p>${esc(oordeelTekst)}</p></div>`);
     }
     blocks.push(`<div class="panel tint"><div class="panel-h">Extern delen</div><p class="para">${safeText(cc.extern_deelbaar,'Nog niet extern delen; eerst adviseurscontrole.')}</p></div>`);
-    const kantoorAdviseur=hasVal(r.metadata?.kantoor_adviseur)?r.metadata.kantoor_adviseur:'';
-    const closingItems=[
-      kantoorAdviseur&&{label:'Kantoor / adviseur',waarde:kantoorAdviseur},
-      hasVal(ctx.datum)&&{label:'Datum rapport',waarde:ctx.datum},
-    ].filter(Boolean);
-    if(closingItems.length){
-      blocks.push(secbarB('Contactgegevens'));
-      blocks.push(kvBlocks(closingItems));
-    }
-    add('Financieringssamenvatting','Financieringssamenvatting',blocks);
+    add('Documentatie & aandachtspunten','Documentatie, aandachtspunten en financieringssamenvatting',blocks);
   }
 
   return S;
@@ -1820,8 +1807,11 @@ function buildSections(r,ctx){
 
   /* 13b · Voorwaarden voor verdere beoordeling & documentatie —
      één tabel van MAXIMAAL 7 rijen: Onderdeel | Status | Belang voor financier,
-     gevolgd door de documentatielijsten (Ontvangen/gebruikt · Nog te controleren).
-     De financieringssamenvatting staat als apart, laatste hoofdstuk (09). */
+     gevolgd door de documentatieblokken (Ontvangen/gebruikt · Nog te controleren)
+     en, als afsluiting van hetzelfde hoofdstuk, de financieringssamenvatting.
+     Geen apart slothoofdstuk of losse pagina meer: die bevatte vaak alleen
+     documentatie, contactgegevens of bronvermelding en oogde als een dunne,
+     overbodige laatste pagina. */
   {
     const cc2=r.conclusie||{};
     const dc2=r.documentatiecheck||{};
@@ -1855,53 +1845,39 @@ function buildSections(r,ctx){
       if(extraBron.length) ontv.push(...extraBron.map(d=>({document:d})));
     }
     if(ontv.length){ blocks.push(secbarB('Ontvangen / gebruikt')); blocks.push(bulletBlocks(ontv.map(d=>d.document).slice(0,8))); }
-    /* Geen dubbele lijst: "Nog te controleren" toont uitsluitend punten die niet al
-       in de tabel hierboven staan (overloop voorbij de 7-rijen-cap plus overige
-       separaat te controleren stukken), nooit dezelfde onderwerpen twee keer. */
+    /* Geen dubbele lijst: "Nog te controleren / op te vragen" toont uitsluitend
+       punten die niet al in de tabel hierboven staan (overloop voorbij de
+       7-rijen-cap plus overige separaat te controleren stukken), nooit
+       dezelfde onderwerpen twee keer. */
     const teControlerenKeys=new Set(capped.map(x=>normV(x.item).slice(0,26)));
     const overloop=uniq.slice(7).map(x=>x.item);
     const teControleren=[...overloop,...A(dc2.separaat_te_controleren).filter(hasVal)]
       .filter(t=>!teControlerenKeys.has(normV(t).slice(0,26)));
     const teControlerenUniq=[...new Set(teControleren)];
-    if(teControlerenUniq.length){ blocks.push(secbarB('Nog te controleren')); blocks.push(bulletBlocks(teControlerenUniq.slice(0,8))); }
-    add('Voorwaarden & documentatie','Vervolgstappen','Voorwaarden voor verdere beoordeling & documentatie',blocks);
-  }
-
-  /* 14 · Financieringssamenvatting — apart, laatste hoofdstuk (09); maximaal 8 regels,
-     geen hard oordeel. Afsluitend een compact contactblok (kantoor/adviseur +
-     datum) als "ondertekenblok", zodat de laatste pagina niet grotendeels leeg
-     blijft onder de samenvattingskaart. */
-  {
-    const cc2=r.conclusie||{};
-    const cparas=hasVal(cc2.tekst)?String(cc2.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):'';
-    const blocks=[];
-    if(cparas) blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div>${cparas}</div>`);
+    if(teControlerenUniq.length){ blocks.push(secbarB('Nog te controleren / op te vragen')); blocks.push(bulletBlocks(teControlerenUniq.slice(0,8))); }
     /* Overige bronhoofdstukken (bronspecifieke inhoud buiten het vaste schema,
-       bijv. detailgegevens van betrokken personen) staan hier als bijlage, vlak
-       vóór het contactblok — nooit meer als eigen tussenliggend hoofdstuk. */
+       bijv. detailgegevens van betrokken personen) horen hier zonder aparte
+       "bijlage"-kop; ze zijn gewoon aanvullende inhoud van dit hoofdstuk. */
     for(const os of A(r.overige_secties)){
       if(!os||!hasVal(os.titel)) continue;
-      blocks.push(secbarB(os.titel,'bijlage'));
+      blocks.push(secbarB(os.titel));
       blocks.push(paraBlocks(os.tekst));
       const tb=A(os.tabel).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
       if(tb.length) blocks.push(kvBlocks(tb));
     }
-    const kantoorAdviseur=hasVal(r.metadata?.kantoor_adviseur)?r.metadata.kantoor_adviseur:'';
-    const closingItems=[
-      kantoorAdviseur&&{label:'Kantoor / adviseur',waarde:kantoorAdviseur},
-      hasVal(ctx.datum)&&{label:'Datum rapport',waarde:ctx.datum},
-    ].filter(Boolean);
-    if(closingItems.length){
-      blocks.push(secbarB('Contactgegevens'));
-      blocks.push(kvBlocks(closingItems));
-    }
-    add('Financieringssamenvatting','Financieringssamenvatting','Financieringssamenvatting',blocks);
+    /* Financieringssamenvatting: de inhoudelijke afsluiting van het rapport,
+       onderaan ditzelfde hoofdstuk — geen apart slothoofdstuk, geen losse
+       contactgegevenspagina (kantoor/adviseur en datum staan al op de cover
+       en in de paginafooter). */
+    const cparas=hasVal(cc2.tekst)?String(cc2.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):'';
+    if(cparas) blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div>${cparas}</div>`);
+    add('Voorwaarden & documentatie','Vervolgstappen','Voorwaarden voor verdere beoordeling & documentatie',blocks);
   }
 
   /* Dunne secties samenvoegen: geen aparte hoofdstukken zonder echte broninhoud.
      Een generieke "Overige informatie"-dumpsectie is niet toegestaan; dunne secties
      worden daarom in een bestaand kernhoofdstuk gevouwen (nooit een nieuw hoofdstuk). */
-  const KERN=new Set(['Managementsamenvatting','Financieringsopzet','Voorwaarden & documentatie','Financieringssamenvatting']);
+  const KERN=new Set(['Managementsamenvatting','Financieringsopzet','Voorwaarden & documentatie']);
   const isThin=sec=>{
     const body=sec.blocks.slice(1).join('');
     return !KERN.has(sec.label)&&body.length<700&&!/<table|class="kpis|orgcard|chart-card|kvgrid|verdict/.test(body);
@@ -1909,7 +1885,7 @@ function buildSections(r,ctx){
   const thin=S.filter(isThin);
   if(thin.length>=2){
     const rest=S.filter(s=>!thin.includes(s));
-    let host=rest.find(s=>s.label==='Voorwaarden & documentatie')||rest.find(s=>s.label==='Financieringssamenvatting');
+    let host=rest.find(s=>s.label==='Voorwaarden & documentatie');
     const extra=thin.flatMap(t=>[secbarB(t.label),...t.blocks.slice(1)]);
     if(host){
       host.blocks.push(...extra);
@@ -2080,6 +2056,26 @@ function layoutPages(sections){
     for(const group of groupByHeading(blocks)) placeGroup(sec,group);
   }
   close();
+  /* Geen dunne slotpagina: is de allerlaatste pagina een "— vervolg"-vervolgpagina
+     van hetzelfde hoofdstuk als de pagina ervoor, en is ze minder dan ~50% gevuld
+     én past ze samen met de vorige pagina alsnog binnen het paginabudget, voeg ze
+     dan terug samen met de vorige pagina in plaats van een bijna lege laatste
+     pagina te laten staan. Alleen de trailing vervolgpagina van hetzelfde hoofdstuk
+     komt hiervoor in aanmerking — verschillende hoofdstukken worden nooit op één
+     pagina samengevoegd. */
+  if(pages.length>=2){
+    const last=pages[pages.length-1];
+    const prev=pages[pages.length-2];
+    const lastLabel=last.labels[0]||'';
+    const prevLabel=prev.labels[prev.labels.length-1]||'';
+    const isVervolgVanVorige=/ — vervolg$/.test(lastLabel)&&lastLabel.replace(/ — vervolg$/,'')===prevLabel.replace(/ — vervolg$/,'');
+    if(isVervolgVanVorige&&last.h<budget*0.5&&prev.h+last.h<=budget){
+      prev.html+=last.html;
+      prev.h+=last.h;
+      for(const l of last.labels) if(!prev.labels.includes(l)) prev.labels.push(l);
+      pages.pop();
+    }
+  }
   page.remove();
   return pages;
 }
@@ -2179,10 +2175,12 @@ function capTableRows(sections,maxRows){
    (overige_secties) vormt geen eigen hoofdstuk meer — die wordt al samengevoegd
    met de laatste pagina (Financieringssamenvatting) en telt dus niet apart mee. */
 const HARD_MAX_PAGES = 15;
-const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & documentatie','Financieringssamenvatting']);
-/* Alle 9 vaste hoofdstukken zijn essentieel (rapporttype B-structuur); alleen
-   bronspecifieke overige_secties (buiten dit vaste schema) zijn droppable en
-   komen dus niet in ESSENTIAL_LABELS voor. Geen vaste prioriteitsvolgorde nodig. */
+const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & documentatie']);
+/* Alle vaste hoofdstukken zijn essentieel (rapporttype B-structuur; de
+   financieringssamenvatting is geen eigen hoofdstuk meer — die staat al als
+   afsluiting in "Voorwaarden & documentatie"). Alleen bronspecifieke
+   overige_secties (buiten dit vaste schema) zijn droppable en komen dus niet
+   in ESSENTIAL_LABELS voor. Geen vaste prioriteitsvolgorde nodig. */
 const DROP_PRIORITY=[];
 function fitToPageBudget(sections,maxOutputPages,opts={}){
   const tocSeparate=opts.tocSeparate!==false;
@@ -2208,16 +2206,9 @@ function fitToPageBudget(sections,maxOutputPages,opts={}){
   if(total()>maxOutputPages) cur=shortenParagraphs(cur,1);
   /* 5 — achterblad vervalt vóórdat inhoud vervalt (alleen als niet al geforceerd uit) */
   if(!forceNoBack&&total()>maxOutputPages) includeBack=false;
-  /* 6 — laatste redmiddel: de financieringssamenvatting samenvoegen met het
-     voorwaarden/documentatiehoofdstuk (in plaats van een apart slothoofdstuk).
-     Andere hoofdstukken worden NOOIT samengevoegd — dat verbergt hoofdstukken uit
-     de inhoudsopgave zonder de paginalengte echt te verkorten. Bij het ruime
-     budget van 11 pagina's is dit zelden nodig. */
-  if(total()>maxOutputPages){
-    const f=cur.find(s=>s.label==='Financieringssamenvatting');
-    const t=cur.find(s=>s.label==='Voorwaarden & documentatie');
-    if(f&&t){ t.blocks.push(secbarB(f.label),...f.blocks.slice(1)); cur=cur.filter(s=>s!==f); }
-  }
+  /* 6 — (vervallen) de financieringssamenvatting is al bij het opbouwen van de
+     secties samengevoegd met "Voorwaarden & documentatie" — geen apart
+     slothoofdstuk meer om hier alsnog in te vouwen. */
   /* 7 — bulletlijsten verder inkorten */
   if(total()>maxOutputPages) cur=trimBulletBlocks(cur,3);
   if(total()>maxOutputPages) cur=trimBulletBlocks(cur,2);
