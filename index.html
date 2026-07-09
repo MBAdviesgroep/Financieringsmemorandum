@@ -1386,6 +1386,15 @@ function buildCompactIntakeSections(r,ctx){
       blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div><p>${esc(oordeelTekst)}</p></div>`);
     }
     blocks.push(`<div class="panel tint"><div class="panel-h">Extern delen</div><p class="para">${safeText(cc.extern_deelbaar,'Nog niet extern delen; eerst adviseurscontrole.')}</p></div>`);
+    const kantoorAdviseur=hasVal(r.metadata?.kantoor_adviseur)?r.metadata.kantoor_adviseur:'';
+    const closingItems=[
+      kantoorAdviseur&&{label:'Kantoor / adviseur',waarde:kantoorAdviseur},
+      hasVal(ctx.datum)&&{label:'Datum rapport',waarde:ctx.datum},
+    ].filter(Boolean);
+    if(closingItems.length){
+      blocks.push(secbarB('Contactgegevens'));
+      blocks.push(kvBlocks(closingItems));
+    }
     add('Financieringssamenvatting','Financieringssamenvatting',blocks);
   }
 
@@ -1718,12 +1727,23 @@ function buildSections(r,ctx){
   }
 
   /* 14 · Financieringssamenvatting — apart, laatste hoofdstuk (09); maximaal 8 regels,
-     geen hard oordeel. */
+     geen hard oordeel. Afsluitend een compact contactblok (kantoor/adviseur +
+     datum) als "ondertekenblok", zodat de laatste pagina niet grotendeels leeg
+     blijft onder de samenvattingskaart. */
   {
     const cc2=r.conclusie||{};
     const cparas=hasVal(cc2.tekst)?String(cc2.tekst).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join(''):'';
     const blocks=[];
     if(cparas) blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringssamenvatting</span></div>${cparas}</div>`);
+    const kantoorAdviseur=hasVal(r.metadata?.kantoor_adviseur)?r.metadata.kantoor_adviseur:'';
+    const closingItems=[
+      kantoorAdviseur&&{label:'Kantoor / adviseur',waarde:kantoorAdviseur},
+      hasVal(ctx.datum)&&{label:'Datum rapport',waarde:ctx.datum},
+    ].filter(Boolean);
+    if(closingItems.length){
+      blocks.push(secbarB('Contactgegevens'));
+      blocks.push(kvBlocks(closingItems));
+    }
     add('Financieringssamenvatting','Financieringssamenvatting','Financieringssamenvatting',blocks);
   }
 
