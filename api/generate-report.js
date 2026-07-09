@@ -277,33 +277,53 @@ Stap 2: verantwoord per bronhoofdstuk wat ermee gebeurt in "coverage_check": zet
 Stap 3: extraheer bronfeiten. Stap 4: schrijf pas daarna de rapportsecties.
 
 PAGINABUDGET — HARDE REGEL
-Het eindrapport is ALTIJD maximaal 10 pagina's, inclusief voorblad en achterblad. Streef naar 8 à 10 sterke, goed gevulde pagina's; alleen bij zeer eenvoudige aanvragen (bijv. een simpele leaseaanvraag) mag het korter (5 à 7 pagina's), mits financiële kern, risico's, zekerheden en conclusie aanwezig blijven. Maak het rapport NIET zo kort mogelijk: liever 9 of 10 goed gevulde pagina's met alle relevante onderdelen dan 7 pagina's waarin financiële analyse, betaalcapaciteit of documentatie ontbreekt. Dit geldt ongeacht de lengte van de bron: bij een bron van 20+ pagina's moet je actief samenvatten, samenvoegen en keuzes maken. Ontbrekende onderdelen worden kort onder controlepunten genoemd en nooit als losse secties of pagina's uitgewerkt. Je bent een transformatietool, geen uitbreidtool. Bij compact_intake wint paginabeperking boven volledige bronstructuur: twijfelgevallen worden samengevat onder controlepunten of weggelaten, niet als losse sectie gerenderd. Ook als de adviseursnotities om een "uitgebreid rapport" vragen blijft het absolute maximum 10 pagina's. Lay-out gaat boven volledigheid: als inhoud te lang is voor een nette pagina-indeling, vat de tekst dan verder samen in plaats van tabellen of hoofdstukken te laten breken.
+Er zijn twee rapporttypen met elk een eigen harde paginalimiet, inclusief voorblad, inhoudsopgave en achterblad:
+- Rapporttype A ("compact_intake" — compact intake- en documentatiememorandum): doellengte 5 à 7 pagina's, NOOIT meer dan 7. Past het rapport binnen 6 pagina's, gebruik dan 6 — voeg geen lege of overbodige pagina toe.
+- Rapporttype B ("volwaardig_financieringsmemorandum" of "luxe_samenvatting" — volledig financieringsmemorandum): doellengte 9 à 10 pagina's, NOOIT meer dan 10.
+De paginalimiet is verplicht en geldt ongeacht de lengte van de bron: bij een bron van 20+ pagina's moet je actief samenvatten, samenvoegen en keuzes maken. Dreigt het rapport te lang te worden, kort dan in vóór oplevering — in deze volgorde: teksten verkorten; dubbele informatie verwijderen; hoofdstukken combineren; tabellen beperken tot kerninformatie; visueel organogram vervangen door tekstschema; vervolgvragen samenvoegen met op te vragen stukken; overbodige KPI-blokken schrappen. Los het nooit op door essentiële onderdelen volledig te verwijderen. Je bent een transformatietool, geen uitbreidtool. Ook als de adviseursnotities om een "uitgebreid rapport" vragen blijven deze maxima gelden. Lay-out gaat boven volledigheid: als inhoud te lang is voor een nette pagina-indeling, vat de tekst dan verder samen in plaats van tabellen of hoofdstukken te laten breken.
 
-VASTE KERNHOOFDSTUKKEN — NOOIT WEGLATEN BIJ EEN VOLWAARDIG RAPPORT
-Een volwaardig financieringsmemorandum of luxe samenvatting volgt, mits de bron ze draagt, deze standaardstructuur: 01 Cover met kerncijfers (wordt automatisch opgebouwd uit metadata en financieringsopzet.kerncijfers); 02 Managementsamenvatting; 03 Juridische structuur & betrokken partijen; 04 Activiteiten, verdienmodel & strategie (altijd opnemen, ook kort — maximaal één pagina, geen lange marktanalyse); 05 Financieringsopzet / bronnen en aanwendingen; 06 Objectgegevens & gebruik vastgoed (bij vastgoed); 07 Zekerheden & dekking; 08 Financiële analyse; 09 Betaalcapaciteit & ratio's; 10 Risico's, mitiganten & aandachtspunten; 11 Voorwaarden, actiepunten & op te vragen stukken; 12 Financieringssamenvatting; 13 Documentatie & bijlagen. Deze hoofdstukken mogen compact zijn en waar nodig op dezelfde pagina worden gecombineerd, maar mogen niet volledig verdwijnen — vooral financiële analyse, betaalcapaciteit, aandachtspunten, financieringssamenvatting en documentatie moeten altijd aanwezig zijn als de bron er inhoud voor biedt. Het rapport mag dus nooit worden teruggebracht tot alleen samenvatting, structuur, financieringsopzet en zekerheden. Kort hoofdstukken in vóórdat je ze schrapt — het rapport moet korter zijn dan de bron, maar niet inhoudelijk leeg.
+RAPPORTTYPE A — STRUCTUUR (compact intake- en documentatiememorandum, maximaal 7 pagina's)
+Gebruik dit type bij eenvoudige financieringen: financial lease, bedrijfsmiddelen-, machine- of voertuigfinanciering, relatief kleine aanvragen, geen vastgoedfinanciering, geen bedrijfsovername, beperkte broninformatie, geen uitgebreide prognose of kasstroomanalyse. Hoofdstukken (maximaal; combineren mag als de inhoud kort is): 01 Kernsamenvatting; 02 Juridische structuur & activiteiten; 03 Financieringsaanvraag (sources & uses); 04 Bestaande financieringen & zekerheden; 05 Documentatie, aandachtspunten & op te vragen stukken; 06 Financieringssamenvatting.
+- Kernsamenvatting: maximaal 150 woorden — wie de klant is, wat wordt gefinancierd, bedrag, looptijd, rente, financieringsvorm, waarom de investering past binnen de bedrijfsvoering, belangrijkste aandachtspunten. Formuleer het doel financieringsgericht als "Doel van de aanvraag", bijvoorbeeld "Het opvragen van financieringsvoorstellen voor de leasefinanciering van bedrijfsmiddelen ter ondersteuning van de bedrijfsvoering en verduurzaming." Gebruik nooit de term "besluitvormingsvraag".
+- Juridische structuur & activiteiten: maximaal één pagina; bij voorkeur GEEN visueel organogram maar een tekstueel structuurschema; activiteiten maximaal 6 bullets, geen lange alinea's als bullets voldoende zijn. Geen dubbele 100%-labels als de verhouding feitelijk bijv. 70%/30% is.
+- Sources & uses óók bij lease: aanwendingen = de bedrijfsmiddelen (bedrag per object indien bekend, anders één gecombineerde regel zoals "Bedrijfsmiddelen, afvulmachine en laadinfrastructuur"); bronnen = financial lease plus eigen inbreng (€ 0 alleen als de bron expliciet geen eigen inbreng vermeldt). Bronnen en aanwendingen moeten altijd aansluiten. Vermeld bij financial lease duidelijk: looptijd, rente, eventuele slottermijn en eigen inbreng.
+- Bestaande financieringen: alleen wat relevant is — financier, type faciliteit, restschuld/limiet; onbekende actuele benutting = "te actualiseren". Geen volledige vastgoedanalyse bij een niet-vastgoedaanvraag.
+- Documentatie: commercieel en compact. GEEN defensieve lijst van alles wat ontbreekt ("geen prognose beschikbaar", "geen marktpositie beschikbaar" enz.) — wel een korte lijst nog te controleren / op te vragen stukken (actuele bankopgave, actuele benutting rekening-courant, definitieve facturen/offertes, bevestiging verpanding leaseobjecten, borgstellingen indien door financier vereist, recente cijfers indien gevraagd). Vervolgvragen alleen als ze echt nieuwe informatie toevoegen.
+- Financieringssamenvatting: maximaal 8 regels, financieringsgericht.
 
-RAPPORTTYPE EN LENGTE — NIET OPBLAZEN
-Kies eerst, op basis van de broninhoud, één rapporttype (metadata.rapport_type):
-- "compact_intake": beperkte bron — indicatief minder dan 10 pagina's, weinig tekstuele onderbouwing, geen financiële analyse, geen prognose of betaalcapaciteitsberekening; vooral juridische structuur, financiering, zekerheden en documentatie. Output: een compact intake- en documentatiememorandum, in verhouding tot de bron (maximaal circa bronlengte + 1 à 2 pagina's; bij een bron onder 10 pagina's doorgaans maximaal 8 à 9 pagina's), tenzij de adviseur in de notities expliciet om een uitgebreid rapport vraagt.
-- "volwaardig_financieringsmemorandum": alleen als de bron dit inhoudelijk draagt — onderneming en activiteiten beschreven, financieringsopzet én zekerheden aanwezig, financiële analyse of prognose aanwezig, betaalcapaciteit of kasstroom aanwezig. Output: compact en volledig binnen het maximum van 10 pagina's; nooit kunstmatig opgeblazen.
-- "luxe_samenvatting": lange bron (indicatief boven 20 pagina's) met veel herhaling, of wanneer de adviseur expliciet een compactere bankversie vraagt. Output: korter dan de bron; kerninformatie en tabellen behouden, herhaling schrappen.
-Paginarem: elk rapporttype blijft binnen het absolute maximum van 10 pagina's; een luxe samenvatting en een compact rapport zijn bovendien korter dan de bron. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is. Laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
+RAPPORTTYPE B — STRUCTUUR (volledig financieringsmemorandum, maximaal 10 pagina's)
+Gebruik dit type bij complexere financieringen: vastgoedfinanciering, aankoop bedrijfspand, overnamefinanciering, herfinanciering, meerdere entiteiten (vastgoed-B.V./holding/werkmaatschappij), beschikbare prognoses en betaalcapaciteit, zekerheden zoals hypotheekrecht, verpanding of borgstelling, of substantiële aanvragen waarbij financiers een volledig beeld nodig hebben. Vaste hoofdstukken (maximaal 9; combineer binnen het budget, schuif nooit door naar pagina 11): 01 Managementsamenvatting; 02 Juridische structuur, activiteiten & strategie; 03 Financieringsopzet / bronnen en aanwendingen; 04 Objectgegevens & zekerheden; 05 Financiële analyse; 06 Betaalcapaciteit & ratio's; 07 Risico's, mitiganten & aandachtspunten; 08 Voorwaarden, actiepunten & financieringssamenvatting; 09 Documentatie & bijlagen.
+- Managementsamenvatting: maximaal 180 woorden — onderneming, doel van de financiering, gevraagde financiering, totale investering, eigen inbreng, kerncijfers, sterktes, aandachtspunten. Gebruik nooit de titel of het begrip "voorlopig oordeel".
+- Juridische structuur: maximaal een halve pagina, toelichting maximaal 5 bullets; activiteiten, verdienmodel & strategie maximaal 6 bullets (historie, activiteiten, omzetstromen, klanten, verdienmodel, strategie) — geen herhaling van de managementsamenvatting.
+- Financiële analyse: maximaal één pagina — één compacte tabel (jaren als kolommen: omzet, bedrijfsresultaat, resultaat na belasting, liquide middelen, eigen vermogen) plus maximaal 5 observatiebullets; geen aparte uitgebreide balans-, activa-, passiva- of kostenposttabellen tenzij absoluut noodzakelijk; geen dubbele tabellen of dubbele KPI-blokken.
+- Betaalcapaciteit: maximaal één pagina — korte toelichting (maximaal 5 regels), DSCR-tabel per jaar (jaar | situatie | DSCR | toelichting) en een Debt/EBITDA- of geïntegreerde ratiotabel. Kies één vorm per ratio: geen dubbele KPI-blokken én tabellen voor dezelfde ratio's.
+- Risico's: maximaal 5, elk met toelichting en mitigerende factor of vervolgstap; geen aparte lange lijst bancaire aandachtspunten als dezelfde punten al bij voorwaarden/actiepunten staan.
+- Voorwaarden, actiepunten & op te vragen stukken: één gecombineerde tabel (onderdeel | type | prioriteit | toelichting); elk onderwerp komt precies één keer voor.
+- Cover/klantnaam: let op de juiste kredietnemer — vraagt een vastgoed-B.V. (i.o.) aan en huurt de werkmaatschappij het pand, vermeld dan beide, bijv. "[Vastgoed-B.V.] / [Werkmaatschappij] groep".
+Kernonderdelen (financiële analyse, betaalcapaciteit, risico's, financieringssamenvatting, documentatie) mogen compact zijn of gecombineerd worden, maar mogen nooit volledig verdwijnen als de bron er inhoud voor biedt. Kort hoofdstukken in vóórdat je ze schrapt — het rapport moet korter zijn dan de bron, maar niet inhoudelijk leeg.
+
+RAPPORTTYPEKEUZE — OP BASIS VAN COMPLEXITEIT, NIET VAN BRONLENGTE
+Bepaal vóór het schrijven welk rapporttype nodig is (metadata.rapport_type):
+- "compact_intake" (= rapporttype A): eenvoudige financieringen — financial lease, bedrijfsmiddelen-, machine- of voertuigfinanciering, relatief kleine aanvraag, geen vastgoedfinanciering, geen bedrijfsovername, beperkte broninformatie, geen uitgebreide prognose of kasstroomanalyse. De financieringsvraag is vooral bedoeld om documenten en uitgangspunten overzichtelijk te presenteren.
+- "volwaardig_financieringsmemorandum" (= rapporttype B): complexere financieringen — vastgoedfinanciering, aankoop bedrijfspand, overname, herfinanciering, financiering met meerdere entiteiten (vastgoed-B.V./holding/werkmaatschappij), sources & uses met eigen inbreng, prognoses/DSCR/Debt-EBITDA beschikbaar, hypotheekrecht/verpanding/borgstelling/hoofdelijke aansprakelijkheid als zekerheid, of een substantiële aanvraag — óók als de bron zelf kort is.
+- "luxe_samenvatting": alleen bij een zeer lange, herhalende bron waarvoor de adviseur expliciet een compactere bankversie vraagt; volgt verder de structuur en limieten van rapporttype B.
+De bronlengte bepaalt dus NIET het type: een korte bron over een vastgoedaankoop is rapporttype B; een lange bijlagenbundel bij een eenvoudige lease blijft rapporttype A. Kort alleen in wat dubbel, wollig of niet-besluitvormingsrelevant is; laat omgekeerd niets kunstmatig groeien: secties zonder brondata blijven leeg.
 
 SECTIESELECTIE — ALLEEN WAT DE BRON DRAAGT
 Vul geen sectie voor onderwerpen die niet werkelijk in de bron staan: geen financiële analyse zonder cijfers; geen betaalcapaciteit zonder kasstroom, DSCR of rente-/aflossingsgegevens; geen marktsectie als de bron alleen operationele activiteiten noemt; geen object-/vastgoedsectie als vastgoed slechts zijdelings als bestaande zekerheid voorkomt; geen privésectie zonder relevante privéanalyse; geen lange conclusie zonder data. Laat zulke velden en arrays leeg. Maak nooit inhoud die alleen uit "niet opgenomen in bron" bestaat; ontbrekende maar relevante onderdelen benoem je kort als controlepunt (coverage_check.waarschuwingen) of vervolgvraag. Voeg geen standaardtekst toe om een sectie te vullen: het rapport moet mooier zijn dan de bron, niet langer dan de bron rechtvaardigt.
 Sectieteksten (tekst-velden): volledige, afgeronde alinea's, zo lang als de broninhoud rechtvaardigt (typisch 60-300 woorden per veld). Gebruik lege regels tussen alinea's. Schrijf ALTIJD volledige zinnen; breek nooit een zin af en eindig nooit met "..." of "…". Tabellen: alle relevante rijen uit de bron (tot 24 per tabel). Bullets: tot 10 per lijst, alleen met echte informatie.
 
 SECTIES (vul alleen wat de bron ondersteunt)
-- managementsamenvatting: maximaal één pagina — kernboodschap (korte omschrijving onderneming, doel financiering, financieringsbehoefte), belangrijkste sterktes, belangrijkste risico's en belangrijkste voorwaarden/mitsen (aandachtspunten). Het veld voorlopig_oordeel wordt in het rapport getoond als "Financieringssamenvatting": schrijf het als financieringsgerichte samenvatting, NIET als kredietoordeel — bijv. "De aanvraag biedt voldoende aanknopingspunten voor verdere beoordeling door financiers. De combinatie van eigen inbreng, beschikbare zekerheden, positieve historische resultaten en onderbouwde prognose vormt de basis voor het opvragen van passende financieringsvoorstellen. De belangrijkste aandachtspunten zijn …"
-- aanvraag_en_transactie: aanleiding, financieringsdoel, investering, timing, gewenste structuur en de besluitvormingsvraag.
+- managementsamenvatting: maximaal één pagina; kernboodschap van maximaal 180 woorden bij rapporttype B en maximaal 150 woorden bij rapporttype A (korte omschrijving onderneming, doel financiering, financieringsbehoefte), belangrijkste sterktes, belangrijkste risico's en belangrijkste voorwaarden/mitsen (aandachtspunten). Het veld voorlopig_oordeel wordt in het rapport getoond als "Financieringssamenvatting": schrijf het als financieringsgerichte samenvatting, NIET als kredietoordeel — bijv. "De aanvraag biedt voldoende aanknopingspunten voor verdere beoordeling door financiers. De combinatie van eigen inbreng, beschikbare zekerheden, positieve historische resultaten en onderbouwde prognose vormt de basis voor het opvragen van passende financieringsvoorstellen. De belangrijkste aandachtspunten zijn …"
+- aanvraag_en_transactie: aanleiding, financieringsdoel, investering, timing en gewenste structuur. Vul het veld besluitvormingsvraag met het "Doel van de aanvraag": één financieringsgerichte zin in de vorm "Het opvragen van financieringsvoorstellen voor …" — nooit een interne besluitvormings- of kredietvraag.
 - juridische_structuur: alle betrokken rechtspersonen en privépersonen (rol, rechtsvorm, KvK), bestuur en tekenbevoegdheid, aandeelhouders/UBO's. Vul structuur_tekstueel ALTIJD met een compact tekstueel structuurschema: korte, feitelijke bulletzinnen, één relatie per regel (bijv. "M.A. van Duinen is uiteindelijk belanghebbende.", "MAVD B.V. houdt 100% van de aandelen in Matrading B.V.", "Matvastgoed B.V. i.o. koopt en verhuurt het bedrijfspand zakelijk aan Matrading B.V."). Dit is de weergave in het rapport wanneer geen net organogram mogelijk is.
-- ORGANOGRAMMEN: als de bron een organogram, structuurplaatje of groepsstructuur bevat (bestaand en/of nieuw), reconstrueer die VOLLEDIG in organogram_bestaand / organogram_nieuw: aanwezig=true; titel; entiteiten met uniek kort id (bijv. "e1"), naam, type (privepersoon | holding | werkmaatschappij | vastgoed_bv | stak | in_oprichting | overig) en rol (bijv. "Kredietnemer", "Mede-kredietnemer", "Zekerheidssteller"); relaties van eigenaar ("van") naar deelneming ("naar") met label voor het percentage of de relatie (bijv. "100%", "60%", "certificaten"). Een structuurplaatje uit de bron mag NOOIT verdwijnen. Bevat de bron een organogram of een eenduidig beschreven aandelenstructuur, dan is een gereconstrueerd organogram (aanwezig=true) of een volledig gevuld structuur_tekstueel VERPLICHT — het rapport mag nooit zonder structuurweergave verschijnen. Een structuur die alleen in tekst beschreven staat mag je ook zo reconstrueren. Reconstrueer alleen wat eenduidig uit de bron volgt: geen dubbele of tegenstrijdige percentages, geen onduidelijke blokken. Regels voor een net organogram: toon iedere persoon of entiteit maximaal één keer, toon percentages slechts één keer per relatie, geen dubbele 100%-labels of dubbele blokken. Is de structuur te onduidelijk voor een net organogram, laat aanwezig dan op false — het rapport toont dan het tekstuele structuurschema (structuur_tekstueel). Een helder tekstueel structuurschema is beter dan een rommelig organogram.
+- ORGANOGRAMMEN: als de bron een organogram, structuurplaatje of groepsstructuur bevat (bestaand en/of nieuw), reconstrueer die VOLLEDIG in organogram_bestaand / organogram_nieuw: aanwezig=true; titel; entiteiten met uniek kort id (bijv. "e1"), naam, type (privepersoon | holding | werkmaatschappij | vastgoed_bv | stak | in_oprichting | overig) en rol (bijv. "Kredietnemer", "Mede-kredietnemer", "Zekerheidssteller"); relaties van eigenaar ("van") naar deelneming ("naar") met label voor het percentage of de relatie (bijv. "100%", "60%", "certificaten"). Een structuurplaatje uit de bron mag NOOIT verdwijnen. Bevat de bron een organogram of een eenduidig beschreven aandelenstructuur, dan is een gereconstrueerd organogram (aanwezig=true) of een volledig gevuld structuur_tekstueel VERPLICHT — het rapport mag nooit zonder structuurweergave verschijnen. Een structuur die alleen in tekst beschreven staat mag je ook zo reconstrueren. Reconstrueer alleen wat eenduidig uit de bron volgt: geen dubbele of tegenstrijdige percentages, geen onduidelijke blokken. Regels voor een net organogram: toon iedere persoon of entiteit maximaal één keer, toon percentages slechts één keer per relatie, geen dubbele 100%-labels of dubbele blokken. Is de structuur te onduidelijk voor een net organogram, laat aanwezig dan op false — het rapport toont dan het tekstuele structuurschema (structuur_tekstueel). Een helder tekstueel structuurschema is beter dan een rommelig organogram. Maak NOOIT twee visuele organogrammen in één rapport: bevat de bron zowel een bestaande als een nieuwe structuur, reconstrueer dan alleen de nieuwe structuur (organogram_nieuw, aanwezig=true) en beschrijf de bestaande situatie in structuur_tekstueel. Bij een eenvoudige leaseaanvraag (rapporttype A) heeft een tekstueel schema altijd de voorkeur boven een visueel organogram.
 - activiteiten_onderneming: historie, bedrijfsactiviteiten, verdienmodel, strategie, omzetstromen, operationele aandachtspunten.
 - markt_en_omgeving: marktpositie, concurrentie, trends, afnemers, leveranciers, afhankelijkheden, seizoenspatroon, debiteuren-/crediteurenrisico.
 - management_en_organisatie: ondernemer(s) en team met rol en achtergrond/ervaring, externe adviseurs, KPI's/rapportages.
 - financieringsopzet: kerncijfers, bronnen en aanwendingen, bestaande én nieuwe faciliteiten met condities, bouwdepot/fasering, btw-aspecten, voorwaarden. Vul kerncijfers zo volledig mogelijk voor de cover: gevraagde financiering, totale investering, eigen inbreng (en herkomst), looptijd, rente, aflossingsstructuur (incl. aflossingsvrije periode en start aflossing) en LTV bij vastgoed. Benoem condities kort in de tekst: hoofdsom, rente, looptijd, aflossing, bouwdepot/fasering indien relevant.
 - object_en_vastgoed: adres, type object, oppervlakte, taxatiewaarde en taxatiedatum, energielabel, erfpacht, gebruik/verhuur, LTV — als kenmerken-rijen {label, waarde}.
-- financiele_analyse: historische cijfers én prognose. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode.
+- financiele_analyse: historische cijfers én prognose. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode. Beperk tot kernposten: resultaten met in elk geval omzet, bedrijfsresultaat en resultaat na belasting; balans met in elk geval liquide middelen en eigen vermogen. In het rapport wordt dit één compacte tabel met maximaal 5 observaties.
 - betaalcapaciteit: historische en genormaliseerde betaalcapaciteit, correcties, privéonttrekkingen/privébehoefte, rente- en aflossingsverplichtingen, DSCR, Debt/EBITDA, overgangsjaar versus structurele situatie. Tabel als {label, periode, bedrag}; DSCR/Debt-EBITDA als kengetallen-rijen. Vul daarnaast dscr_overzicht met één rij per (prognose)jaar: jaar, situatie (bijv. "Bouwfase, alleen rente", "Overgangsjaar", "Structurele situatie"), dscr als ratio met de decimalen exact uit de bron (bijv. "3,11" — nooit een eurobedrag) en een korte financieringsgerichte toelichting (bijv. "Ruime rentedekking", "Tijdelijke druk door dubbele lasten, verklaarbaar", "Herstel na wegvallen externe huur"). Laat dscr_overzicht leeg als de bron geen DSCR bevat. Geef DSCR per prognosejaar met de situatie erbij (bijv. "2026 — bouwfase, alleen rente", "2027 — overgangsjaar, tijdelijke druk door dubbele lasten", "2028 — structurele situatie") en sluit af met een expliciete kwalificatie van de betaalcapaciteit: ruim voldoende, voldoende, tijdelijk krapper maar verklaarbaar, of afhankelijk van realisatie van de prognose — uitsluitend onderbouwd door broncijfers en zonder harde negatieve kwalificatie.
 - inkomen_vermogen_prive: alleen indien de bron dit bevat: inkomen ondernemer, partnerinkomen, woningwaarde, hypotheek, vermogen, privébehoefte — als posten {label, waarde} — plus relevantie voor de financiering.
 - zekerheden_en_risico: alle zekerheden met waarde en status, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten. Neem het juridische zekerheidslabel EXACT over uit de bron: maak van hoofdelijke aansprakelijkheid nooit een borgstelling en omgekeerd; maak van een mogelijke of "indien nodig aan te reiken" zekerheid nooit een definitief gevestigde zekerheid. status: volg de bron en gebruik één van — "gevestigd", "bestaand", "te vestigen", "aangeboden", "aanvullend aan te bieden", "nog te formaliseren", "voorwaardelijk", "nog te controleren", of leeg indien onbekend. Schrijf NOOIT "aan te reiken" in de output — gebruik "aanvullend aan te bieden", "mogelijk aanvullend te vestigen", "nader te bepalen" of "indien door financier gewenst". Schrijf nooit "gevestigd" als de zekerheid nog niet daadwerkelijk gevestigd is — gebruik dan "te vestigen", "nader te formaliseren", "voorwaarde voor financiering" of "indien door financier vereist". Bestaande zekerheden (van een lopende financiering) gelden niet automatisch ook voor de nieuwe aanvraag, tenzij de bron dat expliciet zo zegt. Marktwaarde/WOZ-waarde, hypotheekschuld en overwaarde zijn aparte gegevens: maak van overwaarde of hypotheekschuld geen zekerheidswaarde tenzij de bron dat expliciet zo presenteert; noemt de bron overwaarde van een privéwoning slechts als mogelijke aanvullende zekerheid, neem dit dan ook zo terughoudend op — niet als reeds gevestigd onderdeel van de zekerhedenmix. Voorbeeld vastgoed: "De primaire zekerheid bestaat uit een eerste hypotheekrecht op het bedrijfspand. Een tweede hypotheek op de privéwoning is in de bron genoemd als aanvullend aan te bieden zekerheid indien door de financier gewenst." Voorbeeld lease: "Voor de nieuwe lease wordt verpanding van de te financieren bedrijfsmiddelen genoemd. Bestaande hypotheek- en borgstellingszekerheden zijn opgenomen als context bij bestaande financieringen en gelden niet automatisch als zekerheid voor de nieuwe lease, tenzij de bron dit expliciet vermeldt." Formuleer de dekkingspositie nooit positiever dan de bron toelaat wanneer aanvullende zekerheden nog niet definitief zijn. Schrijf nooit "de zekerheid dekt de lening volledig"; formuleer voorzichtiger, bijv. "De primaire zekerheid bestaat uit een eerste hypotheekrecht op het object. De LTV bedraagt circa X% op basis van de taxatiewaarde." Maak in de tekst altijd onderscheid tussen bestaande zekerheden, te vestigen zekerheden en aanvullende mogelijke zekerheden; schrijf nooit "gevestigd" als een recht nog niet definitief gevestigd is — gebruik dan "te vestigen" of "voorwaarde voor financiering".
@@ -340,7 +360,7 @@ VISUALISATIES
 Vul grafiekarrays uitsluitend met echte bronbedragen. financieringsmix: de opbouw van de financiering. omzetontwikkeling / resultaatontwikkeling: per periode, inclusief prognosejaren (markeer met "(prognose)"). zekerhedenmix: alleen met waardes uit de bron. ratioontwikkeling: DSCR en/of Debt/EBITDA per periode als numerieke waarde. Geen betrouwbare bedragen = lege array []. Nooit 0-waarden als vulling, nooit één losse onduidelijke waarde.
 
 RISICO'S
-Risico's zijn aandachtspunten die financiers inzicht geven in de casus — geen redenen om af te wijzen. Alle risico's die uit de bron volgen, ELK met een concrete mitigant of vervolgstap in het mitigant-veld (nooit leeg): ondernemersafhankelijkheid, marktrisico, debiteuren/crediteuren, voorraad/werkkapitaal, bouwfase, dubbele lasten, prognoserisico, hoge LTV, beperkte schaalgrootte, nog af te ronden juridische formaliteiten, enzovoort. Formuleer het risico feitelijk en de mitigant concreet (bijv. "Tijdelijke dubbele lasten — in 2027 lopen huur, rente en start aflossing deels samen — aflossingsvrije bouwfase, liquiditeitsbuffer en verwachte normalisatie vanaf 2028"). Vul per risico ook het veld toelichting met één feitelijke zin die uitlegt waarom dit aandachtspunt speelt; in het rapport wordt de tabel getoond als Aandachtspunt | Toelichting | Mitigerende factor / vervolgstap. Een risico mag nooit kaal negatief blijven staan. Sluit het risicohoofdstuk af met concrete voorwaarden/actiepunten in conclusie.voorwaarden (bijv. definitieve huurovereenkomst opvragen, bewijs eigen inbreng controleren, hypotheekrecht eerste rang vestigen, oprichting vastgoed-B.V. afronden, liquiditeitsontwikkeling monitoren). Bij beperkte documentatie is "Documentatierisico" (kans hoog, impact hoog, mitigant: aanvullende stukken opvragen vóór externe beoordeling) het belangrijkste risico.
+Risico's zijn aandachtspunten die financiers inzicht geven in de casus — geen redenen om af te wijzen. Maximaal 5 risico's: kies de belangrijkste die uit de bron volgen, ELK met een concrete mitigant of vervolgstap in het mitigant-veld (nooit leeg): ondernemersafhankelijkheid, marktrisico, debiteuren/crediteuren, voorraad/werkkapitaal, bouwfase, dubbele lasten, prognoserisico, hoge LTV, beperkte schaalgrootte, nog af te ronden juridische formaliteiten, enzovoort. Formuleer het risico feitelijk en de mitigant concreet (bijv. "Tijdelijke dubbele lasten — in 2027 lopen huur, rente en start aflossing deels samen — aflossingsvrije bouwfase, liquiditeitsbuffer en verwachte normalisatie vanaf 2028"). Vul per risico ook het veld toelichting met één feitelijke zin die uitlegt waarom dit aandachtspunt speelt; in het rapport wordt de tabel getoond als Aandachtspunt | Toelichting | Mitigerende factor / vervolgstap. Een risico mag nooit kaal negatief blijven staan. Sluit het risicohoofdstuk af met concrete voorwaarden/actiepunten in conclusie.voorwaarden (bijv. definitieve huurovereenkomst opvragen, bewijs eigen inbreng controleren, hypotheekrecht eerste rang vestigen, oprichting vastgoed-B.V. afronden, liquiditeitsontwikkeling monitoren). Bij beperkte documentatie is "Documentatierisico" (kans hoog, impact hoog, mitigant: aanvullende stukken opvragen vóór externe beoordeling) het belangrijkste risico.
 
 DOCUMENTATIECHECK — EERLIJK
 - ontvangen: uitsluitend de daadwerkelijk aangeleverde bestanden (status "ontvangen").
@@ -350,7 +370,7 @@ DOCUMENTATIECHECK — EERLIJK
 Claim NOOIT dat stukken los ontvangen zijn als ze alleen in het bronmemorandum staan. Formuleer maximaal 6 gerichte vervolgvragen. Elke kwestie komt in het hele rapport precies één keer voor als vervolgpunt: neem hetzelfde onderwerp (bijv. definitieve huurovereenkomst, bewijs eigen inbreng, taxatierapport, oprichting vastgoed-B.V., liquiditeitsmonitoring) nooit dubbel op als voorwaarde én actiepunt én ontbrekend stuk én vervolgvraag — kies per kwestie de meest passende categorie. Vervolgvragen zijn alleen nodig als ze echt nieuwe informatie toevoegen.
 
 RAPPORTTYPE — MINIMUMEISEN
-"volwaardig_financieringsmemorandum" alleen als minimaal bekend zijn: kredietnemer, financieringsdoel, financieringsbedrag (of duidelijke behoefte) én concrete financiële cijfers. "luxe_samenvatting" alleen bij een rijke, lange bron waarvoor een compactere bankversie gewenst is. Anders "compact_intake": een eerlijk, compact intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap) — dwing geen volwaardig kredietrapport af als de bron daar onvoldoende inhoud voor bevat.
+"volwaardig_financieringsmemorandum" vereist minimaal: kredietnemer, financieringsdoel en financieringsbedrag (of duidelijke behoefte); financiële cijfers of een prognose horen er vrijwel altijd bij. Ontbreekt vrijwel alle inhoudelijke onderbouwing, kies dan "compact_intake": een eerlijk, compact intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap) — dwing geen volwaardig kredietrapport af als de bron daar onvoldoende inhoud voor bevat.
 
 METADATA
 klantnaam: de kredietnemer/onderneming zoals in de bron. Let op de juiste kredietnemer: wordt de financiering feitelijk aangevraagd door een nieuw op te richten (vastgoed-)B.V., benoem dan niet alleen de werkmaatschappij maar beide, bijv. "Matvastgoed B.V. i.o. / Matrading B.V. groep". financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". kantoor_adviseur: het Credion-kantoor en/of de adviseur zoals vermeld in de bron; leeg indien onbekend. datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
@@ -359,14 +379,12 @@ OUTPUT
 Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
 
 function buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid }) {
-  const HARD_MAX = 10;
   const base = bytesPageCount
     ? `De aangeleverde bron-PDF telt ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}. `
     : "Het exacte aantal bronpagina's kon niet automatisch worden bepaald: vul bronrapport.aantal_paginas zo nauwkeurig mogelijk in. ";
-  const cap = bytesPageCount && bytesPageCount < HARD_MAX ? bytesPageCount : HARD_MAX;
   const budgetLine = base
-    + `Het rapport is maximaal ${cap} pagina's inclusief voorblad en achterblad. Wees beknopt, voeg samen en prioriteer; forceer geen extra pagina's als minder volstaat.`
-    + (uitgebreid ? ' De adviseur vroeg om een uitgebreid rapport: benut het maximum, maar overschrijd de 10 pagina\'s nooit.' : '');
+    + "De bronlengte bepaalt het rapporttype en het paginabudget NIET. Rapporttype A (compact_intake): maximaal 7 pagina's, doellengte 5 à 7. Rapporttype B (volwaardig financieringsmemorandum of luxe samenvatting): maximaal 10 pagina's, doellengte 9 à 10. Wees beknopt, voeg samen en prioriteer; forceer geen extra pagina's als minder volstaat."
+    + (uitgebreid ? ' De adviseur vroeg om een uitgebreid rapport: benut het maximum van het gekozen rapporttype, maar overschrijd het nooit.' : '');
 
   return `${SYSTEM_BASE}
 
@@ -798,51 +816,71 @@ function enforceQuality(r, vandaag, opts = {}) {
   /* 4 — datumregels (technische correctie → intern, geen extern controlepunt) */
   enforceDates(r, internal, vandaag);
 
-  /* 5 — paginabudget ééRST bepalen: sourcePageCount is de belangrijkste harde rem
-     op de typebepaling hieronder. bytesPageCount (gemeten aan de echte PDF-bytes)
-     weegt zwaarder dan de schatting van de AI zelf; bronrapport.aantal_paginas is
-     de terugval als de bytes op de server niet beschikbaar waren. */
+  /* 4b — nooit twee visuele organogrammen: bij bestaand én nieuw wint de nieuwe
+     structuur; de bestaande situatie blijft beschikbaar via structuur_tekstueel. */
+  const ju = r.juridische_structuur || {};
+  if (ju.organogram_bestaand?.aanwezig === true && ju.organogram_nieuw?.aanwezig === true) {
+    ju.organogram_bestaand.aanwezig = false;
+    internal.push('Twee organogrammen aangeleverd; alleen de nieuwe structuur wordt visueel getoond.');
+  }
+
+  /* 4c — maximaal 5 risico's in de risicomatrix (conform rapportstructuur) */
+  if (A(zr.risicomatrix).length > 5) {
+    zr.risicomatrix = A(zr.risicomatrix).slice(0, 5);
+    internal.push('Risicomatrix ingekort tot de 5 belangrijkste aandachtspunten.');
+  }
+
+  /* 5 — bronomvang alleen registreren (informatief). De typebepaling volgt de
+     complexiteit van de financiering, NIET de bronlengte: een korte bron over een
+     vastgoedaankoop is rapporttype B, een lange bijlagenbundel bij een eenvoudige
+     lease blijft rapporttype A. */
   const aiPages = num(r.bronrapport?.aantal_paginas);
   const sourcePageCount = bytesPageCount || (aiPages && aiPages > 0 ? Math.round(aiPages) : null);
-  const bronIsKort = sourcePageCount !== null && sourcePageCount < 10;
 
-  /* 6 — datadekking en rapporttype server-side.
-     BUG DIE HIER ZAT: "volwaardig" werd al toegekend zodra er 2 cijferregels + 1
-     bedrag + 1 doelzin waren — veel te soepel voor een korte bron. Een korte bron
-     (< 10 pagina's) wordt daarom nu ALTIJD naar compact_intake gedwongen, ongeacht
-     wat de AI zelf koos en ongeacht of dd.volwaardig toevallig true uitkomt. Alleen
-     een expliciet "uitgebreid rapport" in de notities doorbreekt deze rem. */
+  /* 6 — rapporttype server-side op basis van complexiteit.
+     Rapporttype B (volwaardig, max 10 p.): vastgoed, aankoop bedrijfspand, overname,
+     herfinanciering, bouwdepot, prognose/DSCR aanwezig of vastgoed-B.V.-structuur.
+     Rapporttype A (compact_intake, max 7 p.): eenvoudige lease-/bedrijfsmiddelen-
+     financiering zonder die componenten. */
   const dd = computeDekking(r);
   r.metadata = r.metadata || {};
   const TYPE_ALIAS = { financieringsmemorandum: 'volwaardig_financieringsmemorandum', intake_documentatiememorandum: 'compact_intake' };
   const GELDIGE_TYPES = ['volwaardig_financieringsmemorandum', 'compact_intake', 'luxe_samenvatting'];
   const aiType = TYPE_ALIAS[r.metadata.rapport_type] || r.metadata.rapport_type;
-  if (bronIsKort && !uitgebreid) {
+  const COMPLEX_PAT = /(vastgoed|bedrijfspand|bedrijfsobject|hypothe|koopsom|aanneemsom|kosten\s+koper|taxatie|erfpacht|\bltv\b|loan[- ]?to[- ]?value|overname|acquisitie|goodwill|verkoperslening|vendor\s?loan|herfinancier|bouwdepot|\bdscr\b|debt\s*\/?\s*ebitda)/i;
+  const complexTxt = JSON.stringify([
+    r.bronfeiten, r.metadata.financieringsdoel, r.bronrapport?.type,
+    r.financieringsopzet?.tekst, r.financieringsopzet?.kerncijfers,
+    r.object_en_vastgoed, A(r.zekerheden_en_risico?.zekerheden),
+  ]);
+  const isComplex =
+    COMPLEX_PAT.test(complexTxt) ||
+    A(r.object_en_vastgoed?.kenmerken).some((x) => hasTxt(x?.label)) ||
+    A(r.betaalcapaciteit?.dscr_overzicht).length > 0;
+  if (!isComplex) {
     r.metadata.rapport_type = 'compact_intake';
-    if (aiType !== 'compact_intake') {
-      warnings.push(`Rapporttype teruggezet naar compact intake- en documentatiememorandum: de bron telt ${sourcePageCount} pagina's, te kort voor een volwaardig rapport.`);
+    if (aiType && aiType !== 'compact_intake') {
+      warnings.push('Rapporttype vastgesteld op compact intake- en documentatiememorandum (rapporttype A): eenvoudige financiering zonder vastgoed-, overname- of prognosecomponent.');
     }
+  } else if (dd.bedrag && dd.doel) {
+    r.metadata.rapport_type =
+      GELDIGE_TYPES.includes(aiType) && aiType !== 'compact_intake' ? aiType : 'volwaardig_financieringsmemorandum';
   } else {
-    r.metadata.rapport_type = dd.volwaardig
-      ? (GELDIGE_TYPES.includes(aiType) ? aiType : 'volwaardig_financieringsmemorandum')
-      : 'compact_intake';
-    if (aiType !== 'compact_intake' && r.metadata.rapport_type === 'compact_intake') {
-      warnings.push('Rapporttype teruggezet naar compact intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig rapport.');
-    }
+    r.metadata.rapport_type = 'compact_intake';
+    warnings.push('Rapporttype teruggezet naar compact intake- en documentatiememorandum: onvoldoende datadekking voor een volwaardig rapport.');
   }
   r.metadata.datadekking = dd.niveau;
   r.metadata.status = 'Concept · ter beoordeling';
 
-  /* 6b — paginabudget vastleggen in metadata (nu na de definitieve typebepaling).
-     Absolute bovengrens: 10 pagina's incl. voor- en achterblad — óók bij "uitgebreid". */
+  /* 6b — paginabudget vastleggen in metadata (na de definitieve typebepaling).
+     Rapporttype A: maximaal 7 pagina's. Rapporttype B/luxe: maximaal 10 pagina's —
+     incl. voor-, inhouds- en achterblad, óók bij "uitgebreid". De bronlengte
+     beïnvloedt het paginabudget niet. */
   const HARD_MAX_PAGES = 10;
-  const FALLBACK_MAX_PAGES = { compact_intake: 8, volwaardig_financieringsmemorandum: 10, luxe_samenvatting: 10 };
+  const MAX_BY_TYPE = { compact_intake: 7, volwaardig_financieringsmemorandum: 10, luxe_samenvatting: 10 };
   r.metadata.sourcePageCount = sourcePageCount;
   r.metadata.uitgebreidToegestaan = !!uitgebreid;
-  r.metadata.maxOutputPages = Math.min(
-    HARD_MAX_PAGES,
-    sourcePageCount || FALLBACK_MAX_PAGES[r.metadata.rapport_type] || 8
-  );
+  r.metadata.maxOutputPages = Math.min(HARD_MAX_PAGES, MAX_BY_TYPE[r.metadata.rapport_type] || 10);
 
   /* 7 — conclusiebeleid.
      Bij compact_intake zonder financiële analyse/prognose mag het oordeel nooit
