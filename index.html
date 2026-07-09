@@ -1242,16 +1242,17 @@ function buildSections(r,ctx){
     if(hasVal(ac.tekst)||hasVal(ac.historie)||hasVal(ac.verdienmodel)||hasVal(ac.strategie)||A(ac.kernpunten).filter(hasVal).length){
       blocks.push(secbarB('Activiteiten, verdienmodel & strategie'));
       blocks.push(paraBlocks(ac.tekst));
-      blocks.push(panel('Historie',ac.historie));
-      blocks.push(panel('Verdienmodel',ac.verdienmodel));
-      blocks.push(panel('Strategie',ac.strategie));
-      const kp=A(ac.kernpunten).filter(hasVal).slice(0,6);
+      /* Historie/verdienmodel/strategie in één compact panel i.p.v. drie aparte
+         panels — bespaart kopregels en padding, houdt hoofdstuk 2 op één pagina. */
+      const hvs=[hasVal(ac.historie)&&`Historie: ${ac.historie}`,hasVal(ac.verdienmodel)&&`Verdienmodel: ${ac.verdienmodel}`,hasVal(ac.strategie)&&`Strategie: ${ac.strategie}`].filter(Boolean).join('\n\n');
+      if(hvs) blocks.push(panel('Onderneming',hvs));
+      const kp=A(ac.kernpunten).filter(hasVal).slice(0,4);
       if(kp.length) blocks.push(bulletBlocks(kp));
     }
     if(hasVal(mk.tekst)||A(mk.afhankelijkheden).filter(hasVal).length){
       blocks.push(secbarB('Markt en afnemers'));
       if(hasVal(mk.tekst)) blocks.push(paraBlocks(mk.tekst));
-      const afh=A(mk.afhankelijkheden).filter(hasVal);
+      const afh=A(mk.afhankelijkheden).filter(hasVal).slice(0,3);
       if(afh.length) blocks.push(bulletBlocks(afh,'orange'));
     }
     const team=A(mg.team).filter(x=>hasVal(x?.naam));
@@ -1562,6 +1563,59 @@ function stripChartBlocks(sections){
     .filter(s=>s.blocks.length>1);
 }
 
+/* Compressiestap 1 (spec): visueel organogram schrappen — een tekstueel schema
+   is al elders in het hoofdstuk aanwezig of de kernboodschap blijft ook zonder
+   diagram leesbaar. Alleen ingezet als het budget dit écht vereist. */
+function stripOrgDiagrams(sections){
+  return sections.map(s=>({label:s.label,blocks:s.blocks.filter(b=>!/^<div class="orgcard/.test(b))}));
+}
+
+/* Compressiestap "samenvattingen verkorten": lange lopende tekst (losse
+   alinea's en tekst binnen panels) inkorten tot de eerste N zinnen. Tabellen,
+   bulletlijsten en KPI-blokken blijven ongemoeid — alleen doorlopende tekst
+   wordt korter, conform "verkort teksten" als eerste stap vóór structurele ingrepen. */
+function shortenParagraphs(sections,maxSentences){
+  const truncate=txt=>{
+    const parts=txt.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9])/);
+    return parts.length<=maxSentences?txt:parts.slice(0,maxSentences).join(' ');
+  };
+  return sections.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
+    let m=b.match(/^<p class="para">([\s\S]*)<\/p>$/);
+    if(m) return `<p class="para">${truncate(m[1])}</p>`;
+    if(/^<div class="panel/.test(b)){
+      const ps=[...b.matchAll(/<p class="para">([\s\S]*?)<\/p>/g)];
+      if(ps.length>1) return b.slice(0,b.indexOf(ps[0][0]))+`<p class="para">${ps[0][1]}</p></div>`;
+    }
+    return b;
+  })}));
+}
+
+/* Bulletlijsten verder inkorten tot maxItems (extra veiligheidsmarge naast de
+   vaste maxima die elk hoofdstuk al hanteert). */
+function trimBulletBlocks(sections,maxItems){
+  return sections.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
+    const m=b.match(/^(<div class="blist[^"]*">)((?:<div>[\s\S]*?<\/div>)+)(<\/div>)$/);
+    if(!m) return b;
+    const items=m[2].match(/<div>[\s\S]*?<\/div>/g)||[];
+    return items.length<=maxItems?b:m[1]+items.slice(0,maxItems).join('')+m[3];
+  })}));
+}
+
+/* Uiterste redmiddel: detailregels in tabellen inkorten, totaal-/samenvattende
+   rijen (class="total") blijven altijd staan zodat bronnen/aanwendingen kloppend blijft. */
+function capTableRows(sections,maxRows){
+  return sections.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
+    if(!/^<table class="t">/.test(b)) return b;
+    return b.replace(/<tbody>([\s\S]*?)<\/tbody>/,(full,body)=>{
+      const rows=body.match(/<tr[\s\S]*?<\/tr>/g)||[];
+      if(rows.length<=maxRows) return full;
+      const totals=rows.filter(r=>/^<tr class="total"/.test(r));
+      const detail=rows.filter(r=>!/^<tr class="total"/.test(r));
+      return `<tbody>${detail.slice(0,Math.max(1,maxRows-totals.length)).join('')}${totals.join('')}</tbody>`;
+    });
+  })}));
+}
+
 /* Paginabudget afdwingen: het rapport is ALTIJD maximaal HARD_MAX_PAGES pagina's,
    inclusief voorblad, (optionele) inhoudsopgave en achterblad — die drie blijven
    altijd staan. Niet-essentiële hoofdstukken worden in vaste prioriteitsvolgorde
@@ -1581,7 +1635,7 @@ function fitToPageBudget(sections,maxOutputPages,opts={}){
   let cur=[...sections]; let includeBack=!forceNoBack;
   const total=()=>totalRenderedPages(cur,includeBack,tocSeparate);
   const rank=s=>{ const i=DROP_PRIORITY.indexOf(s.label); return i===-1?-1:i; };
-  /* 1 — niet-essentiële hoofdstukken laten vervallen */
+  /* 1 — niet-essentiële hoofdstukken laten vervallen (alleen bronspecifieke overige_secties) */
   while(cur.length>1&&total()>maxOutputPages){
     const candidates=cur.filter(s=>!ESSENTIAL_LABELS.has(s.label));
     if(!candidates.length) break;
@@ -1590,28 +1644,27 @@ function fitToPageBudget(sections,maxOutputPages,opts={}){
   }
   /* 2 — grafiekblokken schrappen; de tabellen bevatten dezelfde cijfers */
   if(total()>maxOutputPages) cur=stripChartBlocks(cur);
-  /* 3 — achterblad vervalt vóórdat inhoud vervalt (alleen als niet al geforceerd uit) */
+  /* 3 — organogram schrappen (tekstueel schema/toelichting blijft de structuur uitleggen) */
+  if(total()>maxOutputPages) cur=stripOrgDiagrams(cur);
+  /* 4 — samenvattingen verkorten: lopende tekst inkorten vóórdat hoofdstukken worden
+     samengevoegd of geschrapt — dit is meestal de grootste, minst schadelijke winst. */
+  if(total()>maxOutputPages) cur=shortenParagraphs(cur,3);
+  if(total()>maxOutputPages) cur=shortenParagraphs(cur,1);
+  /* 5 — achterblad vervalt vóórdat inhoud vervalt (alleen als niet al geforceerd uit) */
   if(!forceNoBack&&total()>maxOutputPages) includeBack=false;
-  /* 4 — laatste redmiddel: hoofdstukken samenvoegen in plaats van verwijderen.
-     Object & zekerheden schuift in Financieringsopzet, Financiële analyse in
-     Betaalcapaciteit — conform de compressieregels. Kernhoofdstukken verdwijnen nooit. */
-  const MERGE_INTO=[['Object & zekerheden','Financieringsopzet'],['Financiële analyse',"Betaalcapaciteit & ratio's"],["Risico's, mitiganten & aandachtspunten",'Voorwaarden & financieringssamenvatting']];
-  for(const [from,to] of MERGE_INTO){
-    if(total()<=maxOutputPages) break;
-    const f=cur.find(s=>s.label===from); const t=cur.find(s=>s.label===to);
+  /* 6 — enige toegestane hoofdstuk-samenvoeging: voorwaarden en documentatie combineren.
+     Andere hoofdstukken worden NOOIT samengevoegd — dat verbergt hoofdstukken uit de
+     inhoudsopgave zonder de paginalengte echt te verkorten. */
+  if(total()>maxOutputPages){
+    const f=cur.find(s=>s.label==='Documentatie & bijlagen');
+    const t=cur.find(s=>s.label==='Voorwaarden & financieringssamenvatting');
     if(f&&t){ t.blocks.push(secbarB(f.label),...f.blocks.slice(1)); cur=cur.filter(s=>s!==f); }
   }
-  /* 5 — uiterste redmiddel: bulletlijsten in de resterende hoofdstukken verder
-     inkorten (nooit tabellen breken) zodat het budget hoe dan ook wordt gehaald. */
-  if(total()>maxOutputPages){
-    cur=cur.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
-      const m=b.match(/^<div class="blist[^"]*">((?:<div>.*?<\/div>)+)<\/div>$/);
-      if(!m) return b;
-      const items=m[1].match(/<div>.*?<\/div>/g)||[];
-      if(items.length<=3) return b;
-      return b.replace(m[1],items.slice(0,3).join(''));
-    })}));
-  }
+  /* 7 — bulletlijsten verder inkorten */
+  if(total()>maxOutputPages) cur=trimBulletBlocks(cur,3);
+  if(total()>maxOutputPages) cur=trimBulletBlocks(cur,2);
+  /* 8 — uiterste redmiddel: detailregels in tabellen inkorten (totaalregels blijven staan) */
+  if(total()>maxOutputPages) cur=capTableRows(cur,6);
   return {sections:cur,includeBack};
 }
 
