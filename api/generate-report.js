@@ -325,7 +325,7 @@ SECTIES (vul alleen wat de bron ondersteunt)
 - management_en_organisatie: ondernemer(s) en team met rol en achtergrond/ervaring, externe adviseurs, KPI's/rapportages.
 - financieringsopzet: kerncijfers, bronnen en aanwendingen, bestaande én nieuwe faciliteiten met condities, bouwdepot/fasering, btw-aspecten, voorwaarden. Vul kerncijfers zo volledig mogelijk voor de cover: gevraagde financiering, totale investering, eigen inbreng (en herkomst), looptijd, rente, aflossingsstructuur (incl. aflossingsvrije periode en start aflossing) en LTV bij vastgoed. Benoem condities kort in de tekst: hoofdsom, rente, looptijd, aflossing, bouwdepot/fasering indien relevant.
 - object_en_vastgoed: adres, type object, oppervlakte, taxatiewaarde en taxatiedatum, energielabel, erfpacht, gebruik/verhuur, LTV — als kenmerken-rijen {label, waarde}.
-- financiele_analyse: historische cijfers én prognose. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode. Beperk tot kernposten: resultaten met in elk geval omzet, bedrijfsresultaat en resultaat na belasting; balans met in elk geval liquide middelen en eigen vermogen. In het rapport wordt dit één compacte tabel met maximaal 5 observaties.
+- financiele_analyse: historische cijfers én prognose. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode. Beperk tot kernposten: resultaten met in elk geval omzet, bedrijfsresultaat en resultaat na belasting; balans met in elk geval liquide middelen en eigen vermogen. In het rapport wordt dit één compacte tabel met maximaal 5 observaties. BELANGRIJK — nooit hetzelfde bedrag verzinnen voor verschillende kernposten: omzet, bedrijfsresultaat, resultaat na belasting, liquide middelen en eigen vermogen zijn voor elk jaar afzonderlijke, wezenlijk andere bedragen. Bevat de bron voor een bepaald jaar geen eigen balansgegevens (liquide middelen, eigen vermogen), laat die rij dan voor dat jaar gewoon WEG in plaats van het resultaatcijfer te herhalen of te kopiëren naar een andere post — een lege/ontbrekende post is altijd beter dan een gefabriceerd of gedupliceerd bedrag. Komen er toch twee of meer van deze posten met exact hetzelfde bedrag in hetzelfde jaar uit de brondata, controleer dan of dat werkelijk zo in de bron staat; is dat niet het geval, neem dan alleen de post over die de bron daadwerkelijk vermeldt.
 - betaalcapaciteit: historische en genormaliseerde betaalcapaciteit, correcties, privéonttrekkingen/privébehoefte, rente- en aflossingsverplichtingen, DSCR, Debt/EBITDA, overgangsjaar versus structurele situatie. Tabel als {label, periode, bedrag}; DSCR/Debt-EBITDA als kengetallen-rijen. Vul daarnaast dscr_overzicht met één rij per (prognose)jaar: jaar, situatie (bijv. "Bouwfase, alleen rente", "Overgangsjaar", "Structurele situatie"), dscr als ratio met de decimalen exact uit de bron (bijv. "3,11" — nooit een eurobedrag) en een korte financieringsgerichte toelichting (bijv. "Ruime rentedekking", "Tijdelijke druk door dubbele lasten, verklaarbaar", "Herstel na wegvallen externe huur"). Laat dscr_overzicht leeg als de bron geen DSCR bevat. Geef DSCR per prognosejaar met de situatie erbij (bijv. "2026 — bouwfase, alleen rente", "2027 — overgangsjaar, tijdelijke druk door dubbele lasten", "2028 — structurele situatie") en sluit af met een expliciete kwalificatie van de betaalcapaciteit: ruim voldoende, voldoende, tijdelijk krapper maar verklaarbaar, of afhankelijk van realisatie van de prognose — uitsluitend onderbouwd door broncijfers en zonder harde negatieve kwalificatie.
 - inkomen_vermogen_prive: alleen indien de bron dit bevat: inkomen ondernemer, partnerinkomen, woningwaarde, hypotheek, vermogen, privébehoefte — als posten {label, waarde} — plus relevantie voor de financiering.
 - zekerheden_en_risico: alle zekerheden met waarde en status, dekkingspositie, volledige risicomatrix (elk risico met kans, impact en mitigant), bancaire aandachtspunten. Neem het juridische zekerheidslabel EXACT over uit de bron: maak van hoofdelijke aansprakelijkheid nooit een borgstelling en omgekeerd; maak van een mogelijke of "indien nodig aan te reiken" zekerheid nooit een definitief gevestigde zekerheid. status: volg de bron en gebruik één van — "gevestigd", "bestaand", "te vestigen", "aangeboden", "aanvullend aan te bieden", "nog te formaliseren", "voorwaardelijk", "nog te controleren", of leeg indien onbekend. De standaardvocabulaire voor een NIEUWE zekerheid die nog niet is gevestigd is: "te vestigen" (nog te vestigen zekerheidsrecht), "nader te formaliseren" (juridisch nog vast te leggen), "aanvullend aan te bieden" (mogelijke extra zekerheid), "indien door financier vereist" (voorwaardelijk op de financier). Schrijf NOOIT "aan te reiken" in de output — gebruik "aanvullend aan te bieden", "mogelijk aanvullend te vestigen", "nader te bepalen" of "indien door financier gewenst". Schrijf nooit "gevestigd" als de zekerheid nog niet daadwerkelijk gevestigd is (bijv. bij de aankoop van een nieuw bedrijfspand is het eerste hypotheekrecht per definitie nog NIET gevestigd, ook niet als het rapport het als "primaire zekerheid" beschrijft) — gebruik dan "te vestigen", "nader te formaliseren", "voorwaarde voor financiering" of "indien door financier vereist". Schrijf ook nooit een harde afsluitende conclusie zoals "de zekerheid dekt volledig" of "solide zekerheden" als samenvattend hard oordeel over de dekkingspositie; gebruik in plaats daarvan een afgewogen formulering zoals "De zekerheidstelling biedt een duidelijke basis voor verdere beoordeling, waarbij definitieve vestiging van het eerste hypotheekrecht en eventuele aanvullende zekerheden nog moeten worden afgestemd." Bestaande zekerheden (van een lopende financiering) gelden niet automatisch ook voor de nieuwe aanvraag, tenzij de bron dat expliciet zo zegt. Marktwaarde/WOZ-waarde, hypotheekschuld en overwaarde zijn aparte gegevens: maak van overwaarde of hypotheekschuld geen zekerheidswaarde tenzij de bron dat expliciet zo presenteert; noemt de bron overwaarde van een privéwoning slechts als mogelijke aanvullende zekerheid, neem dit dan ook zo terughoudend op — niet als reeds gevestigd onderdeel van de zekerhedenmix. Voorbeeld vastgoed: "De primaire zekerheid bestaat uit een eerste hypotheekrecht op het bedrijfspand. Een tweede hypotheek op de privéwoning is in de bron genoemd als aanvullend aan te bieden zekerheid indien door de financier gewenst." Voorbeeld lease: "Voor de nieuwe lease wordt verpanding van de te financieren bedrijfsmiddelen genoemd. Bestaande hypotheek- en borgstellingszekerheden zijn opgenomen als context bij bestaande financieringen en gelden niet automatisch als zekerheid voor de nieuwe lease, tenzij de bron dit expliciet vermeldt." Formuleer de dekkingspositie nooit positiever dan de bron toelaat wanneer aanvullende zekerheden nog niet definitief zijn. Schrijf nooit "de zekerheid dekt de lening volledig"; formuleer voorzichtiger, bijv. "De primaire zekerheid bestaat uit een eerste hypotheekrecht op het object. De LTV bedraagt circa X% op basis van de taxatiewaarde." Maak in de tekst altijd onderscheid tussen bestaande zekerheden, te vestigen zekerheden en aanvullende mogelijke zekerheden; schrijf nooit "gevestigd" als een recht nog niet definitief gevestigd is — gebruik dan "te vestigen" of "voorwaarde voor financiering".
@@ -801,6 +801,67 @@ function isMessyOrganogram(org) {
   return false;
 }
 
+/* Financiële kernposten (omzet, bedrijfsresultaat, resultaat na belasting,
+   liquide middelen, eigen vermogen) horen voor eenzelfde jaar wezenlijk andere
+   bedragen te zijn. Als de AI 3 of meer van deze posten voor hetzelfde jaar met
+   exact hetzelfde bedrag teruggeeft, is dat vrijwel altijd een gefabriceerd/
+   gedupliceerd cijfer (bijv. het resultaat hergebruikt als liquide middelen bij
+   ontbrekende balansdata) — die posten worden dan verwijderd; alleen de post met
+   de hoogste prioriteit (omzet > bedrijfsresultaat > resultaat na belasting >
+   liquide middelen > eigen vermogen) blijft staan. Twee-op-twee overeenkomsten
+   worden met rust gelaten (kan legitiem zijn, bijv. resultaat na belasting =
+   bedrijfsresultaat bij nihil belastingdruk). */
+function enforceFinancialFigureQuality(r, internal) {
+  const fa = r.financiele_analyse;
+  if (!fa || (!Array.isArray(fa.resultaten) && !Array.isArray(fa.balans))) return;
+  const PRIORITY = [
+    { key: 'omzet', re: /omzet/i },
+    { key: 'bedrijfsresultaat', re: /bedrijfsresultaat|^ebitda?$/i },
+    { key: 'resultaatnabelasting', re: /resultaat[^]*na[^]*belasting/i },
+    { key: 'liquide', re: /liquide/i },
+    { key: 'eigenvermogen', re: /eigen\s*vermogen/i },
+  ];
+  const rankOf = (label) => {
+    const i = PRIORITY.findIndex((p) => p.re.test(String(label || '')));
+    return i === -1 ? PRIORITY.length : i;
+  };
+  const norm = (x) => String(x || '').trim();
+  const groups = {};
+  const collect = (arrName) => {
+    const arr = fa[arrName];
+    if (!Array.isArray(arr)) return;
+    arr.forEach((row, idx) => {
+      const periode = norm(row?.periode);
+      if (!periode || typeof row?.bedrag !== 'number') return;
+      (groups[periode] = groups[periode] || []).push({ arrName, idx, label: norm(row.label), bedrag: row.bedrag });
+    });
+  };
+  collect('resultaten');
+  collect('balans');
+  const toRemove = { resultaten: new Set(), balans: new Set() };
+  for (const periode of Object.keys(groups)) {
+    const byBedrag = {};
+    for (const row of groups[periode]) {
+      (byBedrag[row.bedrag] = byBedrag[row.bedrag] || []).push(row);
+    }
+    for (const bedrag of Object.keys(byBedrag)) {
+      const dupRows = byBedrag[bedrag];
+      if (dupRows.length < 3) continue; // alleen 3+ gelijke posten is verdacht
+      const sorted = [...dupRows].sort((a, b) => rankOf(a.label) - rankOf(b.label));
+      const keep = sorted[0];
+      for (const row of dupRows) {
+        if (row === keep) continue;
+        toRemove[row.arrName].add(row.idx);
+      }
+      internal.push(
+        `Financiële analyse ${periode}: kernposten (${dupRows.map((d) => d.label).join(', ')}) hadden allemaal exact hetzelfde bedrag (${bedrag}); alleen "${keep.label}" is behouden, de overige zijn als vermoedelijk gefabriceerd/gedupliceerd verwijderd.`
+      );
+    }
+  }
+  if (toRemove.resultaten.size) fa.resultaten = fa.resultaten.filter((_, idx) => !toRemove.resultaten.has(idx));
+  if (toRemove.balans.size) fa.balans = fa.balans.filter((_, idx) => !toRemove.balans.has(idx));
+}
+
 function enforceOrgDiagramQuality(r, warnings, internal) {
   const ju = (r.juridische_structuur = r.juridische_structuur || {});
   for (const key of ['organogram_bestaand', 'organogram_nieuw']) {
@@ -933,6 +994,11 @@ function enforceQuality(r, vandaag, opts = {}) {
      100%-labels, gebroken referenties) worden nooit getoond, ook niet als de
      AI zelf aanwezig=true teruggaf. */
   enforceOrgDiagramQuality(r, warnings, internal);
+
+  /* 4b.i.b — financiële kernposten die voor hetzelfde jaar 3x hetzelfde
+     (vermoedelijk gefabriceerde/gedupliceerde) bedrag teruggeven, worden
+     opgeschoond vóórdat de kerncijfertabel wordt opgebouwd. */
+  enforceFinancialFigureQuality(r, internal);
 
   /* 4b.ii — handmatig door de adviseur aangeleverd structuurschema heeft altijd
      voorrang boven AI-generatie: overschrijft structuur_tekstueel (tekst/
