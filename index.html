@@ -1518,8 +1518,9 @@ function layoutPages(sections){
   const MMpx=mmPx();
   const budget=254*MMpx;        /* netto contenthoogte per pagina (koptekst 16mm + body-pad 8mm
      + voettekst-reserve ~15mm laten ±258mm netto over; 254mm houdt een kleine veiligheidsmarge aan) */
-  const minSection=55*MMpx;     /* minimale restruimte om een nieuw hoofdstuk te starten */
-  const headReserve=26*MMpx;    /* kop nooit onderaan zonder inhoud eronder */
+  const headReserve=26*MMpx;    /* veiligheidsmarge voor de "past dit hoofdstuk in zijn geheel op
+     één pagina"-check; koppen zelf kunnen dankzij groupByHeading/placeGroup hieronder nooit meer
+     losraken van hun bijbehorende inhoud, dus hier is geen aparte kop-reserve meer nodig. */
   const page=document.createElement('div');
   page.className='report-page';
   page.style.cssText='position:absolute;left:-9999px;top:0;height:auto;overflow:visible;box-shadow:none;margin:0;transform:none';
@@ -1540,9 +1541,62 @@ function layoutPages(sections){
      (tekst inkorten, bullets/tabelrijen inperken) tot het wél op één pagina past.
      Alleen als zelfs de zwaarste compressie nog niet genoeg is (in de praktijk
      vrijwel nooit) loopt het alsnog door op een "— vervolg"-pagina, als uiterste
-     noodgreep. */
-  const sectionHeight=blocks=>blocks.reduce((h,bl)=>h+measure(bl),0);
+     noodgreep.
+     Het hele hoofdstuk wordt in één keer gemeten (i.p.v. losse blokken optellen):
+     opgetelde individuele metingen overschatten de werkelijke hoogte doordat
+     marges tussen aangrenzende blokken dan niet kunnen "collapsen", wat anders
+     tot onnodig inkorten leidt en beschikbare paginaruimte laat liggen. */
+  const sectionHeight=blocks=>measure(blocks.join(''));
   const fitsPage=blocks=>sectionHeight(blocks)+headReserve<=budget;
+
+  /* Groepeer op kop: een kop (secbar/chap) hoort altijd samen met alle inhoud die
+     erop volgt, tot de eerstvolgende kop. Een groep wordt hieronder altijd als
+     geheel geplaatst of als geheel doorgeschoven naar een nieuwe pagina — een kop
+     kan zo nooit meer alleen (met lege ruimte eronder) blijven staan terwijl de
+     bijbehorende inhoud (organogram, tabel, toelichting) pas op de volgende
+     pagina begint. Dit lost concreet op: "Structuur" zonder organogram,
+     "Nieuwe financiering" zonder tabel, een zekerhedentabel zonder
+     "Dekkingspositie" erbij, enzovoort. */
+  const groupByHeading=blocks=>{
+    const groups=[];
+    for(const bl of blocks){
+      if(isHeading(bl)||!groups.length) groups.push([bl]);
+      else groups[groups.length-1].push(bl);
+    }
+    return groups;
+  };
+
+  /* Plaats één kop+inhoud-groep atomair: eerst proberen op de huidige pagina,
+     anders in zijn geheel op een nieuwe pagina. Past de groep zelfs niet op een
+     lege pagina (zeldzaam: een zeer grote combinatie), splits dan pas op
+     blokniveau — en houd de kop daarbij altijd samen met minimaal het eerste
+     volgende inhoudsblok, zodat de kop nooit geïsoleerd raakt. Grote losse
+     blokken (bijv. een lange tabel) kunnen zo nog wel naar een vervolgpagina
+     doorschuiven, maar nooit een kop zonder enige inhoud erbij. */
+  const placeGroup=(sec,group)=>{
+    const groupHtml=group.join('');
+    const groupH=measure(groupHtml);
+    if(cur.h>0&&cur.h+groupH<=budget){
+      cur.html+=groupHtml; cur.h+=groupH;
+      return;
+    }
+    if(groupH<=budget){
+      if(cur.h>0){ close(); open(sec.label+' — vervolg'); }
+      cur.html+=groupHtml; cur.h+=groupH;
+      return;
+    }
+    if(cur.h>0){ close(); open(sec.label+' — vervolg'); }
+    let i=0;
+    while(i<group.length){
+      const chunk = i===0&&group.length>1 ? [group[0],group[1]] : [group[i]];
+      const chunkHtml=chunk.join('');
+      const h=measure(chunkHtml);
+      if(cur.h>0&&cur.h+h>budget){ close(); open(sec.label+' — vervolg'); }
+      cur.html+=chunkHtml; cur.h+=h;
+      i+=chunk.length;
+    }
+  };
+
   for(const sec of sections){
     if(cur) close();
     let blocks=sec.blocks;
@@ -1571,16 +1625,7 @@ function layoutPages(sections){
       blocks=candidate.blocks;
     }
     open(sec.label);
-    let placed=false;
-    for(const bl of blocks){
-      const h=measure(bl);
-      const reserve=isHeading(bl)?headReserve:0;
-      if(cur.h>0&&cur.h+h+reserve>budget){
-        close();
-        open(sec.label+(placed?' — vervolg':''));
-      }
-      cur.html+=bl; cur.h+=h; placed=true;
-    }
+    for(const group of groupByHeading(blocks)) placeGroup(sec,group);
   }
   close();
   page.remove();
