@@ -1129,42 +1129,77 @@ function pivotBlocks(rows,firstCol){
   return tableBlocks([{label:firstCol},{label:'Periode'},{label:'Bedrag',num:true}],trs);
 }
 
-/* Financi\u00eble analyse (rapporttype B): Jaar als rijen, vaste kernmetrics als kolommen \u2014
-   exact \u00e9\u00e9n tabel conform de vaste 10-pagina-indeling (geen aparte balanstabel). */
-function finYearTable(fa){
-  const METRICS=[
-    {key:'omzet',label:'Omzet',re:/omzet/i},
-    {key:'bedrijfsresultaat',label:'Bedrijfsresultaat',re:/bedrijfsresultaat|^ebitda?$/i},
-    {key:'resultaatnabelasting',label:'Resultaat na belasting',re:/resultaat[^]*na[^]*belasting/i},
-    {key:'liquide',label:'Liquide middelen',re:/liquide/i},
-    {key:'eigenvermogen',label:'Eigen vermogen',re:/eigen\s*vermogen/i},
-  ];
-  const rows=[...A(fa.resultaten),...A(fa.balans)].filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag));
-  if(!rows.length) return [];
-  const periods=[...new Set(rows.map(x=>String(x.periode).trim()))];
-  periods.sort((a,b)=>{
+/* Financi\u00eble analyse (rapporttype B): dynamische balans- en resultatentabellen
+   o.b.v. de bron. Rijen = posten (in vaste, logische volgorde als de bron dat
+   postlabel bevat; overige postlabels die de bron aanlevert maar niet in de
+   vaste lijst staan, verschijnen erachter in de volgorde waarin ze in de bron
+   voorkomen \u2014 er gaat dus nooit brondetail verloren). Kolommen = alle
+   jaren/periodes die de bron voor deze posten vermeldt (historisch \u00e9n
+   prognose), oplopend gesorteerd. Totaalregels (Totaal activa/Totaal passiva/
+   Bedrijfsresultaat/Resultaat na belasting) worden vet getoond. */
+/* Regex\u2019en zijn bewust volledig verankerd (^...$) zodat alleen de exacte
+   canonieke postnaam in de vaste bucket valt; brondetail met een afwijkend of
+   specifieker label (bijv. "Materi\u00eble vaste activa", "Immateri\u00eble vaste
+   activa") komt daardoor terecht als eigen, apart getoonde regel in plaats van
+   stilzwijgend te worden samengevoegd met of overschreven door de hoofdpost. */
+const BALANS_ORDER=[
+  {key:'vasteactiva',label:'Vaste activa',re:/^vaste\s+activa$/i},
+  {key:'vlottendeactiva',label:'Vlottende activa',re:/^vlottende\s+activa$/i},
+  {key:'liquide',label:'Liquide middelen',re:/^liquide\s+middelen$/i},
+  {key:'totaalactiva',label:'Totaal activa',re:/^totaal\s+activa$/i,total:true},
+  {key:'eigenvermogen',label:'Eigen vermogen',re:/^eigen\s*vermogen$/i},
+  {key:'langlopend',label:'Langlopende schulden',re:/^langlopende?\s+schulden?$/i},
+  {key:'kortlopend',label:'Kortlopende schulden',re:/^kortlopende?\s+schulden?$/i},
+  {key:'totaalpassiva',label:'Totaal passiva',re:/^totaal\s+passiva$/i,total:true},
+];
+const RESULTAAT_ORDER=[
+  {key:'omzet',label:'Omzet',re:/^(netto[- ]?)?omzet$/i},
+  {key:'bedrijfsopbrengsten',label:'Bedrijfsopbrengsten',re:/^bedrijfsopbrengsten$/i},
+  {key:'kosten',label:'Kosten',re:/^(bedrijfs)?kosten$|^bedrijfslasten$/i},
+  {key:'bedrijfsresultaat',label:'Bedrijfsresultaat',re:/^bedrijfsresultaat$|^ebitda?$/i,total:true},
+  {key:'finbatenlasten',label:'Financi\u00eble baten en lasten',re:/^financi[e\u00eb]le\s+baten(\s+en\s+lasten)?$/i},
+  {key:'resultaatvoorbelasting',label:'Resultaat voor belasting',re:/^resultaat[^]*voor[^]*belasting$/i},
+  {key:'belasting',label:'Belasting',re:/^belasting(en)?$/i},
+  {key:'resultaatnabelasting',label:'Resultaat na belasting',re:/^resultaat[^]*na[^]*belasting$/i,total:true},
+];
+function sortPeriods(periods){
+  return [...periods].sort((a,b)=>{
     const ay=parseInt(String(a).match(/\d{4}/)?.[0]||'0',10);
     const by=parseInt(String(b).match(/\d{4}/)?.[0]||'0',10);
-    return ay-by;
+    if(ay!==by) return ay-by;
+    return String(a).localeCompare(String(b));
   });
+}
+function finStatementTable(rows,order){
+  const rs=A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag));
+  if(!rs.length) return [];
+  const periods=sortPeriods([...new Set(rs.map(x=>String(x.periode).trim()))]);
+  const seenExtra=[];
+  const keyFor=(label)=>{
+    const trimmed=String(label).trim();
+    const m=order.find(o=>o.re.test(trimmed));
+    if(m) return m.key;
+    const k='x:'+trimmed.toLowerCase();
+    if(!seenExtra.some(e=>e.key===k)) seenExtra.push({key:k,label:trimmed,total:false});
+    return k;
+  };
   const map={};
-  for(const row of rows){
-    const m=METRICS.find(mm=>mm.re.test(String(row.label)));
-    if(!m) continue;
+  for(const row of rs){
+    const key=keyFor(String(row.label));
     const p=String(row.periode).trim();
-    map[p]=map[p]||{};
-    if(!(m.key in map[p])) map[p][m.key]=row.bedrag;
+    map[key]=map[key]||{};
+    if(!(p in map[key])) map[key][p]=row.bedrag;
   }
-  const used=METRICS.filter(m=>periods.some(p=>map[p]&&isNum(map[p][m.key])));
+  const used=[...order,...seenExtra].filter(m=>periods.some(p=>map[m.key]&&isNum(map[m.key][p])));
   if(!used.length) return [];
-  const trs=periods.map(p=>{
-    const cells=used.map(m=>{
-      const v=map[p]&&map[p][m.key];
+  const trs=used.map(m=>{
+    const cells=periods.map(p=>{
+      const v=map[m.key]&&map[m.key][p];
       return `<td class="num ${isNum(v)&&v<0?'neg':''}">${mcell(v)}</td>`;
     }).join('');
-    return `<tr><td style="white-space:nowrap">${esc(p)}</td>${cells}</tr>`;
+    return `<tr${m.total?' class="total"':''}><td>${esc(m.label)}</td>${cells}</tr>`;
   });
-  return tableBlocks([{label:'Jaar'},...used.map(m=>({label:m.label,num:true}))],trs,{protect:true});
+  return tableBlocks([{label:'Post'},...periods.map(p=>({label:p,num:true}))],trs,{protect:true});
 }
 
 /* Grafieken */
@@ -1730,15 +1765,24 @@ function buildSections(r,ctx){
     add('Object & zekerheden','Object & zekerheden','Objectgegevens & zekerheden',blocks);
   }
 
-  /* 10 · Financiële analyse — exact één tabel (Jaar als rijen, kernmetrics als kolommen),
-     conform de vaste 10-pagina-indeling. Geen grafieken, geen aparte balanstabel. */
+  /* 10 · Financiële analyse — volledig en dynamisch o.b.v. de bron: aparte
+     balans- en resultatentabel (posten als rijen, alle jaren als kolommen),
+     5-8 observaties, en een korte niet-dubbelende verwijzing naar ratio's/
+     terugbetaalcapaciteit (die met de betaalcapaciteitscijfers wordt getoond
+     in het hoofdstuk Betaalcapaciteit & ratio's, om dubbeling te voorkomen). */
   const fa=r.financiele_analyse||{};
   {
-    const obs=A(fa.observaties).filter(hasVal).slice(0,5);
+    const obs=A(fa.observaties).filter(hasVal).slice(0,8);
     const blocks=[paraBlocks(fa.tekst)];
-    const tbl=finYearTable(fa);
-    if(tbl.length){ blocks.push(secbarB('Kerncijfers','conform aangeleverde documentatie')); blocks.push(tbl); }
+    const balansTbl=finStatementTable(fa.balans,BALANS_ORDER);
+    if(balansTbl.length){ blocks.push(secbarB('Balansontwikkeling','conform aangeleverde documentatie')); blocks.push(balansTbl); }
+    const resultatenTbl=finStatementTable(fa.resultaten,RESULTAAT_ORDER);
+    if(resultatenTbl.length){ blocks.push(secbarB('Resultatenontwikkeling','conform aangeleverde documentatie')); blocks.push(resultatenTbl); }
     if(obs.length){ blocks.push(secbarB('Observaties')); blocks.push(bulletBlocks(obs)); }
+    const ratios=A(fa.ratios).filter(x=>hasVal(x?.ratio)&&hasVal(x?.waarde));
+    if(ratios.length){
+      blocks.push(panel("Ratio's en terugbetaalcapaciteit","De ratio's en de toelichting op de terugbetaalcapaciteit (o.a. DSCR, Debt/EBITDA, solvabiliteit en rentabiliteit) zijn samen met de betaalcapaciteitscijfers opgenomen in het hoofdstuk Betaalcapaciteit & ratio's, om dubbele cijfers te voorkomen.",false));
+    }
     /* Inkomen & vermogen privé: geen eigen hoofdstuk — compact hier ondergebracht. */
     const pv=r.inkomen_vermogen_prive||{};
     const posten=A(pv.posten).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
