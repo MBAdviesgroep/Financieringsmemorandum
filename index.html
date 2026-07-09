@@ -255,6 +255,7 @@ table.t .sub{font-size:7.8pt;color:var(--muted);margin-top:.6mm;line-height:1.35
 .blist div{display:flex;gap:2.6mm;font-size:9pt;line-height:1.5;color:var(--ink-2)}
 .blist div::before{content:'';flex:none;width:1.6mm;height:1.6mm;border-radius:50%;background:var(--blue);margin-top:1.9mm}
 .blist.orange div::before{background:var(--orange)}
+.blist.green div::before{background:var(--green)}
 .twocol{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-bottom:4.5mm}
 .twocol .blist,.twocol .panel{margin-bottom:0}
 .colh{font-size:7.4pt;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:2.6mm;padding-bottom:1.6mm;border-bottom:1px solid var(--line);color:var(--blue-deep)}
@@ -309,6 +310,21 @@ svg.chart{width:100%;height:auto;display:block}
 .org-legend i.l-hold{border-color:var(--blue-deep)}
 .org-legend i.l-vast{border-color:var(--orange)}
 .org-legend i.l-opr{border-style:dashed}
+
+/* Structuurschema's naast elkaar (huidig vs. na wijziging) */
+.org-duo{display:flex;justify-content:center;align-items:flex-start;gap:14px;margin-bottom:4.5mm;break-inside:avoid}
+.org-duo-col{flex:0 1 45%;max-width:45%;min-width:0;display:flex;flex-direction:column}
+.org-duo-col .orgcard{margin-bottom:2.4mm}
+.org-duo-caption{font-size:7.8pt;color:var(--muted);line-height:1.5;text-align:center;padding:0 1mm}
+.org-duo-col .ch-h{font-size:6.6pt}
+.org-duo-col .org{gap:7mm}
+.org-duo-col .org-level{gap:4mm}
+.org-duo-col .org-box{min-width:20mm;max-width:38mm;padding:2mm 2.6mm}
+.org-duo-col .ob-name{font-size:7.4pt}
+.org-duo-col .ob-role{font-size:6.2pt}
+.org-duo-col .org-legend{font-size:6.2pt;gap:3mm;margin-top:2mm}
+.org-single{max-width:70%;margin:0 auto 4.5mm}
+.org-single .orgcard{margin-bottom:0}
 
 /* Documentatie & status */
 .docrow{display:flex;align-items:baseline;gap:3mm;padding:1.9mm 0;border-bottom:1px solid #EDF2F8;font-size:8.8pt}
@@ -919,9 +935,39 @@ function kvBlocks(items,chunk=14){
   return out;
 }
 function kpiBlock(pairs){
-  const ks=pairs.filter(Boolean).slice(0,6);
+  const ks=pairs.filter(Boolean).slice(0,8);
   if(!ks.length) return '';
   return `<div class="kpis" style="--kn:${Math.min(ks.length,4)}">${ks.map(k=>`<div class="kpi"><div class="kpi-l">${esc(k[0])}</div><div class="kpi-v">${esc(k[1])}</div>${hasVal(k[2])?`<div class="kpi-s">${esc(k[2])}</div>`:''}</div>`).join('')}</div>`;
+}
+/* Aanvullende kerncijfers voor de managementsamenvatting-fallback: DSCR van het
+   structurele/eerste volle jaar en omzet van het structurele/prognosejaar —
+   alleen als de bron dit daadwerkelijk draagt. */
+function extraCijferKpis(r){
+  const out=[];
+  const dscrArr=A(r.betaalcapaciteit?.dscr_overzicht).filter(x=>hasVal(x?.dscr));
+  if(dscrArr.length){
+    const structureel=dscrArr.find(x=>/structureel/i.test(String(x.situatie||'')))||dscrArr[dscrArr.length-1];
+    if(structureel) out.push([`DSCR${hasVal(structureel.jaar)?' '+structureel.jaar:''}`,structureel.dscr,hasVal(structureel.situatie)?structureel.situatie:'']);
+  }
+  const omzetRows=A(r.financiele_analyse?.resultaten).filter(x=>hasVal(x?.label)&&/omzet/i.test(x.label)&&hasVal(x?.periode)&&isNum(x?.bedrag));
+  if(omzetRows.length){
+    const sorted=[...omzetRows].sort((a,b)=>{
+      const ay=parseInt(String(a.periode).match(/\d{4}/)?.[0]||'0',10);
+      const by=parseInt(String(b.periode).match(/\d{4}/)?.[0]||'0',10);
+      return ay-by;
+    });
+    const last=sorted[sorted.length-1];
+    out.push([`Omzet ${last.periode}`,money(last.bedrag),'']);
+  }
+  return out;
+}
+/* Sterktes en aandachtspunten naast elkaar (max. 5 per kolom). */
+function sterkteAandachtBlock(sterktes,aandachtspunten){
+  const st=A(sterktes).filter(hasVal).slice(0,5);
+  const ap=A(aandachtspunten).filter(hasVal).slice(0,5);
+  if(!st.length&&!ap.length) return '';
+  const col=(items,label,cls,colhCls)=>items.length?`<div><div class="colh ${colhCls}">${esc(label)}</div>${bulletBlocks(items,cls).join('')}</div>`:'';
+  return `<div class="twocol">${col(st,'Belangrijkste sterktes','green','gr')}${col(ap,'Belangrijkste aandachtspunten','orange','am')}</div>`;
 }
 
 /* Pivot: rijen {label,periode,bedrag} → label-rijen met periodekolommen */
@@ -1026,10 +1072,10 @@ function ratioCharts(points){
 
 /* ── Organogram: reconstructie uit gestructureerde brondata ────────── */
 const ORG_TYPE_CLS={privepersoon:'t-priv',holding:'t-hold',werkmaatschappij:'t-werk',vastgoed_bv:'t-vast',stak:'t-stak',in_oprichting:'t-opr',overig:'t-ovr'};
-function orgBlock(org,title){
-  if(!org||org.aanwezig!==true) return '';
+function orgDiagramInner(org){
+  if(!org||org.aanwezig!==true) return null;
   const ents=A(org.entiteiten).filter(e=>hasVal(e?.naam)).slice(0,14);
-  if(!ents.length) return '';
+  if(!ents.length) return null;
   const ids=new Set(ents.map(e=>String(e.id)));
   const rels=A(org.relaties).filter(rl=>ids.has(String(rl?.van))&&ids.has(String(rl?.naar))&&String(rl.van)!==String(rl.naar));
   const incoming={};
@@ -1060,11 +1106,32 @@ function orgBlock(org,title){
     types.has('vastgoed_bv')&&'<span><i class="l-vast"></i>Vastgoed-BV</span>',
     types.has('in_oprichting')&&'<span><i class="l-opr"></i>In oprichting</span>',
   ].filter(Boolean).join('');
+  return {rowsHtml,rels,legendItems};
+}
+function orgBlock(org,title){
+  const d=orgDiagramInner(org);
+  if(!d) return '';
   return `<div class="orgcard"><div class="ch-h">${esc(hasVal(org.titel)?org.titel:title)}</div>
-    <div class="org" data-rels="${esc(JSON.stringify(rels))}">${rowsHtml}<svg class="org-svg" aria-hidden="true"></svg></div>
-    ${legendItems?`<div class="org-legend">${legendItems}</div>`:''}
+    <div class="org" data-rels="${esc(JSON.stringify(d.rels))}">${d.rowsHtml}<svg class="org-svg" aria-hidden="true"></svg></div>
+    ${d.legendItems?`<div class="org-legend">${d.legendItems}</div>`:''}
     ${hasVal(org.toelichting)?`<div class="org-note">${esc(org.toelichting)}</div>`:''}
   </div>`;
+}
+/* Twee structuurschema's naast elkaar (bijv. huidig vs. na wijziging) — alleen
+   wanneer BEIDE schema's geldig zijn; anders valt de aanroeper terug op één
+   schema gecentreerd via orgBlock(). Elk schema krijgt een eigen subtitel en
+   een korte toelichtingsregel (caption) eronder, even breed en boven uitgelijnd. */
+function orgDuoBlock(orgA,titleA,orgB,titleB){
+  const dA=orgDiagramInner(orgA), dB=orgDiagramInner(orgB);
+  if(!dA||!dB) return '';
+  const card=(org,d,title)=>`<div class="org-duo-col">
+    <div class="orgcard org-duo-card"><div class="ch-h">${esc(hasVal(org.titel)?org.titel:title)}</div>
+      <div class="org" data-rels="${esc(JSON.stringify(d.rels))}">${d.rowsHtml}<svg class="org-svg" aria-hidden="true"></svg></div>
+      ${d.legendItems?`<div class="org-legend">${d.legendItems}</div>`:''}
+    </div>
+    ${hasVal(org.toelichting)?`<div class="org-duo-caption">${esc(org.toelichting)}</div>`:''}
+  </div>`;
+  return `<div class="org-duo">${card(orgA,dA,titleA)}${card(orgB,dB,titleB)}</div>`;
 }
 /* Handmatig aangeleverd structuurschema (afbeelding) heeft altijd voorrang boven
    AI-generatie: de bytes staan al lokaal in state.structImage (rechtstreeks van
@@ -1160,16 +1227,19 @@ function buildCompactIntakeSections(r,ctx){
         partijen.map(x=>`<tr><td>${esc(x.naam)}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${cell(x.kvk)}</td></tr>`)
       ));
     }
-    const ob=orgBlock(ju.organogram_bestaand,'Organogram — bestaande structuur');
-    const on=orgBlock(ju.organogram_nieuw,'Organogram — nieuwe structuur');
     const structImg=structImageBlock();
+    const duo=structImg?'':orgDuoBlock(ju.organogram_bestaand,'Structuur huidig',ju.organogram_nieuw,'Structuur na wijziging');
+    const ob=(structImg||duo)?'':orgBlock(ju.organogram_bestaand,'Structuur huidig');
+    const on=(structImg||duo)?'':orgBlock(ju.organogram_nieuw,'Structuur na wijziging');
     if(structImg){
       /* Handmatig aangeleverde afbeelding heeft altijd voorrang boven een
          AI-organogram of -tekstschema. */
-      blocks.push(structImg);
+      blocks.push(`<div class="org-single">${structImg}</div>`);
+    } else if(duo){
+      blocks.push(duo);
     } else {
-      if(ob) blocks.push(ob);
-      if(on) blocks.push(on);
+      if(ob) blocks.push(`<div class="org-single">${ob}</div>`);
+      if(on) blocks.push(`<div class="org-single">${on}</div>`);
       if(!ob&&!on){
         const stx=A(ju.structuur_tekstueel).filter(hasVal);
         const schema=stx.length?stx:A(ju.aandeelhouders_ubo).filter(hasVal);
@@ -1313,12 +1383,21 @@ function buildSections(r,ctx){
         isNum(kc.eigen_inbreng)&&['Eigen inbreng',money(kc.eigen_inbreng)],
         hasVal(kc.ltv)&&['LTV',kc.ltv],
         hasVal(kc.looptijd)&&['Looptijd',kc.looptijd],
+        hasVal(kc.rente)&&['Rente',kc.rente],
+        ...extraCijferKpis(r),
       ].filter(Boolean);
     }
     blocks.push(kpiBlock(kpis));
-    /* Geen sterktes/risico's-tweeluik en geen financieringssamenvatting-blok hier:
-       deze pagina blijft compact (eigen pagina, los van de inhoudsopgave),
-       en de financieringssamenvatting staat al in hoofdstuk 08 — nooit dubbel. */
+    /* Sterktes en aandachtspunten naast elkaar — de commerciële kern van
+       hoofdstuk 01, zodat een financier direct ziet waarom het dossier
+       interessant is en waar de aandachtspunten liggen. */
+    blocks.push(sterkteAandachtBlock(ms.belangrijkste_sterktes,ms.aandachtspunten));
+    /* Financieringsduiding: korte, eigen afsluiting van dit hoofdstuk — bewust
+       een andere tekst dan voorlopig_oordeel (dat apart in hoofdstuk 09 als
+       Financieringssamenvatting verschijnt), dus nooit dubbel. */
+    if(hasVal(ms.financieringsduiding)){
+      blocks.push(`<div class="verdict"><div class="verdict-top"><span class="verdict-l">Financieringsduiding</span></div><p>${esc(ms.financieringsduiding)}</p></div>`);
+    }
     add('Managementsamenvatting','Managementsamenvatting','Samenvatting van de financieringscasus',blocks);
   }
 
@@ -1329,7 +1408,38 @@ function buildSections(r,ctx){
   const ju=r.juridische_structuur||{};
   {
     const partijen=A(ju.partijen).filter(p=>hasVal(p?.naam));
+    const bes=A(ju.bestuur_en_tekenbevoegdheid).filter(hasVal);
+    const ubo=A(ju.aandeelhouders_ubo).filter(hasVal);
+    const stx=A(ju.structuur_tekstueel).filter(hasVal);
+    const structImg=structImageBlock();
+    /* Twee structuurschema's (huidig / na wijziging) worden — indien beide
+       geldig zijn — altijd eerst naast elkaar geprobeerd; anders valt dit
+       terug op één schema gecentreerd op max. 70% breedte. */
+    const duo=structImg?'':orgDuoBlock(ju.organogram_bestaand,'Structuur huidig',ju.organogram_nieuw,'Structuur na wijziging');
+    const ob=(structImg||duo)?'':orgBlock(ju.organogram_bestaand,'Structuur huidig');
+    const on=(structImg||duo)?'':orgBlock(ju.organogram_nieuw,'Structuur na wijziging');
+    /* Volgorde: titel (via add() hieronder), korte inleiding, structuurschema('s),
+       en pas daarna Betrokken partijen en Bestuur en tekenbevoegdheid. */
     const blocks=[paraBlocks(ju.tekst)];
+    if(structImg){
+      /* Handmatig aangeleverde afbeelding heeft altijd voorrang boven een AI-organogram of -tekstschema. */
+      if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO’s')); blocks.push(bulletBlocks(ubo)); }
+      blocks.push(`<div class="org-single">${structImg}</div>`);
+    } else if(duo){
+      if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO’s')); blocks.push(bulletBlocks(ubo)); }
+      blocks.push(secbarB('Structuur','huidig en na wijziging'));
+      blocks.push(duo);
+    } else if(ob||on){
+      if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO\u2019s')); blocks.push(bulletBlocks(ubo)); }
+      blocks.push(secbarB('Structuur','gereconstrueerd uit de bron'));
+      if(ob) blocks.push(`<div class="org-single">${ob}</div>`);
+      if(on) blocks.push(`<div class="org-single">${on}</div>`);
+    } else {
+      /* Geen net visueel organogram: dan ALTIJD een tekstueel structuurschema —
+         bij voorkeur structuur_tekstueel, anders de aandeelhouders-/UBO-regels. */
+      const schema=stx.length?stx:ubo;
+      if(schema.length){ blocks.push(secbarB('Structuurschema','tekstuele weergave')); blocks.push(bulletBlocks(schema)); }
+    }
     if(partijen.length){
       blocks.push(secbarB('Betrokken partijen'));
       blocks.push(tableBlocks(
@@ -1337,28 +1447,7 @@ function buildSections(r,ctx){
         partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${cell(x.kvk)}</td></tr>`)
       ));
     }
-    const bes=A(ju.bestuur_en_tekenbevoegdheid).filter(hasVal);
     if(bes.length){ blocks.push(secbarB('Bestuur en tekenbevoegdheid')); blocks.push(bulletBlocks(bes)); }
-    const ubo=A(ju.aandeelhouders_ubo).filter(hasVal);
-    const stx=A(ju.structuur_tekstueel).filter(hasVal);
-    const ob=orgBlock(ju.organogram_bestaand,'Organogram — bestaande structuur');
-    const on=orgBlock(ju.organogram_nieuw,'Organogram — nieuwe structuur');
-    const structImg=structImageBlock();
-    if(structImg){
-      /* Handmatig aangeleverde afbeelding heeft altijd voorrang boven een AI-organogram of -tekstschema. */
-      if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO’s')); blocks.push(bulletBlocks(ubo)); }
-      blocks.push(structImg);
-    } else if(ob||on){
-      if(ubo.length){ blocks.push(secbarB('Aandeelhouders en UBO\u2019s')); blocks.push(bulletBlocks(ubo)); }
-      blocks.push(secbarB('Structuur','gereconstrueerd uit de bron'));
-      if(ob) blocks.push(ob);
-      if(on) blocks.push(on);
-    } else {
-      /* Geen net visueel organogram: dan ALTIJD een tekstueel structuurschema —
-         bij voorkeur structuur_tekstueel, anders de aandeelhouders-/UBO-regels. */
-      const schema=stx.length?stx:ubo;
-      if(schema.length){ blocks.push(secbarB('Structuurschema','tekstuele weergave')); blocks.push(bulletBlocks(schema)); }
-    }
     /* Activiteiten, verdienmodel & strategie + compacte markt- en managementinfo
        horen in ditzelfde hoofdstuk (02) — geen losse hoofdstukken meer. */
     const ac=r.activiteiten_onderneming||{};
