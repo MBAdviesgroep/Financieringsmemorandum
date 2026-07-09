@@ -279,7 +279,7 @@ Stap 3: extraheer bronfeiten. Stap 4: schrijf pas daarna de rapportsecties.
 PAGINABUDGET — HARDE REGEL
 Er zijn twee rapporttypen met elk een eigen harde paginalimiet, inclusief voorblad, inhoudsopgave en achterblad:
 - Rapporttype A ("compact_intake" — compact intake- en documentatiememorandum): doellengte 5 à 7 pagina's, NOOIT meer dan 7. Past het rapport binnen 6 pagina's, gebruik dan 6 — voeg geen lege of overbodige pagina toe.
-- Rapporttype B ("volwaardig_financieringsmemorandum" of "luxe_samenvatting" — volledig financieringsmemorandum): doellengte 9 à 10 pagina's, NOOIT meer dan 10.
+- Rapporttype B ("volwaardig_financieringsmemorandum" of "luxe_samenvatting" — volledig financieringsmemorandum): doellengte 10 à 11 pagina's, NOOIT meer dan 11.
 De paginalimiet is verplicht en geldt ongeacht de lengte van de bron: bij een bron van 20+ pagina's moet je actief samenvatten, samenvoegen en keuzes maken. Dreigt het rapport te lang te worden, kort dan in vóór oplevering — in deze volgorde: teksten verkorten; dubbele informatie verwijderen; hoofdstukken combineren; tabellen beperken tot kerninformatie; visueel organogram vervangen door tekstschema; vervolgvragen samenvoegen met op te vragen stukken; overbodige KPI-blokken schrappen. Los het nooit op door essentiële onderdelen volledig te verwijderen. Je bent een transformatietool, geen uitbreidtool. Ook als de adviseursnotities om een "uitgebreid rapport" vragen blijven deze maxima gelden. Lay-out gaat boven volledigheid: als inhoud te lang is voor een nette pagina-indeling, vat de tekst dan verder samen in plaats van tabellen of hoofdstukken te laten breken.
 
 RAPPORTTYPE A — STRUCTUUR (compact intake- en documentatiememorandum, maximaal 7 pagina's)
@@ -291,9 +291,9 @@ Gebruik dit type bij eenvoudige financieringen: financial lease, bedrijfsmiddele
 - Documentatie: commercieel en compact. GEEN defensieve lijst van alles wat ontbreekt ("geen prognose beschikbaar", "geen marktpositie beschikbaar" enz.) — wel een korte lijst nog te controleren / op te vragen stukken (actuele bankopgave, actuele benutting rekening-courant, definitieve facturen/offertes, bevestiging verpanding leaseobjecten, borgstellingen indien door financier vereist, recente cijfers indien gevraagd). Vervolgvragen alleen als ze echt nieuwe informatie toevoegen.
 - Financieringssamenvatting: maximaal 8 regels, financieringsgericht.
 
-RAPPORTTYPE B — STRUCTUUR (volledig financieringsmemorandum, ALTIJD maximaal 10 pagina's, geen uitzondering)
-Gebruik dit type bij complexere financieringen: vastgoedfinanciering, aankoop bedrijfspand, overnamefinanciering, herfinanciering, meerdere entiteiten (vastgoed-B.V./holding/werkmaatschappij), beschikbare prognoses en betaalcapaciteit, zekerheden zoals hypotheekrecht, verpanding of borgstelling, of substantiële aanvragen waarbij financiers een volledig beeld nodig hebben. Voor vastgoedfinancieringen geldt de vaste 10-pagina-indeling hieronder ALTIJD, zonder uitzondering: pagina 1 cover; pagina 2 inhoudsopgave + managementsamenvatting (samen op één pagina, geen aparte inhoudsopgavepagina); pagina 3 juridische structuur + activiteiten & strategie; pagina 4 financieringsopzet / bronnen en aanwendingen; pagina 5 objectgegevens + zekerheden; pagina 6 financiële analyse; pagina 7 betaalcapaciteit & ratio's; pagina 8 risico's, mitiganten & aandachtspunten; pagina 9 voorwaarden voor verdere beoordeling + financieringssamenvatting; pagina 10 documentatie & bijlagen. Geen extra hoofdstukken, geen vervolgpagina's, en GEEN achterblad — het rapport eindigt op pagina 10 met de documentatiepagina. De vaste hoofdstukken (exact 9, geen 10e): 01 Managementsamenvatting; 02 Juridische structuur, activiteiten & strategie; 03 Financieringsopzet / bronnen en aanwendingen; 04 Objectgegevens & zekerheden; 05 Financiële analyse; 06 Betaalcapaciteit & ratio's; 07 Risico's, mitiganten & aandachtspunten; 08 Voorwaarden, actiepunten & financieringssamenvatting; 09 Documentatie & bijlagen.
-- Managementsamenvatting: kort genoeg om samen met de inhoudsopgave op één pagina te passen — kernboodschap van maximaal 130 woorden (niet 180: er moet ruimte overblijven voor de inhoudsopgave op dezelfde pagina), doel van de financiering, gevraagde financiering, totale investering, eigen inbreng, kerncijfers. Géén aparte sterktes/risico's-tweeluik en géén financieringssamenvatting-blok in dit hoofdstuk — die twee elementen staan al in hoofdstuk 08; herhaal ze hier niet. Gebruik nooit de titel of het begrip "voorlopig oordeel".
+RAPPORTTYPE B — STRUCTUUR (volledig financieringsmemorandum, maximaal 11 pagina's)
+Gebruik dit type bij complexere financieringen: vastgoedfinanciering, aankoop bedrijfspand, overnamefinanciering, herfinanciering, meerdere entiteiten (vastgoed-B.V./holding/werkmaatschappij), beschikbare prognoses en betaalcapaciteit, zekerheden zoals hypotheekrecht, verpanding of borgstelling, of substantiële aanvragen waarbij financiers een volledig beeld nodig hebben. Vaste indeling: pagina 1 cover; pagina 2 inhoudsopgave (ALTIJD een eigen pagina, nooit samengevoegd met een hoofdstuk); daarna één pagina per hoofdstuk. Geen achterblad. Volledigheid van de inhoud — met name het juridische structuurschema of organogram — weegt zwaarder dan het paginabudget: liever één pagina extra dan een onvolledig structuurschema. De vaste hoofdstukken (exact 9): 01 Managementsamenvatting; 02 Juridische structuur, activiteiten & strategie; 03 Financieringsopzet / bronnen en aanwendingen; 04 Objectgegevens & zekerheden; 05 Financiële analyse; 06 Betaalcapaciteit & ratio's; 07 Risico's, mitiganten & aandachtspunten; 08 Voorwaarden, actiepunten & financieringssamenvatting; 09 Documentatie & bijlagen.
+- Managementsamenvatting: kernboodschap van maximaal 180 woorden — doel van de financiering, gevraagde financiering, totale investering, eigen inbreng, kerncijfers. Gebruik nooit de titel of het begrip "voorlopig oordeel".
 - Juridische structuur: maximaal een halve pagina, toelichting maximaal 5 bullets; activiteiten, verdienmodel & strategie maximaal 6 bullets (historie, activiteiten, omzetstromen, klanten, verdienmodel, strategie) — geen herhaling van de managementsamenvatting. Toon iedere entiteit en iedere persoon maximaal één keer in het structuurschema of organogram; nooit dubbele 100%-labels voor dezelfde relatie.
 - Financiële analyse: maximaal één pagina — exact één tabel met Jaar als rijen en de kolommen Omzet, Bedrijfsresultaat, Resultaat na belasting, Liquide middelen, Eigen vermogen (alleen kolommen die de bron daadwerkelijk draagt), plus maximaal 5 observatiebullets; geen aparte balans-, activa-, passiva- of kostenposttabellen, geen grafieken, geen KPI-blokken in dit hoofdstuk.
 - Betaalcapaciteit: maximaal één pagina — korte toelichting (maximaal 5 regels), DSCR-tabel per jaar (jaar | situatie | DSCR | toelichting; DSCR altijd als ratio zoals "3,11", NOOIT als eurobedrag) en compact Debt/EBITDA of overige kengetallen in dezelfde of een korte tweede tabel. Herhaal geen cijfers uit de financiële analyse.
@@ -384,7 +384,7 @@ function buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid
     ? `De aangeleverde bron-PDF telt ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}. `
     : "Het exacte aantal bronpagina's kon niet automatisch worden bepaald: vul bronrapport.aantal_paginas zo nauwkeurig mogelijk in. ";
   const budgetLine = base
-    + "De bronlengte bepaalt het rapporttype en het paginabudget NIET. Rapporttype A (compact_intake): maximaal 7 pagina's, doellengte 5 à 7. Rapporttype B (volwaardig financieringsmemorandum of luxe samenvatting): maximaal 10 pagina's, doellengte 9 à 10. Wees beknopt, voeg samen en prioriteer; forceer geen extra pagina's als minder volstaat."
+    + "De bronlengte bepaalt het rapporttype en het paginabudget NIET. Rapporttype A (compact_intake): maximaal 7 pagina's, doellengte 5 à 7. Rapporttype B (volwaardig financieringsmemorandum of luxe samenvatting): maximaal 11 pagina's, doellengte 10 à 11 — de inhoudsopgave krijgt altijd een eigen pagina. Wees beknopt, voeg samen en prioriteer; forceer geen extra pagina's als minder volstaat, maar laat volledigheid (zoals het structuurschema) nooit sneuvelen voor het paginabudget."
     + (uitgebreid ? ' De adviseur vroeg om een uitgebreid rapport: benut het maximum van het gekozen rapporttype, maar overschrijd het nooit.' : '');
 
   return `${SYSTEM_BASE}
@@ -874,14 +874,14 @@ function enforceQuality(r, vandaag, opts = {}) {
   r.metadata.status = 'Concept · ter beoordeling';
 
   /* 6b — paginabudget vastleggen in metadata (na de definitieve typebepaling).
-     Rapporttype A: maximaal 7 pagina's. Rapporttype B/luxe: maximaal 10 pagina's —
-     incl. voor-, inhouds- en achterblad, óók bij "uitgebreid". De bronlengte
-     beïnvloedt het paginabudget niet. */
-  const HARD_MAX_PAGES = 10;
-  const MAX_BY_TYPE = { compact_intake: 7, volwaardig_financieringsmemorandum: 10, luxe_samenvatting: 10 };
+     Rapporttype A: maximaal 7 pagina's. Rapporttype B/luxe: maximaal 11 pagina's —
+     cover + eigen inhoudsopgavepagina + 9 hoofdstukken, óók bij "uitgebreid". De
+     bronlengte beïnvloedt het paginabudget niet. */
+  const HARD_MAX_PAGES = 11;
+  const MAX_BY_TYPE = { compact_intake: 7, volwaardig_financieringsmemorandum: 11, luxe_samenvatting: 11 };
   r.metadata.sourcePageCount = sourcePageCount;
   r.metadata.uitgebreidToegestaan = !!uitgebreid;
-  r.metadata.maxOutputPages = Math.min(HARD_MAX_PAGES, MAX_BY_TYPE[r.metadata.rapport_type] || 10);
+  r.metadata.maxOutputPages = Math.min(HARD_MAX_PAGES, MAX_BY_TYPE[r.metadata.rapport_type] || 11);
 
   /* 7 — conclusiebeleid.
      Bij compact_intake zonder financiële analyse/prognose mag het oordeel nooit
