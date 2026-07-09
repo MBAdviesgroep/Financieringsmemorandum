@@ -379,13 +379,38 @@ klantnaam: de kredietnemer/onderneming zoals in de bron. Let op de juiste kredie
 OUTPUT
 Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
 
-function buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid }) {
+/* Structuurschema dat de adviseur zelf heeft aangeleverd (tekst/handmatig/afbeelding)
+   krijgt in de prompt een eigen, dwingende sectie: de AI mag dit nooit overschrijven
+   of opnieuw verzinnen. Dit is de eerste (prompt-)laag; enforceStructOverride()
+   hieronder is de tweede, server-side laag die dit ook afdwingt ongeacht wat de
+   AI teruggeeft. */
+function buildStructOverrideBlock(structuurOverride) {
+  const mode = structuurOverride && structuurOverride.mode;
+  if (!mode || mode === 'auto') return '';
+  if (mode === 'tekst' || mode === 'handmatig') {
+    const tekst = String(structuurOverride.tekst || '').trim();
+    if (!tekst) return '';
+    return `\n\nSTRUCTUURSCHEMA — DOOR DE ADVISEUR ZELF AANGELEVERD (VERPLICHT, VOORRANG BOVEN AI-GENERATIE)
+De adviseur heeft onderstaand structuurschema zelf aangeleverd. Neem dit LETTERLIJK en ONGEWIJZIGD over in juridische_structuur.structuur_tekstueel (één regel per bullet, exact zoals hieronder — verzin niets bij, laat niets weg, herformuleer niets). Verzin zelf GEEN organogram: zet organogram_bestaand.aanwezig en organogram_nieuw.aanwezig op false. Je mag in de lopende sectietekst kort en zakelijk naar dit schema verwijzen, maar het schema zelf blijft ongewijzigd zoals hieronder aangeleverd.
+---
+${tekst}
+---`;
+  }
+  if (mode === 'afbeelding') {
+    return `\n\nSTRUCTUURSCHEMA — AFBEELDING DOOR DE ADVISEUR AANGELEVERD (VOORRANG BOVEN AI-GENERATIE)
+De adviseur heeft zelf een afbeelding van het structuurschema aangeleverd; deze wordt apart en ongewijzigd in het hoofdstuk "Juridische structuur & activiteiten" geplaatst. Genereer daarom zelf GEEN organogram (organogram_bestaand.aanwezig en organogram_nieuw.aanwezig moeten op false staan) en schrijf geen volledig tekstueel structuurschema meer — een korte, zakelijke verwijzing in de lopende tekst (bijv. "De groepsstructuur is weergegeven in het bijgevoegde schema.") volstaat.`;
+  }
+  return '';
+}
+
+function buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid, structuurOverride }) {
   const base = bytesPageCount
     ? `De aangeleverde bron-PDF telt ${bytesPageCount} pagina${bytesPageCount === 1 ? '' : "'s"}. `
     : "Het exacte aantal bronpagina's kon niet automatisch worden bepaald: vul bronrapport.aantal_paginas zo nauwkeurig mogelijk in. ";
   const budgetLine = base
     + "De bronlengte bepaalt het rapporttype en het paginabudget NIET. De inhoudsopgave krijgt altijd een eigen pagina (pagina 2, nooit samengevoegd met hoofdstuk 1). Rapporttype A (compact_intake): maximaal 8 pagina's, doellengte 6 à 8. Rapporttype B (volwaardig financieringsmemorandum of luxe samenvatting): richtlengte 11 tot 13 pagina's, maximaal 15. Volledigheid weegt zwaarder dan een streng paginabudget: neem structuur, juridische opzet, financiële analyse mét prognose, betaalcapaciteit, zekerheden, risico's en documentatie allemaal netjes en volledig op. Wees niet nodeloos uitgebreid, maar laat nooit inhoud sneuvelen om binnen een paginabudget te blijven."
     + (uitgebreid ? ' De adviseur vroeg om een uitgebreid rapport: benut het maximum van het gekozen rapporttype, maar overschrijd het nooit.' : '');
+  const structBlock = buildStructOverrideBlock(structuurOverride);
 
   return `${SYSTEM_BASE}
 
@@ -396,7 +421,7 @@ PAGINABUDGET
 ${budgetLine}
 
 ADVISEURSNOTITIES
-${notities || 'Geen aanvullende adviseursnotities opgegeven.'}
+${notities || 'Geen aanvullende adviseursnotities opgegeven.'}${structBlock}
 
 ACTUELE DATUM (voor metadata.rapportdatum)
 ${vandaag}
@@ -737,8 +762,89 @@ const CONCL_ONVOLDOENDE =
 const FORBIDDEN_CLAIMS =
   /(verantwoord en betaalbaar|zonder meer worden verstrekt|bankwaardig rapport|sterk onderbouwd|duurzaam draagbaar|geen noemenswaardige risico'?s|financiering kan worden verstrekt|definitief akkoord)/i;
 
+/* Herkent een rommelig/onbetrouwbaar organogram, ook als het model de
+   promptinstructies niet volgt: dubbele entiteiten, dubbele relaties tussen
+   dezelfde twee partijen, dubbele 100%-relaties vanuit dezelfde entiteit, of
+   relaties die naar een niet-bestaande entiteit verwijzen. Dit is de server-
+   side vangnet-laag naast de promptinstructies — een organogram dat hierop
+   struikelt wordt nooit getoond, ook al zei de AI zelf aanwezig=true. */
+function isMessyOrganogram(org) {
+  if (!org || org.aanwezig !== true) return false;
+  const entiteiten = A(org.entiteiten);
+  const relaties = A(org.relaties);
+  if (!entiteiten.length || !relaties.length) return true;
+
+  const norm = (x) => String(x || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const namen = entiteiten.map((e) => norm(e?.naam)).filter(Boolean);
+  if (new Set(namen).size < namen.length) return true; // dubbele entiteitsnaam
+
+  const ids = entiteiten.map((e) => norm(e?.id)).filter(Boolean);
+  if (new Set(ids).size < ids.length) return true; // dubbel entiteits-id
+
+  const geldigeRef = new Set([...ids, ...namen]);
+  const brokenRef = relaties.some((r) => !geldigeRef.has(norm(r?.van)) || !geldigeRef.has(norm(r?.naar)));
+  if (brokenRef) return true; // relatie verwijst naar onbekende entiteit
+
+  const relKey = (r) => `${norm(r?.van)}→${norm(r?.naar)}`;
+  const relKeys = relaties.map(relKey);
+  if (new Set(relKeys).size < relKeys.length) return true; // dubbele relatie tussen dezelfde twee partijen
+
+  const per100Van = {};
+  for (const r of relaties) {
+    if (!/^100\s*%$/.test(String(r?.label || '').trim())) continue;
+    const key = norm(r?.van);
+    per100Van[key] = (per100Van[key] || 0) + 1;
+  }
+  if (Object.values(per100Van).some((n) => n > 1)) return true; // dubbel 100%-label vanuit dezelfde entiteit
+
+  return false;
+}
+
+function enforceOrgDiagramQuality(r, warnings, internal) {
+  const ju = (r.juridische_structuur = r.juridische_structuur || {});
+  for (const key of ['organogram_bestaand', 'organogram_nieuw']) {
+    const org = ju[key];
+    if (org?.aanwezig === true && isMessyOrganogram(org)) {
+      org.aanwezig = false;
+      internal.push(`${key}: organogram leek rommelig of inconsistent (dubbele entiteiten/relaties, dubbele 100%-labels of een gebroken verwijzing) en is daarom vervangen door het tekstuele structuurschema.`);
+      if (!A(ju.structuur_tekstueel).filter(hasTxt).length) {
+        warnings.push('Het aangeleverde organogram kon niet betrouwbaar worden weergegeven; controleer of de groepsstructuur volledig en correct in de tekst is beschreven.');
+      }
+    }
+  }
+}
+
+/* Handmatig door de adviseur aangeleverd structuurschema (tekst, zelf ingevoerd,
+   of een afbeelding) krijgt hier altijd voorrang boven wat de AI zelf verzon —
+   ongeacht of het model de promptinstructie (buildStructOverrideBlock) volgde.
+   Bij tekst/handmatig wordt structuur_tekstueel volledig overschreven met de
+   letterlijke, ongewijzigde regels van de adviseur; bij een afbeelding wordt
+   alleen het AI-organogram uitgeschakeld (de afbeelding zelf wordt client-side
+   geplaatst, met de bytes die de browser al lokaal heeft). */
+function enforceStructOverride(r, structuurOverride, internal) {
+  const mode = structuurOverride && structuurOverride.mode;
+  if (!mode || mode === 'auto') return;
+  const ju = (r.juridische_structuur = r.juridische_structuur || {});
+  const leegOrgSchema = () => ({ aanwezig: false, titel: '', toelichting: '', entiteiten: [], relaties: [] });
+  if (mode === 'tekst' || mode === 'handmatig') {
+    const tekst = String(structuurOverride.tekst || '').trim();
+    const regels = tekst ? tekst.split(/\r?\n/).map((s) => s.trim()).filter(Boolean) : [];
+    if (regels.length) {
+      ju.structuur_tekstueel = regels;
+      internal.push('Structuurschema: handmatig aangeleverde tekst van de adviseur overschrijft het AI-gegenereerde tekstuele schema (voorrang op AI-generatie).');
+    }
+    ju.organogram_bestaand = leegOrgSchema();
+    ju.organogram_nieuw = leegOrgSchema();
+  } else if (mode === 'afbeelding') {
+    ju.organogram_bestaand = leegOrgSchema();
+    ju.organogram_nieuw = leegOrgSchema();
+    ju.structuur_afbeelding_aangeleverd = true;
+    internal.push('Structuurschema: adviseur leverde een afbeelding aan; AI-organogram uitgeschakeld, afbeelding wordt apart geplaatst.');
+  }
+}
+
 function enforceQuality(r, vandaag, opts = {}) {
-  const { bytesPageCount = null, uitgebreid = false } = opts;
+  const { bytesPageCount = null, uitgebreid = false, structuurOverride = null } = opts;
   /* Twee gescheiden categorieën, zoals vereist:
      - internal: technische/tool-correcties. Nooit naar de client of het rapport.
        Alleen console-logging voor de ontwikkelaar.
@@ -824,6 +930,16 @@ function enforceQuality(r, vandaag, opts = {}) {
     ju.organogram_bestaand.aanwezig = false;
     internal.push('Twee organogrammen aangeleverd; alleen de nieuwe structuur wordt visueel getoond.');
   }
+
+  /* 4b.i — rommelige/inconsistente organogrammen (dubbele entiteiten of
+     100%-labels, gebroken referenties) worden nooit getoond, ook niet als de
+     AI zelf aanwezig=true teruggaf. */
+  enforceOrgDiagramQuality(r, warnings, internal);
+
+  /* 4b.ii — handmatig door de adviseur aangeleverd structuurschema heeft altijd
+     voorrang boven AI-generatie: overschrijft structuur_tekstueel (tekst/
+     handmatig) en schakelt het AI-organogram sowieso uit. */
+  enforceStructOverride(r, structuurOverride, internal);
 
   /* 4c — maximaal 5 risico's in de risicomatrix (conform rapportstructuur) */
   if (A(zr.risicomatrix).length > 5) {
@@ -1086,6 +1202,22 @@ export default async function handler(req, res) {
     const body = await readJsonBody(req);
     const { filename, memorandum_url, extra_urls, notities } = body || {};
 
+    /* Structuurschema-override van de adviseur: alleen een bekende modus met
+       daadwerkelijke inhoud wordt doorgezet; verder genegeerd (dan blijft de
+       AI vrij, zoals voorheen). De afbeelding zelf hoeft niet server-side te
+       worden opgeslagen of naar het model gestuurd — die wordt client-side
+       geplaatst met de bytes die de browser al lokaal heeft; de server hoeft
+       alleen te weten DAT er een afbeelding is, om het AI-organogram uit te
+       schakelen. */
+    const rawStructOverride = body?.structuur_override;
+    const structuurOverride = (() => {
+      const mode = rawStructOverride?.mode;
+      if (!['tekst', 'handmatig', 'afbeelding'].includes(mode)) return null;
+      if (mode === 'afbeelding') return { mode };
+      const tekst = String(rawStructOverride?.tekst || '').trim().slice(0, 4000);
+      return tekst ? { mode, tekst } : null;
+    })();
+
     /* Bronomvang meten aan de hand van de daadwerkelijke bytes van het hoofddocument
        (het eerste aangeleverde PDF-bestand). Alleen mogelijk als de bytes zijn
        meegestuurd; bij grote bestanden die via Blob lopen ontbreken deze bytes op de
@@ -1142,7 +1274,7 @@ export default async function handler(req, res) {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const docSummary = docNames.map((n, i) => `${i + 1}. ${n}`).join('\n');
     const vandaag = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-    const prompt = buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid });
+    const prompt = buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid, structuurOverride });
     const content = [{ type: 'input_text', text: prompt }, ...docContent];
 
     const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
@@ -1175,7 +1307,7 @@ export default async function handler(req, res) {
 
     let report;
     try {
-      report = enforceQuality(parsed, vandaag, { bytesPageCount, uitgebreid });
+      report = enforceQuality(parsed, vandaag, { bytesPageCount, uitgebreid, structuurOverride });
     } catch (qErr) {
       console.error('Kwaliteitslaag-fout:', qErr);
       report = parsed; // liever ongepolijst rapport dan harde fout
