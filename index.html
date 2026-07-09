@@ -1555,6 +1555,23 @@ function totalRenderedPages(sections,includeBack=true,tocSeparate=true){
   return layoutPages(sections).length+(tocSeparate?2:1)+(includeBack?1:0);
 }
 
+/* Hoogte van een los HTML-blok meten (buiten layoutPages om) — gebruikt als
+   veiligheidscheck voor de vaste toc+hoofdstuk-1-pagina. */
+function measureBlockHeight(html){
+  const MMpx=mmPx();
+  const page=document.createElement('div');
+  page.className='report-page';
+  page.style.cssText='position:absolute;left:-9999px;top:0;height:auto;overflow:visible;box-shadow:none;margin:0;transform:none';
+  const body=document.createElement('div');
+  body.className='rp-body';
+  body.innerHTML=`<div style="overflow:hidden">${html}</div>`;
+  page.appendChild(body);
+  document.body.appendChild(page);
+  const h=body.firstChild.getBoundingClientRect().height;
+  page.remove();
+  return h/MMpx;
+}
+
 /* Grafiekblokken schrappen als compressiestap: tabellen en organogrammen blijven staan. */
 function stripChartBlocks(sections){
   return sections
@@ -1621,7 +1638,7 @@ function capTableRows(sections,maxRows){
    verwijderd; pas als laatste redmiddel vervallen de minst kritieke kernhoofdstukken.
    Bronspecifieke hoofdstukken buiten het vaste schema (overige_secties) hebben
    de laagste prioriteit en verdwijnen als eerste. */
-const HARD_MAX_PAGES = 11;
+const HARD_MAX_PAGES = 14;
 const ESSENTIAL_LABELS=new Set(['Managementsamenvatting','Juridische structuur & activiteiten','Financieringsopzet','Object & zekerheden','Financiële analyse',"Betaalcapaciteit & ratio's","Risico's, mitiganten & aandachtspunten",'Voorwaarden & documentatie','Financieringssamenvatting']);
 /* Alle 9 vaste hoofdstukken zijn essentieel (rapporttype B-structuur); alleen
    bronspecifieke overige_secties (buiten dit vaste schema) zijn droppable en
@@ -1725,14 +1742,13 @@ function renderReport(r){
   const status = md.status||'Concept · ter beoordeling';
   const uitgebreid = md.uitgebreidToegestaan===true;
   const sourcePageCount = isNum(md.sourcePageCount)?md.sourcePageCount:(isNum(md.source_page_count)?md.source_page_count:(isNum(r.bronrapport?.aantal_paginas)?r.bronrapport.aantal_paginas:null));
-  const FALLBACK_MAX={compact_intake:7,volwaardig_financieringsmemorandum:11,luxe_samenvatting:11};
+  const FALLBACK_MAX={compact_intake:7,volwaardig_financieringsmemorandum:14,luxe_samenvatting:14};
   /* Harde bovengrens per rapporttype: type A (compact intake) maximaal 7 pagina's,
-     type B (volwaardig/luxe) maximaal 11 — cover + eigen inhoudsopgavepagina + 9
-     hoofdstukken. De inhoudsopgave krijgt ALTIJD een eigen pagina (nooit samengevoegd
-     met hoofdstuk 1) en volledigheid van de inhoud (zoals het structuurschema) weegt
-     zwaarder dan het paginabudget — liever één pagina extra dan verlies van inhoud.
+     type B (volwaardig/luxe) richtlengte 10-12, maximaal 14 — volledigheid (structuur,
+     financiële analyse, prognose, cijfers) weegt zwaarder dan een streng paginabudget;
+     liever een paar pagina's extra dan iets weglaten. Nooit meer dan 14.
      De bronlengte bepaalt het budget NIET. */
-  const typeMax = isIntake?7:11;
+  const typeMax = isIntake?7:14;
   const budgetRaw = isNum(md.maxOutputPages)?md.maxOutputPages:FALLBACK_MAX[rtype];
   const maxOutputPages = Math.min(typeMax, budgetRaw||typeMax);
   const ctx = {naam,titel,datum,docdatum,dek,status,isIntake,sourcePageCount,maxOutputPages,uitgebreid};
@@ -1749,21 +1765,33 @@ function renderReport(r){
     : fitToPageBudget(rawSections,maxOutputPages,{tocSeparate:false,forceNoBack:true});
   const sections = renumberChapters(fitRes.sections);
   let includeBack = fitRes.includeBack;
-  /* Inhoudsopgave wordt samengevoegd met hoofdstuk 1 (geen eigen pagina) — voor
-     beide rapporttypen. Eerste layoutpas (zonder toc) levert de paginanummers op;
-     de toc wordt daarna als compact blok in hoofdstuk 1 gezet en een tweede pas
-     levert de definitieve pagina's. Past inhoud niet, dan liever een extra
-     pagina (budget 7 resp. 11) dan verlies van inhoud. */
+  /* Inhoudsopgave wordt samengevoegd met hoofdstuk 1 op ÉÉN vaste pagina (geen
+     flow-meting nodig: hoofdstuk 1 is bewust kort genoeg om altijd samen met de
+     toc op één pagina te passen). Hoofdstukken 2+ worden onafhankelijk gepakt
+     vanaf pagina 3 — zo zijn de paginanummers in de inhoudsopgave altijd exact
+     gelijk aan de daadwerkelijk gerenderde pagina's, nooit een schatting. */
   const withToc=false, bodyStart=2;
   if(!isIntake) includeBack=false;
-  const pre=layoutPages(sections);
-  const chaptersPre=[];
-  pre.forEach((p,i)=>{for(const l of p.labels){const base=l.replace(/ — vervolg$/,'');if(!chaptersPre.some(c=>c.label===base))chaptersPre.push({label:base,page:i+bodyStart});}});
-  if(sections[0]){
-    const tocInline=secbarB('Inhoudsopgave')+`<div class="toc compact">${chaptersPre.map((c,i)=>`<div class="toc-row"><span class="toc-num">${String(i+1).padStart(2,'0')}</span><span class="toc-name">${esc(c.label)}</span><span class="toc-dots"></span><span class="toc-page">${c.page}</span></div>`).join('')}</div>`;
-    sections[0]={label:sections[0].label,blocks:[sections[0].blocks[0],tocInline,...sections[0].blocks.slice(1)]};
+  const ch1=sections[0];
+  const restSections=sections.slice(1);
+  const restPages=restSections.length?layoutPages(restSections):[];
+  const chaptersFinal=ch1?[{label:ch1.label,page:2}]:[];
+  restPages.forEach((p,i)=>{for(const l of p.labels){const base=l.replace(/ — vervolg$/,'');if(!chaptersFinal.some(c=>c.label===base))chaptersFinal.push({label:base,page:i+3});}});
+  let pages;
+  if(ch1){
+    const tocInline=secbarB('Inhoudsopgave')+`<div class="toc compact">${chaptersFinal.map((c,i)=>`<div class="toc-row"><span class="toc-num">${String(i+1).padStart(2,'0')}</span><span class="toc-name">${esc(c.label)}</span><span class="toc-dots"></span><span class="toc-page">${c.page}</span></div>`).join('')}</div>`;
+    let ch1Blocks=ch1.blocks;
+    /* Veiligheidscheck: hoofdstuk 1 + toc moeten samen op één pagina passen
+       (budget 248mm netto). Past het net niet, kort dan eerst de lopende tekst
+       in — nooit de toc laten overlopen of hoofdstuk 2 laten verdwijnen. */
+    const fitsOnePage=()=>measureBlockHeight(ch1Blocks[0]+tocInline+ch1Blocks.slice(1).join(''))<=248;
+    if(!fitsOnePage()) ch1Blocks=shortenParagraphs([{label:ch1.label,blocks:ch1Blocks}],1)[0].blocks;
+    if(!fitsOnePage()) ch1Blocks=trimBulletBlocks([{label:ch1.label,blocks:ch1Blocks}],2)[0].blocks;
+    const page2={labels:[ch1.label],html:ch1Blocks[0]+tocInline+ch1Blocks.slice(1).join('')};
+    pages=[page2,...restPages];
+  } else {
+    pages=restPages;
   }
-  const pages=layoutPages(sections);
   const tot=pages.length+(bodyStart-1)+(includeBack?1:0);
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
