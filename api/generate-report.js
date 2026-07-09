@@ -1184,4 +1184,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, data: report });
   } catch (error) {
     console.error('Generate-report error:', error);
-    r
+    return res.status(500).json({ error: error.message || 'AI-verwerking mislukt' });
+  }
+}
