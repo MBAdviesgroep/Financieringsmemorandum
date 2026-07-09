@@ -382,9 +382,9 @@ svg.chart{width:100%;height:auto;display:block}
       </details>
       <details class="up-notes" id="structDetails"><summary>Structuurschema toevoegen (optioneel)</summary>
         <div class="struct-modes">
-          <label><input type="radio" name="structMode" value="auto" checked> Automatisch laten genereren door de AI</label>
+          <label><input type="radio" name="structMode" value="auto"> Automatisch laten genereren door de AI</label>
           <label><input type="radio" name="structMode" value="tekst"> Tekstueel schema gebruiken (zelf typen)</label>
-          <label><input type="radio" name="structMode" value="afbeelding"> Afbeelding uploaden</label>
+          <label><input type="radio" name="structMode" value="afbeelding" checked> Afbeelding uploaden</label>
           <label><input type="radio" name="structMode" value="handmatig"> Zelf schema plakken / invoeren</label>
         </div>
         <textarea id="structTekst" class="hidden" placeholder="Bijv.:&#10;M.A. van Duinen is UBO.&#10;MAVD B.V. houdt 100% van Matrading B.V.&#10;MAVD B.V. houdt 100% van Matvastgoed B.V. i.o.&#10;Matvastgoed B.V. i.o. koopt en houdt het bedrijfspand.&#10;Matrading B.V. huurt het pand zakelijk van Matvastgoed B.V. i.o."></textarea>
@@ -468,7 +468,7 @@ const el = {
 /* ══ Structuurschema: handmatige invoer heeft altijd voorrang op AI-generatie ══ */
 function getStructMode(){
   const r = document.querySelector('input[name="structMode"]:checked');
-  return r ? r.value : 'auto';
+  return r ? r.value : 'afbeelding';
 }
 function updateStructVisibility(){
   const mode = getStructMode();
@@ -477,6 +477,7 @@ function updateStructVisibility(){
   el.structHandmatig?.classList.toggle('hidden', mode!=='handmatig');
 }
 document.querySelectorAll('input[name="structMode"]').forEach(r=>r.addEventListener('change',updateStructVisibility));
+updateStructVisibility();
 el.structImageInput?.addEventListener('change',async()=>{
   const f = el.structImageInput.files?.[0];
   if(!f){ state.structImage=null; el.structImagePreview?.classList.add('hidden'); return; }
@@ -523,7 +524,7 @@ function buildStructOverride(){
   return null;
 }
 function resetStructInput(){
-  document.querySelectorAll('input[name="structMode"]').forEach(r=>{r.checked=r.value==='auto';});
+  document.querySelectorAll('input[name="structMode"]').forEach(r=>{r.checked=r.value==='afbeelding';});
   if(el.structTekst) el.structTekst.value='';
   if(el.structHandmatig) el.structHandmatig.value='';
   if(el.structImageInput) el.structImageInput.value='';
