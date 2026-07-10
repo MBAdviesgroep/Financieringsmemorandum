@@ -176,6 +176,10 @@ body.show-json #downloadJson{display:inline-block}
 
 /* ═══ A4-pagina's — mm-gebaseerd, identiek op scherm en print ═════ */
 .report-page{width:210mm;height:297mm;background:#fff;position:relative;overflow:visible;font-size:10pt;color:var(--ink-2);margin:0 auto 10mm;box-shadow:0 14px 52px rgba(16,32,51,.13)}
+/* Landscape-variant: uitsluitend gebruikt voor het hoofdstuk Financiële analyse
+   als de balans- of resultatentabel meer dan 4 jaarkolommen telt (layoutregel 4).
+   Breedte/hoogte wisselen om; de rest van het rapport blijft portrait. */
+.report-page.landscape{width:297mm;height:210mm}
 .rp-head{position:relative;height:16mm;display:flex;align-items:center;justify-content:space-between;gap:6mm;padding:0 16mm;color:#fff;overflow:hidden;background:radial-gradient(60mm 26mm at 30% 120%,rgba(255,138,0,.12),rgba(255,138,0,0) 70%),radial-gradient(80mm 40mm at 96% -40%,rgba(127,178,255,.26),rgba(12,100,252,0) 68%),linear-gradient(102deg,#0C64FC 0%,#0A55E0 38%,#0640AC 70%,#03296F 100%)}
 .rp-head::before{content:'';position:absolute;left:0;right:0;bottom:.9mm;height:1px;background:rgba(255,255,255,.20)}
 .rp-head::after{content:'';position:absolute;left:0;right:0;bottom:0;height:.9mm;background:linear-gradient(90deg,var(--orange) 0,var(--orange) 26%,rgba(255,138,0,.5) 52%,rgba(255,138,0,.14) 78%,rgba(255,138,0,0) 100%)}
@@ -297,6 +301,12 @@ table.t tr.total td{font-weight:700;color:var(--ink);border-top:1.5px solid var(
 table.t td:first-child,table.t th:first-child{padding-left:0}
 table.t td:last-child,table.t th:last-child{padding-right:0}
 table.t .sub{font-size:7.8pt;color:var(--muted);margin-top:.6mm;line-height:1.35}
+/* Financiële tabellen (Balansontwikkeling/Resultatenontwikkeling): kleinere maar
+   leesbare tekst en krappere celopvulling, zodat meerjarenoverzichten met veel
+   kolommen — óók in landscape — netjes uitgelijnd blijven zonder dat kolommen
+   afbreken. Bedragen blijven rechts uitgelijnd via de bestaande .num-regels. */
+table.t.fin th{font-size:6.6pt;padding:0 2.2mm 1.4mm}
+table.t.fin td{font-size:8.4pt;padding:1.5mm 2.2mm;line-height:1.3}
 
 /* Bullets & twee kolommen */
 .blist{display:flex;flex-direction:column;gap:1.9mm;margin-bottom:4.5mm}
@@ -407,21 +417,29 @@ svg.chart{width:100%;height:auto;display:block}
 @media screen and (max-width:900px){
   .stage{padding:18px 6px 40px}
   .report-page{transform:scale(.58);transform-origin:top center;margin-bottom:calc(-297mm * .42 + 6mm)}
+  .report-page.landscape{margin-bottom:calc(-210mm * .42 + 6mm)}
   .up-actions{grid-template-columns:1fr}
 }
 @media screen and (max-width:560px){
   .report-page{transform:scale(.42);margin-bottom:calc(-297mm * .58 + 6mm)}
+  .report-page.landscape{margin-bottom:calc(-210mm * .58 + 6mm)}
   .up-hero h1{font-size:25px}
 }
 
 /* ═══ Print — exact A4, geen schaal, geen chrome ══════════════════ */
 @page{size:A4;margin:0}
+/* Alleen het hoofdstuk Financiële analyse gebruikt (indien nodig) deze liggende
+   naamgeving; alle andere pagina's blijven op de standaard @page (portrait)
+   hierboven. Ondersteund door de Chromium-printengine die dit rapport als PDF
+   exporteert via de systeem-printdialoog. */
+@page landscape{size:A4 landscape;margin:0}
 @media print{
   html,body{width:210mm;margin:0!important;padding:0!important;background:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .up-view,.loading-view,.toolbar,.no-print{display:none!important}
   .rpt-view{display:block!important}
   .stage{padding:0!important;margin:0!important;background:#fff!important;display:block!important}
   .report-page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;border-radius:0!important;transform:none!important;break-after:page;page-break-after:always;overflow:visible!important}
+  .report-page.landscape{width:297mm!important;height:210mm!important;page:landscape}
   .report-page:last-child{break-after:auto;page-break-after:auto}
   .panel,.chart-card,.orgcard,table.t,.kpi,.verdict,.kv,.docrow{break-inside:avoid;page-break-inside:avoid}
 }
@@ -713,6 +731,22 @@ function sanitizeAdvisorNotes(items){
     if(s===NB || (/^niet vastgesteld\b/i.test(s) && s.length<60)) return false;
     return !FORBIDDEN_NOTE_PATTERNS.some(p=>p.test(s));
   });
+}
+/* Layoutregel 14 (status juridisch correct): de status in de tabel Onderdeel |
+   Status | Belang voor financier moet aansluiten bij het onderwerp, niet één
+   generieke status voor alle punten. Herkent het onderwerp aan trefwoorden en
+   kiest de bijbehorende, vaste terminologie; herkent het niets, dan blijft de
+   meegegeven fallback-status staan (die zelf ook al onderwerp-specifiek is
+   ingesteld per bronarray in de aanroep hieronder). */
+function inferConditionStatus(text,fallback){
+  const t=String(text||'').toLowerCase();
+  if(/hypotheekrecht|hypotheek recht|pandrecht|verpanding|borgstelling|zekerheidsrecht/.test(t)) return 'Te vestigen';
+  if(/huurovereenkomst|huurcontract/.test(t)) return 'Op te vragen / te ondertekenen';
+  if(/eigen inbreng/.test(t)) return 'Te verifiëren';
+  if(/liquiditeit/.test(t)) return 'Te monitoren';
+  if(/prognose|omzetontwikkeling|omzetverdeling|afnemers/.test(t)) return 'Te onderbouwen';
+  if(/oprichting|inschrijving|kvk\b/.test(t)) return 'Te controleren';
+  return fallback;
 }
 const isNum = v => typeof v==='number' && isFinite(v);
 const money = v => isNum(v) ? '€ '+Math.round(v).toLocaleString('nl-NL') : null;
@@ -1062,13 +1096,13 @@ function panel(title,text,tint=true){
   const ps=String(text).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p class="para">${esc(x)}</p>`).join('');
   return `<div class="panel${tint?' tint':''}"><div class="panel-h">${esc(title)}</div>${ps}</div>`;
 }
-function tableBlocks(headers,rowHtmls,{total='',chunk=14,protect=false}={}){
+function tableBlocks(headers,rowHtmls,{total='',chunk=14,protect=false,cls=''}={}){
   if(!rowHtmls.length) return [];
   const ths=headers.map(h=>`<th class="${h.num?'num':''}">${esc(h.label)}</th>`).join('');
   const out=[];
   for(let i=0;i<rowHtmls.length;i+=chunk){
     const last=i+chunk>=rowHtmls.length;
-    out.push(`<table class="t${protect?' protect':''}"><thead><tr>${ths}</tr></thead><tbody>${rowHtmls.slice(i,i+chunk).join('')}${last?total:''}</tbody></table>`);
+    out.push(`<table class="t${protect?' protect':''}${cls?' '+cls:''}"><thead><tr>${ths}</tr></thead><tbody>${rowHtmls.slice(i,i+chunk).join('')}${last?total:''}</tbody></table>`);
   }
   return out;
 }
@@ -1170,6 +1204,12 @@ function sortPeriods(periods){
     return String(a).localeCompare(String(b));
   });
 }
+/* Aantal verschillende jaren/periodes met echte cijfers voor een postenset —
+   gebruikt om te bepalen of de balans- of resultatentabel "breed" is (meer dan
+   4 jaarkolommen) en dus liggend/landscape moet worden weergegeven. */
+function finPeriodCount(rows){
+  return new Set(A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag)).map(x=>String(x.periode).trim())).size;
+}
 function finStatementTable(rows,order){
   const rs=A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag));
   if(!rs.length) return [];
@@ -1199,7 +1239,7 @@ function finStatementTable(rows,order){
     }).join('');
     return `<tr${m.total?' class="total"':''}><td>${esc(m.label)}</td>${cells}</tr>`;
   });
-  return tableBlocks([{label:'Post'},...periods.map(p=>({label:p,num:true}))],trs,{protect:true});
+  return tableBlocks([{label:'Post'},...periods.map(p=>({label:p,num:true}))],trs,{protect:true,cls:'fin'});
 }
 
 /* Grafieken */
@@ -1560,10 +1600,10 @@ function renumberChapters(sections){
 
 function buildSections(r,ctx){
   const S=[];
-  const add=(label,eyebrow,title,blocks)=>{
+  const add=(label,eyebrow,title,blocks,opts={})=>{
     const bs=A(blocks).flat(Infinity).filter(x=>typeof x==='string'&&x.trim());
     if(!bs.length) return;
-    S.push({label,blocks:[chap('Hoofdstuk @@NUM@@',title),...bs]});
+    S.push({label,blocks:[chap('Hoofdstuk @@NUM@@',title),...bs],...opts});
   };
 
   /* 1 · Managementsamenvatting */
@@ -1791,7 +1831,12 @@ function buildSections(r,ctx){
       blocks.push(kvBlocks(posten));
       if(hasVal(pv.relevantie)) blocks.push(panel('Relevantie voor de financiering',pv.relevantie));
     }
-    add('Financiële analyse','Financiële analyse','Financiële analyse',blocks);
+    /* Landscape-weergave (layoutregel 4): alleen dít hoofdstuk gaat liggend als
+       de balans- of resultatentabel meer dan 4 jaarkolommen telt — de rest van
+       het rapport blijft portrait. layoutSectionsMixed() (in de renderer) zorgt
+       dat dit hoofdstuk als aaneengesloten landscape-reeks wordt gepagineerd. */
+    const needsLandscape=finPeriodCount(fa.balans)>4||finPeriodCount(fa.resultaten)>4;
+    add('Financiële analyse','Financiële analyse','Financiële analyse',blocks,{landscape:needsLandscape});
   }
 
   /* 11 · Betaalcapaciteit & ratio's — korte toelichting + DSCR-tabel + ratiotabel;
@@ -1860,11 +1905,11 @@ function buildSections(r,ctx){
     const cc2=r.conclusie||{};
     const dc2=r.documentatiecheck||{};
     const rows=[
-      ...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>({item:x.item,status:'Op te vragen',note:x.toelichting})),
-      ...A(cc2.voorwaarden).filter(hasVal).map(x=>({item:x,status:'Te vestigen'})),
-      ...A(cc2.actiepunten).filter(hasVal).map(x=>({item:x,status:'Te controleren'})),
-      ...A(dc2.separaat_te_controleren).filter(hasVal).map(x=>({item:x,status:'Te controleren'})),
-      ...A(dc2.vervolgvragen).filter(hasVal).map(x=>({item:x,status:'Op te vragen'})),
+      ...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>({item:x.item,status:inferConditionStatus(x.item,'Op te vragen'),note:x.toelichting})),
+      ...A(cc2.voorwaarden).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Te vestigen')})),
+      ...A(cc2.actiepunten).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Te controleren')})),
+      ...A(dc2.separaat_te_controleren).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Te controleren')})),
+      ...A(dc2.vervolgvragen).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Op te vragen')})),
     ];
     /* Ontdubbelen: dezelfde kwestie (huurovereenkomst, eigen inbreng, taxatie, …)
        mag maar één keer voorkomen — niet als voorwaarde én actiepunt én vraag. */
@@ -1986,15 +2031,22 @@ function mmPx(){
   d.remove();
   return w||3.7795;
 }
-function layoutPages(sections){
+function layoutPages(sections,opts={}){
+  const landscape=!!opts.landscape;
   const MMpx=mmPx();
-  const budget=254*MMpx;        /* netto contenthoogte per pagina (koptekst 16mm + body-pad 8mm
-     + voettekst-reserve ~15mm laten ±258mm netto over; 254mm houdt een kleine veiligheidsmarge aan) */
+  /* Portrait: 297mm hoog, ±43mm koptekst/voettekst/veiligheidsmarge, netto 254mm.
+     Landscape (voor brede financiële tabellen): pagina is 210mm hoog i.p.v. 297mm
+     — dezelfde ±43mm chrome/marge blijft staan, dus netto 167mm. De breedte
+     (297mm i.p.v. 210mm) komt uit de CSS-klasse "landscape" op de meetpagina zelf,
+     zodat tabellen met veel jaarkolommen tijdens het meten ook echt de extra
+     breedte krijgen in plaats van in te klappen. */
+  const pageH=landscape?210:297;
+  const budget=(pageH-43)*MMpx;
   const headReserve=26*MMpx;    /* veiligheidsmarge voor de "past dit hoofdstuk in zijn geheel op
      één pagina"-check; koppen zelf kunnen dankzij groupByHeading/placeGroup hieronder nooit meer
      losraken van hun bijbehorende inhoud, dus hier is geen aparte kop-reserve meer nodig. */
   const page=document.createElement('div');
-  page.className='report-page';
+  page.className='report-page'+(landscape?' landscape':'');
   page.style.cssText='position:absolute;left:-9999px;top:0;height:auto;overflow:visible;box-shadow:none;margin:0;transform:none';
   const body=document.createElement('div');
   body.className='rp-body';
@@ -2004,8 +2056,27 @@ function layoutPages(sections){
   const isHeading=h=>/^<div class="(secbar|chap)/.test(h);
 
   const pages=[]; let cur=null;
-  const open=label=>{ cur={labels:[label],html:'',h:0}; };
+  const open=label=>{ cur={labels:[label],html:'',h:0,landscape}; };
   const close=()=>{ if(cur&&cur.html) pages.push(cur); cur=null; };
+
+  /* Item 9/10 (layoutregels): een "— vervolg"-pagina die minder dan ~40% gevuld
+     is, wordt teruggevoegd bij de vorige pagina van HETZELFDE hoofdstuk, mits dat
+     samen weer binnen het paginabudget past — nooit over hoofdstukgrenzen heen.
+     Dit draait na het sluiten van elk hoofdstuk (niet pas aan het einde van het
+     hele document), zodat ook een vervolgpagina midden in het rapport nooit
+     bijna leeg blijft staan. */
+  const mergeThinTrailingPages=chapterStart=>{
+    while(pages.length-chapterStart>=2){
+      const last=pages[pages.length-1];
+      const prev=pages[pages.length-2];
+      if(last.h<budget*0.4&&prev.h+last.h<=budget){
+        prev.html+=last.html;
+        prev.h+=last.h;
+        for(const l of last.labels) if(!prev.labels.includes(l)) prev.labels.push(l);
+        pages.pop();
+      } else break;
+    }
+  };
 
   /* Elk hoofdstuk begint ALTIJD bovenaan een eigen, nieuwe pagina — hoofdstukken
      worden nooit samengepakt op één pagina. Een hoofdstuk mag NOOIT over twee
@@ -2070,7 +2141,6 @@ function layoutPages(sections){
   };
 
   for(const sec of sections){
-    if(cur) close();
     let blocks=sec.blocks;
     if(!fitsPage(blocks)){
       const tryFns=[
@@ -2096,38 +2166,40 @@ function layoutPages(sections){
       }
       blocks=candidate.blocks;
     }
+    const chapterStart=pages.length;
     open(sec.label);
     for(const group of groupByHeading(blocks)) placeGroup(sec,group);
+    close();
+    mergeThinTrailingPages(chapterStart);
   }
-  close();
-  /* Geen dunne slotpagina: is de allerlaatste pagina een "— vervolg"-vervolgpagina
-     van hetzelfde hoofdstuk als de pagina ervoor, en is ze minder dan ~50% gevuld
-     én past ze samen met de vorige pagina alsnog binnen het paginabudget, voeg ze
-     dan terug samen met de vorige pagina in plaats van een bijna lege laatste
-     pagina te laten staan. Alleen de trailing vervolgpagina van hetzelfde hoofdstuk
-     komt hiervoor in aanmerking — verschillende hoofdstukken worden nooit op één
-     pagina samengevoegd. */
-  if(pages.length>=2){
-    const last=pages[pages.length-1];
-    const prev=pages[pages.length-2];
-    const lastLabel=last.labels[0]||'';
-    const prevLabel=prev.labels[prev.labels.length-1]||'';
-    const isVervolgVanVorige=/ — vervolg$/.test(lastLabel)&&lastLabel.replace(/ — vervolg$/,'')===prevLabel.replace(/ — vervolg$/,'');
-    if(isVervolgVanVorige&&last.h<budget*0.5&&prev.h+last.h<=budget){
-      prev.html+=last.html;
-      prev.h+=last.h;
-      for(const l of last.labels) if(!prev.labels.includes(l)) prev.labels.push(l);
-      pages.pop();
-    }
-  }
+  close(); // veiligheidsnet; cur is normaliter al leeg na de lus hierboven
   page.remove();
+  return pages;
+}
+
+/* Landscape-hoofdstukken (bijv. Financiële analyse bij brede meerjarentabellen)
+   worden nooit door elkaar gepagineerd met portrait-hoofdstukken: de sectielijst
+   wordt hier eerst opgeknipt in aaneengesloten reeksen van dezelfde
+   paginastand, elke reeks gaat door layoutPages met de bijbehorende
+   oriëntatie, en de resultaten worden daarna weer op volgorde aan elkaar
+   geplakt. Zo blijft de rest van het rapport altijd portrait en krijgt alleen
+   het/de landscape-hoofdstuk(ken) een liggende pagina. */
+function layoutSectionsMixed(sections){
+  const runs=[];
+  for(const s of sections){
+    const land=!!s.landscape;
+    if(!runs.length||runs[runs.length-1].landscape!==land) runs.push({landscape:land,items:[]});
+    runs[runs.length-1].items.push(s);
+  }
+  let pages=[];
+  for(const run of runs) pages=pages.concat(layoutPages(run.items,{landscape:run.landscape}));
   return pages;
 }
 
 /* Totaal aantal fysieke pagina's: cover + inhoudsopgave (altijd eigen pagina)
    + body + (optioneel) achterblad. */
 function totalRenderedPages(sections,includeBack=true,tocSeparate=true){
-  return layoutPages(sections).length+(tocSeparate?2:1)+(includeBack?1:0);
+  return layoutSectionsMixed(sections).length+(tocSeparate?2:1)+(includeBack?1:0);
 }
 
 /* Hoogte van een los HTML-blok meten (buiten layoutPages om) — gebruikt als
@@ -2351,7 +2423,7 @@ function renderReport(r){
      en contactgegevens, en die staan al compact onderaan het laatste inhoudelijke
      hoofdstuk (Financieringssamenvatting). Geldt voor beide rapporttypen. */
   includeBack=false;
-  const pages=sections.length?layoutPages(sections):[];
+  const pages=sections.length?layoutSectionsMixed(sections):[];
   const tot=pages.length+(bodyStart-1)+(includeBack?1:0);
   const kantoor=hasVal(md.kantoor_adviseur)?md.kantoor_adviseur:'';
 
@@ -2436,7 +2508,7 @@ function renderReport(r){
     const cont=p.labels.length===1&&/ — vervolg$/.test(p.labels[0]);
     return bases.slice(0,2).join(' · ')+(bases.length>2?' · …':'')+(cont?' — vervolg':'');
   };
-  const chrome=(p,i)=>`<section class="report-page" data-screen-label="${esc(pageTitle(p))}">
+  const chrome=(p,i)=>`<section class="report-page${p.landscape?' landscape':''}" data-screen-label="${esc(pageTitle(p))}">
     ${headBar(pageTitle(p))}
     <div class="rp-body">${p.html}</div>
     <footer class="rp-foot">
