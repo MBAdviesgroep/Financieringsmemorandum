@@ -877,6 +877,25 @@ const PHRASE_FIXES = [
   [/\s*Privacygevoelige gegevens van privépersonen en achterliggende vennootschappen zijn opgenomen\.?\s*/gi, ' '],
 ];
 
+/* Waargenomen, terugkerende corruptie: een zin die begint met een kaal
+   restfragment van 1-3 cijfers direct gevolgd door "in <jaar>" — het staartje
+   van een bedrag waarvan het eurosymbool en de eerste cijfers zijn weggevallen
+   (bijv. "000 in 2028, met een tijdelijke daling van DSCR..." i.p.v. "€ 1.590.000
+   in 2028, met een tijdelijke daling van DSCR..."). Dit gebeurt met name in
+   managementsamenvatting.kernboodschap, waarschijnlijk doordat een in de bron
+   over twee regels afgebroken bedrag (kolom-/tabelomloop in de brontabel) door
+   het model letterlijk is overgenomen. Het ontbrekende bedrag kan niet worden
+   teruggehaald — daarom wordt de zinsopening hier automatisch herschreven naar
+   een correcte, generieke vorm (i.p.v. alleen een waarschuwing te geven, die
+   de zin niet daadwerkelijk repareert) en blijft de rest van de zin ongemoeid. */
+function repairLeadingNumberFragment(v) {
+  const NUM_FRAGMENT_MET = /(^|\n\s*\n)(\d{1,3})\s+in\s+(\d{4})\b,\s*met\s+/gi;
+  const NUM_FRAGMENT_GENERIC = /(^|\n\s*\n)(\d{1,3})\s+in\s+(\d{4})\b,?\s*/gi;
+  let out = v.replace(NUM_FRAGMENT_MET, (_m, pre, _digits, jaar) => pre + 'In ' + jaar + ' is sprake van ');
+  out = out.replace(NUM_FRAGMENT_GENERIC, (_m, pre, _digits, jaar) => pre + 'In ' + jaar + ' ');
+  return out;
+}
+
 /* Eurotekens die door PDF-tekstextractie zijn verminkt (bijv. bij Type3/custom-font
    PDF's) komen soms als replacement character (�) of als "EUR 123"/"123 euro" terug.
    Normaliseer dit altijd naar "€ 123", vóórdat de tekst het rapport bereikt. */
@@ -904,6 +923,12 @@ function deepCleanStrings(node, warnings, path = '') {
       }
     }
     if (/^(undefined|null|NaN|\[object Object\])$/i.test(v.trim())) return '';
+    const beforeFragment = v;
+    v = repairLeadingNumberFragment(v);
+    if (v !== beforeFragment) {
+      const w = 'Afgebroken zin gerepareerd: een zin begon met een los cijferfragment (het staartje van een bedrag); de zinsopening is automatisch herschreven. Controleer of het ontbrekende bedrag elders in het rapport correct is opgenomen.';
+      if (!warnings.includes(w)) warnings.push(w);
+    }
     const beforeEuro = v;
     v = fixEuroSigns(v);
     if (v !== beforeEuro) {
