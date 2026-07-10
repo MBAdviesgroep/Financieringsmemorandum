@@ -1441,7 +1441,14 @@ async function createResponse(client, model, content) {
   return client.responses.create({
     model,
     input: [{ role: 'user', content }],
-    max_output_tokens: 28000,
+    /* Vercel Hobby heeft een harde functietijdlimiet van 60s (maxDuration
+       hieronder) die niet verhoogd kan worden. Generatietijd schaalt ongeveer
+       lineair met het aantal output-tokens; 22000 (i.p.v. voorheen 28000)
+       geeft ruimte voor een volledig financieringsmemorandum inclusief de
+       uitgebreide financiële analyse, met wat meer veiligheidsmarge tegen de
+       tijdlimiet. Verhoog dit gerust weer als het account naar Vercel Pro
+       (300s) gaat. */
+    max_output_tokens: 22000,
     text: {
       format: {
         type: 'json_schema',
@@ -1613,13 +1620,23 @@ export default async function handler(req, res) {
     const prompt = buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid, structuurOverride });
     const content = [{ type: 'input_text', text: prompt }, ...docContent];
 
-    const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+    /* Vercel Hobby: harde functietijdlimiet van 60s (zie maxDuration hieronder),
+       niet te verhogen. Generatietijd hangt sterk samen met bronomvang en
+       gevraagde diepgang (uitgebreid rapport, veel pagina's) — voor die
+       zwaarste gevallen kiezen we daarom vooraf al het snellere nano-model
+       i.p.v. pas ná een mislukte poging, want een verstreken functietijdlimiet
+       kan (in tegenstelling tot een 429) niet meer binnen dezelfde aanroep
+       worden opgevangen. Voor de meeste (normale) aanvragen blijft mini de
+       standaard, voor de beste nauwkeurigheid. Een expliciete OPENAI_MODEL
+       env-var overschrijft deze keuze altijd. */
+    const isZwareAanvraag = uitgebreid || (typeof bytesPageCount === 'number' && isFinite(bytesPageCount) && bytesPageCount > 15);
+    const model = process.env.OPENAI_MODEL || (isZwareAanvraag ? 'gpt-4.1-nano' : 'gpt-4.1-mini');
     let response;
     try {
       response = await createResponse(client, model, content);
     } catch (firstErr) {
       if (firstErr?.status === 429 || String(firstErr?.message || '').includes('429')) {
-        response = await createResponse(client, 'gpt-4.1-nano', content);
+        response = await createResponse(client, model === 'gpt-4.1-nano' ? 'gpt-4.1-mini' : 'gpt-4.1-nano', content);
       } else {
         throw firstErr;
       }
