@@ -428,10 +428,17 @@ svg.chart{width:100%;height:auto;display:block}
 
 /* ═══ Print — exact A4, geen schaal, geen chrome ══════════════════ */
 @page{size:A4;margin:0}
-/* Alleen het hoofdstuk Financiële analyse gebruikt (indien nodig) deze liggende
-   naamgeving; alle andere pagina's blijven op de standaard @page (portrait)
-   hierboven. Ondersteund door de Chromium-printengine die dit rapport als PDF
-   exporteert via de systeem-printdialoog. */
+/* Chromium's afdruk-/PDF-engine (window.print(), ook via de systeem-printdialoog)
+   ondersteunt GEEN afwijkende paginaoriëntatie per pagina binnen één afdruktaak —
+   de named-page koppeling hieronder (@page landscape + page:landscape) wordt door
+   Chromium genegeerd, waardoor een "liggend" hoofdstuk anders gewoon samengeperst
+   op een staand vel terechtkomt in plaats van daadwerkelijk gedraaid te worden.
+   Om dit hoofdstuk (Financiële analyse) toch echt liggend leesbaar te krijgen op
+   standaard A4-papier, blijft de fysieke pagina staand (matcht de rest van het
+   document) en wordt in plaats daarvan de INHOUD 90° gedraaid binnen die staande
+   pagina (.rp-landscape-rotate hieronder) — dat werkt wél betrouwbaar, in elke
+   browser. De @page-regel hieronder blijft staan als onschadelijke progressive
+   enhancement voor het geval een toekomstige printengine dit ooit wél ondersteunt. */
 @page landscape{size:A4 landscape;margin:0}
 @media print{
   html,body{width:210mm;margin:0!important;padding:0!important;background:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
@@ -439,7 +446,10 @@ svg.chart{width:100%;height:auto;display:block}
   .rpt-view{display:block!important}
   .stage{padding:0!important;margin:0!important;background:#fff!important;display:block!important}
   .report-page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;border-radius:0!important;transform:none!important;break-after:page;page-break-after:always;overflow:visible!important}
-  .report-page.landscape{width:297mm!important;height:210mm!important;page:landscape}
+  /* De fysieke pagina blijft staand A4 (210×297mm), zodat Chromium één
+     consistente paginamaat voor de hele afdruktaak hanteert. */
+  .report-page.landscape{width:210mm!important;height:297mm!important;overflow:hidden!important}
+  .report-page.landscape .rp-landscape-rotate{position:absolute!important;top:50%!important;left:50%!important;width:297mm!important;height:210mm!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
   .report-page:last-child{break-after:auto;page-break-after:auto}
   .panel,.chart-card,.orgcard,table.t,.kpi,.verdict,.kv,.docrow{break-inside:avoid;page-break-inside:avoid}
 }
@@ -2601,14 +2611,20 @@ function renderReport(r){
     const cont=p.labels.length===1&&/ — vervolg$/.test(p.labels[0]);
     return bases.slice(0,2).join(' · ')+(bases.length>2?' · …':'')+(cont?' — vervolg':'');
   };
-  const chrome=(p,i)=>`<section class="report-page${p.landscape?' landscape':''}" data-screen-label="${esc(pageTitle(p))}">
-    ${headBar(pageTitle(p))}
+  const chrome=(p,i)=>{
+    const inner=`${headBar(pageTitle(p))}
     <div class="rp-body">${p.html}</div>
     <footer class="rp-foot">
       <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(naam)} — Vertrouwelijk</div>
       <div class="rp-foot-r">${esc(datum)} <span class="pg-chip">Pagina ${i+bodyStart} van ${tot}</span></div>
-    </footer>
+    </footer>`;
+    /* Print-fix: alleen bij landscape-pagina's wordt de inhoud in een aparte
+       wrapper gezet, zodat we 'm bij het afdrukken 90° kunnen draaien binnen een
+       fysiek staand A4-vel (zie .rp-landscape-rotate in de print-CSS hierboven). */
+    return `<section class="report-page${p.landscape?' landscape':''}" data-screen-label="${esc(pageTitle(p))}">
+    ${p.landscape?`<div class="rp-landscape-rotate">${inner}</div>`:inner}
   </section>`;
+  };
 
   const back=`<section class="report-page backcover" data-screen-label="Achterblad">
     <svg class="back-deco" viewBox="0 0 400 400" fill="none" aria-hidden="true">
