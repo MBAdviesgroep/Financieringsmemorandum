@@ -1210,6 +1210,24 @@ function sortPeriods(periods){
 function finPeriodCount(rows){
   return new Set(A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag)).map(x=>String(x.periode).trim())).size;
 }
+/* Aantal verschillende posten (rijen, niet kolommen) in een balans- of
+   resultatentabel — gebruikt om "veel financiële posten" te herkennen als
+   landscape-trigger, naast het aantal jaarkolommen. */
+function finDistinctPostCount(rows){
+  return new Set(A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag)).map(x=>String(x.label).trim().toLowerCase())).size;
+}
+/* True als de posten zowel historische als prognose-/structurele periodes
+   bevatten (periode-string markeert dit met "(prognose)" of "(structureel)",
+   zie promptinstructie) — een mix van beide naast elkaar in dezelfde tabel
+   maakt kolomkoppen breder (langere periodelabels) en verdient landscape. */
+function finHasMixedHistForecast(rows){
+  const periods=new Set(A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag)).map(x=>String(x.periode).trim()));
+  let forecast=false,historical=false;
+  for(const p of periods){
+    if(/prognose|structureel/i.test(p)) forecast=true; else historical=true;
+  }
+  return forecast&&historical;
+}
 function finStatementTable(rows,order){
   const rs=A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag));
   if(!rs.length) return [];
@@ -1843,11 +1861,30 @@ function buildSections(r,ctx){
       blocks.push(kvBlocks(posten));
       if(hasVal(pv.relevantie)) blocks.push(panel('Relevantie voor de financiering',pv.relevantie));
     }
-    /* Landscape-weergave (layoutregel 4): alleen dít hoofdstuk gaat liggend als
-       de balans- of resultatentabel meer dan 4 jaarkolommen telt — de rest van
-       het rapport blijft portrait. layoutSectionsMixed() (in de renderer) zorgt
-       dat dit hoofdstuk als aaneengesloten landscape-reeks wordt gepagineerd. */
-    const needsLandscape=finPeriodCount(fa.balans)>4||finPeriodCount(fa.resultaten)>4;
+    /* Landscape-weergave (verruimd): uitsluitend dít hoofdstuk mag liggend
+       worden weergegeven — de rest van het rapport blijft altijd portrait.
+       Landscape is hier de VOORKEURSWEERGAVE voor een brede financiële
+       analyse, geen fallback die pas bij twijfel wordt ingezet: bij twijfel
+       kiezen we voor landscape. Triggers (elk afzonderlijk al voldoende):
+       1) >4 jaarkolommen in de balans- of resultatentabel;
+       2) veel financiële posten (6 of meer verschillende rijen in de balans-
+          of de resultatentabel) — te druk/smal voor portrait;
+       3) zowel Balansontwikkeling als Resultatenontwikkeling aanwezig — twee
+          volle tabellen na elkaar passen in portrait al snel te krap;
+       4) prognose- of structurele jaren naast historische jaren in dezelfde
+          tabel (bredere periodelabels zoals "2027 (prognose)").
+       layoutSectionsMixed() (in de renderer) zorgt dat dit hoofdstuk als
+       aaneengesloten landscape-reeks wordt gepagineerd, met op de eerste
+       landscape-pagina bij voorkeur Balansontwikkeling + Resultatenontwikkeling
+       en — indien dat niet past — Observaties/privé/toelichting op een
+       tweede landscape-pagina (de bestaande groep-gebaseerde paginering
+       plaatst hoofdstukonderdelen al in die volgorde). */
+    const balansPosts=finDistinctPostCount(fa.balans);
+    const resultatenPosts=finDistinctPostCount(fa.resultaten);
+    const bothTablesPresent=balansTbl.length>0&&resultatenTbl.length>0;
+    const veelPosten=balansPosts>=6||resultatenPosts>=6;
+    const mixedJaren=finHasMixedHistForecast(fa.balans)||finHasMixedHistForecast(fa.resultaten);
+    const needsLandscape=finPeriodCount(fa.balans)>4||finPeriodCount(fa.resultaten)>4||bothTablesPresent||veelPosten||mixedJaren;
     add('Financiële analyse','Financiële analyse','Financiële analyse',blocks,{landscape:needsLandscape});
   }
 
