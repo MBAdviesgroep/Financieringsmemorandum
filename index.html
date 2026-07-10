@@ -1715,8 +1715,14 @@ function buildSections(r,ctx){
     }
     const team=A(mg.team).filter(x=>hasVal(x?.naam));
     if(team.length){
-      blocks.push(secbarB('Management'));
-      blocks.push(bulletBlocks(team.map(x=>[x.naam,x.rol,x.achtergrond].filter(hasVal).join(' — '))));
+      /* Layoutregel 11 (Juridische structuur): geen aparte vervolgpagina met
+         alleen "Management" — dit krijgt daarom bewust GEEN eigen secbar-kop
+         (die zou een zelfstandige, pagina-splitsbare groep vormen), maar wordt
+         als compact panel direct gekoppeld aan de voorgaande inhoud
+         (activiteiten/strategie of markt). Past het niet, dan blijft het bij
+         hooguit 2 regels (2 teamleden) beperkt in plaats van door te lopen. */
+      const teamLines=team.slice(0,2).map(x=>[x.naam,x.rol,x.achtergrond].filter(hasVal).join(' — '));
+      blocks.push(panel('Management',teamLines.join('\n')));
     }
     add('Juridische structuur & activiteiten','Structuur & onderneming','Juridische structuur, activiteiten & strategie',blocks);
   }
@@ -1772,7 +1778,12 @@ function buildSections(r,ctx){
         best.map(x=>`<tr><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td><td>${cell(x.condities)}</td></tr>`)));
     }
     if(hasVal(fo.bouwdepot_fasering)) blocks.push(panel('Bouwdepot en fasering',fo.bouwdepot_fasering));
-    if(voorw.length){ blocks.push(secbarB('Voorwaarden en condities')); blocks.push(bulletBlocks(voorw)); }
+    /* Layoutregel 11 (Financieringsopzet): geen aparte vervolgpagina met alleen
+       "Voorwaarden en condities" — net als bij Management hierboven krijgt dit
+       daarom bewust GEEN eigen secbar-kop maar een compact panel, zodat het
+       altijd met de voorgaande financieringstabel/bouwdepottekst meekomt in
+       plaats van als losse groep te kunnen afsplitsen. */
+    if(voorw.length){ blocks.push(panel('Voorwaarden en condities',voorw.join('\n'))); }
     add('Financieringsopzet','Financieringsopzet','Financieringsopzet / bronnen en aanwendingen',blocks);
   }
 
@@ -1807,12 +1818,13 @@ function buildSections(r,ctx){
 
   /* 10 · Financiële analyse — volledig en dynamisch o.b.v. de bron: aparte
      balans- en resultatentabel (posten als rijen, alle jaren als kolommen),
-     5-8 observaties, en een korte niet-dubbelende verwijzing naar ratio's/
-     terugbetaalcapaciteit (die met de betaalcapaciteitscijfers wordt getoond
-     in het hoofdstuk Betaalcapaciteit & ratio's, om dubbeling te voorkomen). */
+     4-6 sterke observaties, en een korte niet-dubbelende verwijzing naar
+     ratio's/terugbetaalcapaciteit (die met de betaalcapaciteitscijfers wordt
+     getoond in het hoofdstuk Betaalcapaciteit & ratio's, om dubbeling te
+     voorkomen). */
   const fa=r.financiele_analyse||{};
   {
-    const obs=A(fa.observaties).filter(hasVal).slice(0,8);
+    const obs=A(fa.observaties).filter(hasVal).slice(0,6);
     const blocks=[paraBlocks(fa.tekst)];
     const balansTbl=finStatementTable(fa.balans,BALANS_ORDER);
     if(balansTbl.length){ blocks.push(secbarB('Balansontwikkeling','conform aangeleverde documentatie')); blocks.push(balansTbl); }
@@ -1933,6 +1945,30 @@ function buildSections(r,ctx){
       const extraBron=A(r.metadata?.bron_documenten).filter(hasVal).filter(d=>!genoemd.has(d));
       if(extraBron.length) ontv.push(...extraBron.map(d=>({document:d})));
     }
+    /* Layoutregel 6/16: "Ontvangen / gebruikt" mag nooit alleen het memorandum
+       tonen als de rest van het rapport laat zien dat er duidelijk meer is
+       gebruikt. Dit wordt afgeleid uit al aanwezige, betrouwbare structuurdata
+       (financiële cijfers, object-/taxatiegegevens, prognose/kasstroom,
+       bouwdepot/fasering, zekerheidsinformatie) — niet uit een apart tekstveld
+       dat de AI toevallig wel of niet volledig heeft ingevuld. Elke aanvulling
+       wordt alleen toegevoegd als er nog geen vergelijkbare vermelding is. */
+    {
+      const bestaatAl=(...trefwoorden)=>ontv.some(d=>{
+        const t=String(d.document||'').toLowerCase();
+        return trefwoorden.some(k=>t.includes(k));
+      });
+      const inferred=[];
+      const fa2=r.financiele_analyse||{};
+      if((A(fa2.balans).length||A(fa2.resultaten).length)&&!bestaatAl('jaarreken','aangifte','financi')) inferred.push('Jaarrekening / financiële cijfers');
+      const ovKen=A(r.object_en_vastgoed?.kenmerken);
+      if(ovKen.some(x=>/taxatie/i.test(String(x?.label||'')))&&!bestaatAl('taxatie')) inferred.push('Taxatiegegevens');
+      if(ovKen.length&&!bestaatAl('object','taxatie','pand','erfpacht')) inferred.push('Objectinformatie');
+      const bc2=r.betaalcapaciteit||{};
+      if((A(bc2.dscr_overzicht).length||A(bc2.tabel).length)&&!bestaatAl('prognose','kasstroom')) inferred.push('Prognose- / kasstroominformatie');
+      if(hasVal(r.financieringsopzet?.bouwdepot_fasering)&&!bestaatAl('bouwdepot','fasering')) inferred.push('Bouwdepot- en faseringsoverzicht');
+      if(A(r.zekerheden_en_risico?.zekerheden).length&&!bestaatAl('zekerheid','hypotheek','verpanding','borg')) inferred.push('Zekerheidsinformatie');
+      ontv.push(...inferred.map(d=>({document:d})));
+    }
     if(ontv.length){ blocks.push(secbarB('Ontvangen / gebruikt')); blocks.push(bulletBlocks(ontv.map(d=>d.document).slice(0,8))); }
     /* Geen dubbele lijst: "Nog te controleren / op te vragen" toont uitsluitend
        punten die niet al in de tabel hierboven staan (overloop voorbij de
@@ -1946,9 +1982,15 @@ function buildSections(r,ctx){
     if(teControlerenUniq.length){ blocks.push(secbarB('Nog te controleren / op te vragen')); blocks.push(bulletBlocks(teControlerenUniq.slice(0,8))); }
     /* Overige bronhoofdstukken (bronspecifieke inhoud buiten het vaste schema,
        bijv. detailgegevens van betrokken personen) horen hier zonder aparte
-       "bijlage"-kop; ze zijn gewoon aanvullende inhoud van dit hoofdstuk. */
+       "bijlage"-kop; ze zijn gewoon aanvullende inhoud van dit hoofdstuk.
+       Layoutregel 7/16: een structuurschema/organogram hoort UITSLUITEND in
+       hoofdstuk 2 (Juridische structuur) — komt zoiets als bronspecifieke
+       "overige sectie" toch hier terecht, dan is dat altijd een duplicaat en
+       wordt het hier overgeslagen. */
+    const STRUCTUUR_TITEL_RE=/structuur|organogram/i;
     for(const os of A(r.overige_secties)){
       if(!os||!hasVal(os.titel)) continue;
+      if(STRUCTUUR_TITEL_RE.test(os.titel)) continue;
       blocks.push(secbarB(os.titel));
       blocks.push(paraBlocks(os.tekst));
       const tb=A(os.tabel).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
@@ -2248,6 +2290,20 @@ function shortenParagraphs(sections,maxSentences){
     if(/^<div class="panel/.test(b)){
       const ps=[...b.matchAll(/<p class="para">([\s\S]*?)<\/p>/g)];
       if(ps.length>1) return b.slice(0,b.indexOf(ps[0][0]))+`<p class="para">${ps[0][1]}</p></div>`;
+    }
+    /* Layoutregel 2/11: financieringsduiding (hoofdstuk 1) en financierings-
+       samenvatting (hoofdstuk 8) staan in een ".verdict"-blok met een kale <p>
+       (zonder class="para") — die was tot nu toe onzichtbaar voor deze
+       compressiestap, waardoor zo'n blok bij een klein tekstoverschot in zijn
+       geheel naar een bijna lege vervolgpagina kon doorschuiven in plaats van
+       eerst gewoon iets korter gemaakt te worden. */
+    if(/^<div class="verdict"/.test(b)){
+      const ps=[...b.matchAll(/<p>([\s\S]*?)<\/p>/g)];
+      if(ps.length){
+        const combined=truncate(ps.map(p=>p[1]).join(' '));
+        const head=b.slice(0,b.indexOf(ps[0][0]));
+        return `${head}<p>${combined}</p></div>`;
+      }
     }
     return b;
   })}));
