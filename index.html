@@ -2311,7 +2311,7 @@ function measureBlockHeight(html){
 /* Grafiekblokken schrappen als compressiestap: tabellen en organogrammen blijven staan. */
 function stripChartBlocks(sections){
   return sections
-    .map(s=>({label:s.label,blocks:s.blocks.filter(b=>!(/^<div class="charts2"/.test(b)||/^<div class="chart-card"/.test(b)))}))
+    .map(s=>({...s,blocks:s.blocks.filter(b=>!(/^<div class="charts2"/.test(b)||/^<div class="chart-card"/.test(b)))}))
     .filter(s=>s.blocks.length>1);
 }
 
@@ -2319,7 +2319,7 @@ function stripChartBlocks(sections){
    is al elders in het hoofdstuk aanwezig of de kernboodschap blijft ook zonder
    diagram leesbaar. Alleen ingezet als het budget dit écht vereist. */
 function stripOrgDiagrams(sections){
-  return sections.map(s=>({label:s.label,blocks:s.blocks.filter(b=>!/^<div class="orgcard/.test(b))}));
+  return sections.map(s=>({...s,blocks:s.blocks.filter(b=>!/^<div class="orgcard/.test(b))}));
 }
 
 /* Compressiestap "samenvattingen verkorten": lange lopende tekst (losse
@@ -2331,7 +2331,7 @@ function shortenParagraphs(sections,maxSentences){
     const parts=txt.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9])/);
     return parts.length<=maxSentences?txt:parts.slice(0,maxSentences).join(' ');
   };
-  return sections.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
+  return sections.map(s=>({...s,blocks:s.blocks.map(b=>{
     let m=b.match(/^<p class="para">([\s\S]*)<\/p>$/);
     if(m) return `<p class="para">${truncate(m[1])}</p>`;
     if(/^<div class="panel/.test(b)){
@@ -2359,7 +2359,12 @@ function shortenParagraphs(sections,maxSentences){
 /* Bulletlijsten verder inkorten tot maxItems (extra veiligheidsmarge naast de
    vaste maxima die elk hoofdstuk al hanteert). */
 function trimBulletBlocks(sections,maxItems){
-  return sections.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
+  /* De Financiële analyse heeft bewust GEEN vast paginamaximum (mag desnoods
+     meer ruimte innemen dan andere hoofdstukken, zie promptinstructie) — de
+     observatiebullets van dit hoofdstuk mogen daarom nooit door het
+     paginabudget worden ingekort; liever een extra (vervolg)pagina dan een
+     onvolledige financiële analyse. */
+  return sections.map(s=>s.label==='Financiële analyse'?s:({...s,blocks:s.blocks.map(b=>{
     const m=b.match(/^(<div class="blist[^"]*">)((?:<div>[\s\S]*?<\/div>)+)(<\/div>)$/);
     if(!m) return b;
     const items=m[2].match(/<div>[\s\S]*?<\/div>/g)||[];
@@ -2370,7 +2375,7 @@ function trimBulletBlocks(sections,maxItems){
 /* Uiterste redmiddel: detailregels in tabellen inkorten, totaal-/samenvattende
    rijen (class="total") blijven altijd staan zodat bronnen/aanwendingen kloppend blijft. */
 function capTableRows(sections,maxRows){
-  return sections.map(s=>({label:s.label,blocks:s.blocks.map(b=>{
+  return sections.map(s=>({...s,blocks:s.blocks.map(b=>{
     /* class="t protect" tables (financiële-analyse jaartabel, partijentabel)
        bevatten kernfeiten die nooit als noodgreep mogen sneuvelen om een
        hoofdstuk op één pagina te persen \u2014 die worden hier overgeslagen; het
