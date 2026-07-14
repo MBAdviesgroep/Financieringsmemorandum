@@ -427,28 +427,18 @@ svg.chart{width:100%;height:auto;display:block}
 }
 
 /* ═══ Print — exact A4, geen schaal, geen chrome ══════════════════ */
-@page{size:210mm 297mm;margin:0}
-/* Chromium's afdruk-/PDF-engine (window.print(), ook via de systeem-printdialoog)
-   ondersteunt GEEN afwijkende paginaoriëntatie per pagina binnen één afdruktaak —
-   de named-page koppeling hieronder (@page landscape + page:landscape) wordt door
-   Chromium genegeerd, waardoor een "liggend" hoofdstuk anders gewoon samengeperst
-   op een staand vel terechtkomt in plaats van daadwerkelijk gedraaid te worden.
-   Om dit hoofdstuk (Financiële analyse) toch echt liggend leesbaar te krijgen op
-   standaard A4-papier, blijft de fysieke pagina staand (matcht de rest van het
-   document) en wordt in plaats daarvan de INHOUD 90° gedraaid binnen die staande
-   pagina (.rp-landscape-rotate hieronder) — dat werkt wél betrouwbaar, in elke
-   browser. De @page-regel hieronder blijft staan als onschadelijke progressive
-   enhancement voor het geval een toekomstige printengine dit ooit wél ondersteunt. */
+@page portraitPage{size:A4 portrait;margin:0}
+@page financialLandscapePage{size:A4 landscape;margin:0}
+@page{size:A4 portrait;margin:0}
 @media print{
-  html,body{width:210mm;margin:0!important;padding:0!important;background:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  html,body{margin:0!important;padding:0!important;background:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact;overflow:visible!important}
   .up-view,.loading-view,.toolbar,.no-print{display:none!important}
   .rpt-view{display:block!important}
-  .stage{padding:0!important;margin:0!important;background:#fff!important;display:block!important}
-  .report-page{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;border-radius:0!important;transform:none!important;break-after:page;page-break-after:always;overflow:visible!important}
-  /* De fysieke pagina blijft staand A4 (210×297mm), zodat Chromium één
-     consistente paginamaat voor de hele afdruktaak hanteert. */
-  .report-page.landscape{width:210mm!important;height:297mm!important;overflow:hidden!important}
-  .report-page.landscape .rp-landscape-rotate{position:absolute!important;top:50%!important;left:50%!important;width:297mm!important;height:210mm!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
+  .stage{padding:0!important;margin:0!important;background:#fff!important;display:block!important;width:auto!important;max-width:none!important}
+  .report-page{page:portraitPage;width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;border-radius:0!important;transform:none!important;break-after:page;page-break-after:always;overflow:hidden!important}
+  .report-page.cover,.report-page.backcover{page:portraitPage;width:210mm!important;height:297mm!important}
+  .report-page.landscape{page:financialLandscapePage;width:297mm!important;height:210mm!important;overflow:hidden!important;contain:layout paint size!important}
+  .report-page.landscape .rp-landscape-rotate{position:static!important;width:100%!important;height:100%!important;transform:none!important;transform-origin:center center!important}
   .report-page:last-child{break-after:auto;page-break-after:auto}
   .panel,.chart-card,.orgcard,table.t,.kpi,.verdict,.kv,.docrow{break-inside:avoid;page-break-inside:avoid}
 }
@@ -678,12 +668,12 @@ function resetStructInput(){
 }
 
 /* ══ Helpers ════════════════════════════════════════════════════════ */
-/* Vangnet tegen verminkte eurotekens (�, "EUR 123", "123 euro") die soms uit
+/* Vangnet tegen verminkte eurotekens ( , "EUR 123", "123 euro") die soms uit
    PDF-tekstextractie komen. De server fixt dit al in de brontekst; dit is een
    tweede laag die altijd meeloopt via esc(), voor elk dynamisch tekstveld. */
 function cleanTextForReport(value){
   return String(value??'')
-    .replace(/�9\s?(?=\d)/g,'€ ')
+    .replace(/ 9\s?(?=\d)/g,'€ ')
     .replace(/\uFFFD\s?(?=\d)/g,'€ ')
     .replace(/\bEUR\s?(?=\d)/gi,'€ ')
     .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1')
@@ -2622,12 +2612,10 @@ function renderReport(r){
       <div class="rp-foot-l"><img src="${MARK}" alt="">Credion · ${esc(naam)} — Vertrouwelijk</div>
       <div class="rp-foot-r">${esc(datum)} <span class="pg-chip">Pagina ${i+bodyStart} van ${tot}</span></div>
     </footer>`;
-    /* Print-fix: alleen bij landscape-pagina's wordt de inhoud in een aparte
-       wrapper gezet, zodat we 'm bij het afdrukken 90° kunnen draaien binnen een
-       fysiek staand A4-vel (zie .rp-landscape-rotate in de print-CSS hierboven). */
-    return `<section class="report-page${p.landscape?' landscape':''}" data-screen-label="${esc(pageTitle(p))}">
-    ${p.landscape?`<div class="rp-landscape-rotate">${inner}</div>`:inner}
-  </section>`;
+    /* Landscape-pagina's worden als échte A4 landscape-pagina gerenderd via
+       @page financialLandscapePage. Geen 90° rotatie toepassen; anders vult
+       de PDF niet netjes het A4-formaat. */
+    return `<section class="report-page${p.landscape?' landscape':''}" data-screen-label="${esc(pageTitle(p))}">${inner}</section>`;
   };
 
   const back=`<section class="report-page backcover" data-screen-label="Achterblad">
