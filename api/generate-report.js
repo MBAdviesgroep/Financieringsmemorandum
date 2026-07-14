@@ -294,7 +294,7 @@ Gebruik dit type bij eenvoudige financieringen: financial lease, bedrijfsmiddele
 
 RAPPORTTYPE B — STRUCTUUR (volledig financieringsmemorandum, richtlengte 11-13 pagina's, maximaal 15)
 Gebruik dit type bij complexere financieringen: vastgoedfinanciering, aankoop bedrijfspand, overnamefinanciering, herfinanciering, meerdere entiteiten (vastgoed-B.V./holding/werkmaatschappij), beschikbare prognoses en betaalcapaciteit, zekerheden zoals hypotheekrecht, verpanding of borgstelling, of substantiële aanvragen waarbij financiers een volledig beeld nodig hebben. Vaste indeling: pagina 1 cover; pagina 2 inhoudsopgave (eigen pagina); pagina 3 managementsamenvatting; daarna één pagina per hoofdstuk; geen achterblad. Richtlengte 11 tot 13 pagina's, maximaal 15 — gebruik extra pagina's zodra dat nodig is voor een rustige lay-out en om te voorkomen dat hoofdstukken worden afgekapt of inhoud sneuvelt. Volledigheid gaat vóór kunstmatig inkorten: alles moet er netjes en compleet in staan — structuur, activiteiten, financieringsopzet, object en zekerheden, financiële analyse mét prognosecijfers, betaalcapaciteit, risico's, voorwaarden en documentatie — liever een paar pagina's extra dan iets weglaten of afkappen. De vaste hoofdstukken (exact 8): 01 Managementsamenvatting; 02 Juridische structuur, activiteiten & strategie; 03 Financieringsopzet / bronnen en aanwendingen; 04 Objectgegevens & zekerheden; 05 Financiële analyse (incl. prognose); 06 Betaalcapaciteit & ratio's; 07 Risico's, mitiganten & aandachtspunten; 08 Voorwaarden voor verdere beoordeling & documentatie — met de financieringssamenvatting als afsluiting van dit hoofdstuk (GEEN apart negende hoofdstuk en GEEN losse laatste pagina).
-- Managementsamenvatting: dit hoofdstuk is de commerciële kern van het rapport — een financier moet er direct uit begrijpen waarom het dossier interessant is, wat de financieringsvraag is en welke punten aandacht vragen. Kernboodschap van 180 tot 220 woorden (mag oplopen tot 250 als de casus dat rechtvaardigt, nooit korter dan 180), krachtig en financieringsgericht geschreven als aaneengesloten LOPENDE TEKST in volledige zinnen — geen droge opsomming, geen rij losse telegramzinnen en geen kernboodschap die uit fragmenten zonder duidelijk onderwerp bestaat. Elke zin heeft een duidelijk, expliciet onderwerp; begin een zin nooit met een verwijzend voornaamwoord zonder helder referent (bijv. "Deze worden beperkt door…") — herhaal het onderwerp (de onderneming, de ondernemer, de aanvraag) zo nodig expliciet in plaats van vaag te verwijzen. Benoem in doorlopende tekst: de onderneming en haar activiteiten, de ondernemer, het doel van de financiering, de structuur (incl. eventuele vastgoed-B.V.), de totale investering, de gevraagde financiering, de eigen inbreng, de historische resultaten, de prognose, de betaalcapaciteit, de voorgestelde zekerheden en de belangrijkste aandachtspunten. Gebruik nooit de titel of het begrip "voorlopig oordeel". Controleer dat de volgende onderdelen allemaal compact terugkomen in hoofdstuk 01 (in de kernboodschap, de kpi_cards of de sterktes/aandachtspunten): onderneming en ondernemer, activiteiten, doel van de financiering, structuur, totale investering, gevraagde financiering, eigen inbreng, belangrijkste historische resultaten, prognose/structureel jaar, betaalcapaciteit, zekerheden en de belangrijkste aandachtspunten — hoofdstuk 01 mag hiervoor een volle pagina beslaan. kpi_cards bevat minimaal deze kerncijfers (label - waarde): Gevraagde financiering, Totale investering, Eigen inbreng, Loan-to-value (LTV), Looptijd, Rente, DSCR (van het structurele/eerste volle jaar, met dat jaar in het label, bijv. "DSCR 2028"), en Omzet (van het structurele/prognosejaar, met dat jaar in het label, bijv. "Omzet 2028") — alleen vullen met daadwerkelijke brondata, nooit gokken of 0 invullen als het onbekend is. belangrijkste_sterktes: maximaal 5, concreet en specifiek voor dit dossier (nooit generiek zoals "goede onderneming"). aandachtspunten: maximaal 5, concreet en specifiek (bijv. definitieve oprichting/inschrijving van een vastgoed-B.V., vastlegging van een huurovereenkomst, liquiditeitsbewaking tijdens een bouw-/overgangsfase, realisatie van de prognose, ondernemersafhankelijkheid). financieringsduiding: een zelfstandige afsluiting van minimaal 4 en maximaal 6 regels die dit hoofdstuk afrondt (nooit korter dan 4 regels en nooit maar één algemene zin) — een andere formulering dan voorlopig_oordeel (dat als afsluiting onderaan hoofdstuk 08 — Voorwaarden & documentatie — verschijnt, niet als apart hoofdstuk): benoem kort waarom de aanvraag voldoende aanknopingspunten biedt voor verdere beoordeling én wat de belangrijkste aandachtspunten zijn, zonder de tekst van voorlopig_oordeel te herhalen.
+- Managementsamenvatting: dit hoofdstuk is de commerciële kern van het rapport — een financier moet er direct uit begrijpen waarom het dossier interessant is, wat de financieringsvraag is en welke punten aandacht vragen. Kernboodschap van 180 tot 220 woorden (mag oplopen tot 250 als de casus dat rechtvaardigt, nooit korter dan 180), krachtig en financieringsgericht geschreven als aaneengesloten LOPENDE TEKST in volledige zinnen — geen droge opsomming, geen rij losse telegramzinnen en geen kernboodschap die uit fragmenten zonder duidelijk onderwerp bestaat. Elke zin heeft een duidelijk, expliciet onderwerp; begin een zin nooit met een verwijzend voornaamwoord zonder helder referent (bijv. "Deze worden beperkt door…") — herhaal het onderwerp (de onderneming, de ondernemer, de aanvraag) zo nodig expliciet in plaats van vaag te verwijzen. Benoem in doorlopende tekst: de onderneming en haar activiteiten, de ondernemer, het doel van de financiering, de structuur (incl. eventuele vastgoed-B.V.), de totale investering, de gevraagde financiering, de eigen inbreng, de historische resultaten, de prognose, de betaalcapaciteit, de voorgestelde zekerheden, de belangrijkste aandachtspunten, en kort waarom de aanvraag financierbaar of interessant is voor een financier. Gebruik nooit de titel of het begrip "voorlopig oordeel". Controleer dat de volgende onderdelen allemaal compact terugkomen in hoofdstuk 01 (in de kernboodschap, de kpi_cards of de sterktes/aandachtspunten): onderneming en ondernemer, activiteiten, doel van de financiering, structuur, totale investering, gevraagde financiering, eigen inbreng, belangrijkste historische resultaten, prognose/structureel jaar, betaalcapaciteit, zekerheden en de belangrijkste aandachtspunten — hoofdstuk 01 mag hiervoor een volle pagina beslaan. kpi_cards bevat minimaal deze kerncijfers (label - waarde): Gevraagde financiering, Totale investering, Eigen inbreng, Loan-to-value (LTV), Looptijd, Rente, DSCR (van het structurele/eerste volle jaar, met dat jaar in het label, bijv. "DSCR 2028"), en Omzet (van het structurele/prognosejaar, met dat jaar in het label, bijv. "Omzet 2028") — alleen vullen met daadwerkelijke brondata, nooit gokken of 0 invullen als het onbekend is. belangrijkste_sterktes: maximaal 5, concreet en specifiek voor dit dossier (nooit generiek zoals "goede onderneming"). aandachtspunten: maximaal 5, concreet en specifiek (bijv. definitieve oprichting/inschrijving van een vastgoed-B.V., vastlegging van een huurovereenkomst, liquiditeitsbewaking tijdens een bouw-/overgangsfase, realisatie van de prognose, ondernemersafhankelijkheid). financieringsduiding: een zelfstandige afsluiting van minimaal 4 en maximaal 6 regels die dit hoofdstuk afrondt (nooit korter dan 4 regels en nooit maar één algemene zin) — een andere formulering dan voorlopig_oordeel (dat als afsluiting onderaan hoofdstuk 08 — Voorwaarden & documentatie — verschijnt, niet als apart hoofdstuk): benoem kort waarom de aanvraag voldoende aanknopingspunten biedt voor verdere beoordeling én wat de belangrijkste aandachtspunten zijn, zonder de tekst van voorlopig_oordeel te herhalen.
 - Juridische structuur: maximaal een halve pagina, toelichting maximaal 5 bullets; activiteiten, verdienmodel & strategie maximaal 6 bullets (historie, activiteiten, omzetstromen, klanten, verdienmodel, strategie) — geen herhaling van de managementsamenvatting. Toon iedere entiteit en iedere persoon maximaal één keer in het structuurschema of organogram; nooit dubbele 100%-labels voor dezelfde relatie.
 - Financiële analyse: geen vast paginamaximum van één pagina meer — de financiële analyse moet volledig zijn als de bron dit draagt, compact en overzichtelijk, en mag daarvoor desnoods meer ruimte innemen dan de andere hoofdstukken. Bevat de bron een volledige financiële analyse (balans, resultatenrekening, ratio's), verwerk deze dan volledig en gestructureerd — beperk je nooit tot alleen omzet, resultaat na belasting, liquide middelen en eigen vermogen. Bouw het hoofdstuk op uit twee aparte, overzichtelijke tabellen in plaats van één te brede tabel: (1) Balansontwikkeling — vaste activa, vlottende activa, liquide middelen, totaal activa, eigen vermogen, langlopende schulden, kortlopende schulden, totaal passiva; (2) Resultatenontwikkeling — omzet, bedrijfsopbrengsten, kosten, bedrijfsresultaat, financiële baten en lasten, resultaat voor belasting, belasting, resultaat na belasting. Rijen zijn de posten, kolommen zijn de jaren/periodes die de bron daadwerkelijk vermeldt (historische jaren, prognosejaren en eventueel een structureel jaar na een overgangsfase) — gebruik nooit vaste of verzonnen jaartallen en laat nooit een jaar weg dat de bron voor deze posten geeft. Neem alleen de posten en tabellen op die de bron daadwerkelijk draagt; blijft de bron beperkt tot enkele kerncijfers, toon dan ook alleen die kerncijfers (geen lege rijen verzinnen). Sluit af met 4 tot 6 sterke, feitelijke observatiebullets die minimaal ingaan op: omzetontwikkeling, resultaatontwikkeling, liquiditeitspositie, eigen vermogen, schuldpositie, en (indien van toepassing) de overgangsfase/prognosejaren en wat dit betekent voor de financier. Ratio's (DSCR, Debt/EBITDA, solvabiliteit, rentabiliteit, kasstroom, rente- en aflossingsruimte) en de toelichting op de terugbetaalcapaciteit horen thuis in het hoofdstuk Betaalcapaciteit & ratio's — herhaal ze niet in dit hoofdstuk, om dubbeling te voorkomen; volstaat in de tekst hier met een korte verwijzing als de bron ratio's bevat. Geen grafieken en geen KPI-blokken in dit hoofdstuk. Balansposten (activa/passiva) en winst-en-verliesposten mogen NOOIT door elkaar in dezelfde tabel staan: de balanspost "Eigen vermogen" hoort uitsluitend in Balansontwikkeling, de resultaatpost "Bedrijfsresultaat" uitsluitend in Resultatenontwikkeling — plaats elke post exact één keer, in de tabel waar hij hoort. Meerjarenoverzichten mogen best breed zijn en de tabellen mogen best veel posten bevatten: de renderer kiest voor dit hoofdstuk automatisch een liggende (landscape) pagina zodra dat de leesbaarheid ten goede komt (o.a. bij meer dan 4 jaarkolommen, veel posten, zowel een balans- als een resultatentabel, of een mix van historische en prognose-/structurele jaren) — landscape is hier de voorkeursweergave, geen fallback, dus je hoeft historische of prognosejaren, of posten, nooit weg te laten om een tabel smal te houden.
 - Betaalcapaciteit: maximaal één pagina — korte toelichting (maximaal 5 regels), DSCR-tabel per jaar (jaar | situatie | DSCR | toelichting; DSCR altijd als ratio zoals "3,11", NOOIT als eurobedrag), compact Debt/EBITDA of overige kengetallen in dezelfde of een korte tweede tabel, en maximaal 3 interpretatiebullets. Herhaal geen cijfers uit de financiële analyse.
@@ -375,7 +375,7 @@ RAPPORTTYPE — MINIMUMEISEN
 "volwaardig_financieringsmemorandum" vereist minimaal: kredietnemer, financieringsdoel en financieringsbedrag (of duidelijke behoefte); financiële cijfers of een prognose horen er vrijwel altijd bij. Ontbreekt vrijwel alle inhoudelijke onderbouwing, kies dan "compact_intake": een eerlijk, compact intake- en documentatieoverzicht (wat is vastgesteld, wat ontbreekt, welke stukken nodig zijn, logische vervolgstap) — dwing geen volwaardig kredietrapport af als de bron daar onvoldoende inhoud voor bevat.
 
 METADATA
-klantnaam: de kredietnemer/onderneming zoals in de bron. Let op de juiste kredietnemer: wordt de financiering feitelijk aangevraagd door een nieuw op te richten (vastgoed-)B.V., benoem dan niet alleen de werkmaatschappij maar beide, in het format "[Vastgoed-B.V.] i.o. / [Werkmaatschappij] groep" — met de daadwerkelijke namen uit de bron, nooit deze placeholder-tekst zelf. financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". kantoor_adviseur: het Credion-kantoor en/of de adviseur zoals vermeld in de bron; leeg indien onbekend. datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
+klantnaam: de kredietnemer/onderneming zoals in de bron. Let op de juiste kredietnemer: wordt de financiering feitelijk aangevraagd door een nieuw op te richten (vastgoed-)B.V., benoem dan niet alleen de werkmaatschappij maar beide, in het format "[Vastgoed-B.V.] i.o. / [Werkmaatschappij] groep" — met de daadwerkelijke namen uit de bron, nooit deze placeholder-tekst zelf. Bevat de casus meerdere relevante entiteiten (werkmaatschappij, vastgoed-B.V., holding), toon dan op de cover altijd de logische combinatie — bijvoorbeeld "[Werkmaatschappij] / [Vastgoed-B.V.]" of "[Werkmaatschappij] / [Holding] / [Vastgoed-B.V.]" — of de groepsnaam als de bron die vermeldt; noem nooit alleen de werkmaatschappij als er ook een vastgoed-B.V. of holding feitelijk bij de financiering betrokken is. financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". kantoor_adviseur: het Credion-kantoor en/of de adviseur zoals vermeld in de bron; leeg indien onbekend. datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
 
 AANVULLENDE KWALITEITSREGELS (verplicht, server-side ook gecontroleerd)
 - Geen restzinnen of afgebroken tekst waar dan ook in het rapport: geen losse getallen als zin ("000 in 2028"), geen zin die met een komma begint (", waarmee vastgoed en activiteiten worden gescheiden"), geen tekstfragment zonder onderwerp. Wordt tekst ingekort, dan blijft de zin grammaticaal volledig — nooit halverwege afbreken.
@@ -385,6 +385,8 @@ AANVULLENDE KWALITEITSREGELS (verplicht, server-side ook gecontroleerd)
 - Geen lege of te dunne vervolgpagina's: een hoofdstuk met slechts één kort tekstblok (bijv. markt en afnemers, of management) wordt inhoudelijk gecombineerd met het voorgaande hoofdstuk in plaats van een nieuwe, nauwelijks gevulde pagina te starten.
 - Voorwaarden & documentatie: elk onderwerp (hypotheekrecht, huurovereenkomst, eigen inbreng, oprichting entiteit, liquiditeitsmonitoring, oplevering, prognose) komt in het hele rapport precies één keer voor, met de vaste status uit de tabel hierboven — nooit hetzelfde onderwerp nogmaals als apart actiepunt, ontbrekend stuk of vervolgvraag.
 - De financieringssamenvatting (afsluiting van het laatste hoofdstuk) benoemt kort: onderbouwing van de aanvraag, eigen inbreng, historische resultaten, structuur, zekerheden, betaalcapaciteit, aandachtspunten en het vervolg richting de financier — maximaal 8 tot 10 regels, nooit een lege of te dunne afsluiting.
+- Geen privégegevens of datadump als losse slotinformatie: neem aan het einde van het rapport nooit een aparte opsomming op van geboortedatum, privéadres, nationaliteit, volledige persoonsgegevens, technische KvK-dumps, oprichtingsdata die al elders staan, of detailtabellen die al in de partijentabel (hoofdstuk Juridische structuur) staan — die partijentabel is voldoende en wordt niet elders herhaald.
+- Financieringsopzet: gebruik zakelijke, eenduidige labels. Schrijf "Totale investering" (nooit "Totaal investering"), en nooit een onlogische combinatie als "inclusief btw exclusief ...". Wordt hoofdelijke aansprakelijkheid of een aanvullende zekerheid genoemd in de tekst van hoofdstuk Zekerheden & risico, neem deze dan ook op als rij in de zekerhedentabel — noem een zekerheid nooit alleen in lopende tekst zonder bijbehorende tabelregel.
 
 OUTPUT
 Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
@@ -825,7 +827,7 @@ function enforceFinalChecklist(r, warnings) {
      overige_secties (bijv. hoofdstuk 8), dan is dat altijd een ongewenst
      duplicaat en wordt het hier verwijderd. */
   if (Array.isArray(r.overige_secties)) {
-    const GENERIEKE_TITEL = /^(bijlage(n)?|bijlage\s*[:\-]|contactgegevens|bronvermelding)\b/i;
+    const GENERIEKE_TITEL = /^(bijlage(n)?|bijlage\s*[:\-]|contactgegevens|bronvermelding|persoonsgegevens|personalia|kvk[- ]?gegevens|geboortegegevens)\b/i;
     const STRUCTUUR_TITEL = /structuur|organogram/i;
     const voor = r.overige_secties.length;
     r.overige_secties = r.overige_secties.filter((os) => !GENERIEKE_TITEL.test(String(os?.titel || '').trim()) && !STRUCTUUR_TITEL.test(String(os?.titel || '').trim()));
@@ -891,6 +893,8 @@ const PHRASE_FIXES = [
   [/\bprive\b/g, 'privé'],
   [/\bEnergie\s*label\b/gi, 'Energielabel'],
   [/\bAantal\s+erfpachters?\s+per\s+jaar\b/gi, 'Erfpachtcanon per jaar'],
+  [/\bTotaal\s+investering\b/g, 'Totale investering'],
+  [/\btotaal\s+investering\b/g, 'totale investering'],
   [/([A-Za-zÀ-ÿ])\uFFFD9/g, '$1é'],
   [/\bfinancie\s?9le\b/gi, 'financiële'],
   [/\bsamenwerking\s+van\s+(?=huur)/gi, 'samenloop van '],
@@ -1240,6 +1244,73 @@ function enforceStructOverride(r, structuurOverride, internal) {
   }
 }
 
+/* Cover moet de juiste kredietnemer(s) tonen: bevat de casus meerdere relevante
+   entiteiten (bijv. werkmaatschappij + vastgoed-B.V. + eventueel holding),
+   dan hoort klantnaam die combinatie te tonen (zie promptinstructie voor het
+   exacte format) — niet alleen de werkmaatschappij. Dit wordt hier alleen
+   gesignaleerd (nooit automatisch samengesteld): een gegokte combinatie van
+   entiteitsnamen zou zelf weer een onjuiste cover-titel kunnen opleveren. */
+function enforceCoverEntities(r, warnings) {
+  const partijen = A(r.juridische_structuur?.partijen).filter((p) => hasTxt(p?.naam));
+  if (partijen.length < 2) return;
+  const klantnaam = String(r.metadata?.klantnaam || '');
+  if (!klantnaam) return;
+  const normNaam = (n) => String(n).toLowerCase().replace(/[^a-z0-9à-ÿ]+/g, ' ').trim();
+  const relevanteRollen = /werkmaatschappij|vastgoed|holding|hoofdaanvrager|kredietnemer/i;
+  const relevantePartijen = partijen.filter((p) => relevanteRollen.test(String(p?.rol || '')) || relevanteRollen.test(String(p?.rechtsvorm || '')));
+  const teToetsen = relevantePartijen.length >= 2 ? relevantePartijen : partijen;
+  const namenNietInCover = teToetsen.filter((p) => {
+    const kern = normNaam(p.naam).split(' ').filter((w) => w.length > 2).slice(0, 2).join(' ');
+    return kern && !normNaam(klantnaam).includes(kern);
+  });
+  if (teToetsen.length >= 2 && namenNietInCover.length >= 1 && namenNietInCover.length < teToetsen.length) {
+    warnings.push(`Eindcontrole: de casus bevat meerdere relevante entiteiten (${teToetsen.map((p) => p.naam).join(', ')}), maar de covertitel ("${klantnaam}") lijkt niet alle belangrijkste entiteiten te tonen; controleer of de cover de juiste combinatie (werkmaatschappij/vastgoed-B.V./holding/groepsnaam) weergeeft.`);
+  }
+}
+
+/* Zekerheden-consistentie: wordt hoofdelijke aansprakelijkheid of een
+   aanvullende zekerheid genoemd in de lopende tekst, dan moet dat ook als
+   rij in de zekerhedentabel staan — anders is het niet verifieerbaar en
+   hoort de vermelding niet in het rapport. Signaleert alleen (verwijdert geen
+   vrije tekst), zodat de adviseur zelf bepaalt: rij toevoegen of zin schrappen. */
+function enforceZekerhedenConsistentie(r, warnings) {
+  const zr = r.zekerheden_en_risico || {};
+  const tekstVelden = [zr.tekst, zr.dekkingspositie].filter(hasTxt).join(' ');
+  if (!tekstVelden) return;
+  const zekerhedenTxt = A(zr.zekerheden).map((z) => String(z?.zekerheid || '')).join(' | ').toLowerCase();
+  const check = (naam, re) => {
+    if (re.test(tekstVelden) && !re.test(zekerhedenTxt)) {
+      warnings.push(`Eindcontrole: "${naam}" wordt genoemd in de tekst van hoofdstuk Zekerheden & risico, maar staat niet als rij in de zekerhedentabel; voeg een rij toe of verwijder de vermelding uit de tekst.`);
+    }
+  };
+  check('Hoofdelijke aansprakelijkheid', /hoofdelijke\s+aansprakelijkheid/i);
+  check('Aanvullende zekerheid', /aanvullende\s+zekerhe(id|den)/i);
+}
+
+/* Geen privégegevens of brondata-dump als losse slotinformatie: geboortedatum,
+   privéadres, nationaliteit, kvk-/geboortegegevens-dumps en dubbele detail-
+   tabellen die al in de partijentabel (juridische_structuur) staan, horen niet
+   thuis in overige_secties of aan het einde van het rapport. Rijen met zulke
+   labels worden uit overige_secties-tabellen verwijderd; wordt een sectie
+   daardoor helemaal leeg, dan vervalt de hele sectie. */
+const PERSOONSGEGEVENS_LABEL_RE = /geboortedatum|geboren\s+op|privé[- ]?adres|woonadres|nationaliteit|paspoortnummer|\bbsn\b/i;
+function enforceNoPersonalDataDump(r, internal) {
+  if (!Array.isArray(r.overige_secties)) return;
+  const voor = r.overige_secties.length;
+  r.overige_secties = r.overige_secties
+    .map((os) => {
+      if (!os || !Array.isArray(os.tabel)) return os;
+      const tabelVoor = os.tabel.length;
+      const tabel = os.tabel.filter((row) => !(row && hasTxt(row.label) && PERSOONSGEGEVENS_LABEL_RE.test(row.label)));
+      if (tabel.length < tabelVoor) internal.push(`Persoonsgegevens (geboortedatum/privéadres/nationaliteit e.d.) verwijderd uit overige_secties-tabel "${os.titel || ''}".`);
+      return { ...os, tabel };
+    })
+    .filter((os) => hasTxt(os?.titel) || hasTxt(os?.tekst) || A(os?.tabel).length);
+  if (r.overige_secties.length < voor) {
+    internal.push('Lege overige_secties (na verwijderen van persoonsgegevens niets inhoudelijks meer over) verwijderd.');
+  }
+}
+
 /* Elk onderwerp (hypotheekrecht, huurovereenkomst, eigen inbreng, oprichting
    entiteit, liquiditeit, oplevering, prognose) mag maar één keer voorkomen in
    het hele rapport — nooit tegelijk als voorwaarde, actiepunt, ontbrekend stuk
@@ -1254,7 +1325,8 @@ const VOORWAARDE_ONDERWERPEN = [
   { key: 'eigen_inbreng', re: /eigen\s+inbreng/i },
   { key: 'oprichting_entiteit', re: /oprichting|inschrijving/i },
   { key: 'liquiditeit', re: /liquiditeit/i },
-  { key: 'oplevering', re: /oplevering/i },
+  { key: 'oplevering', re: /oplevering|ingebruikname/i },
+  { key: 'bouwdepot', re: /bouwdepot|opnameplanning|opnametermijn/i },
   { key: 'prognose', re: /prognose|omzetontwikkeling/i },
 ];
 function dedupeVoorwaardenOnderwerpen(r, internal) {
@@ -1292,17 +1364,21 @@ function dedupeVoorwaardenOnderwerpen(r, internal) {
    maar zorgt dat dit altijd als controlepunt wordt opgemerkt vóór export. */
 function scanBrokenSentencesReport(r, warnings) {
   const commaStarts = [];
+  const bracketStarts = [];
   const digitFrags = [];
+  const onlogischeKosten = [];
   let hasEllipsis = false;
   const walk = (node) => {
     if (typeof node === 'string') {
       if (/(\.\.\.|…)/.test(node)) hasEllipsis = true;
+      if (/inclusief\s+btw\s+exclusief/i.test(node) && onlogischeKosten.length < 3) onlogischeKosten.push(node.trim().slice(0, 60));
       if (node.trim().length >= 20) {
-        const zinnen = node.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9])/);
+        const zinnen = node.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9(])/);
         for (const zin of zinnen) {
           const z = zin.trim();
           if (!z) continue;
           if (/^,/.test(z) && commaStarts.length < 3) commaStarts.push(z.slice(0, 50));
+          if (/^\(/.test(z) && bracketStarts.length < 3) bracketStarts.push(z.slice(0, 50));
           if (/^\d{1,3}(\s|$)/.test(z) && !/^\d{4}\b/.test(z) && digitFrags.length < 3) digitFrags.push(z.slice(0, 50));
         }
       }
@@ -1313,7 +1389,9 @@ function scanBrokenSentencesReport(r, warnings) {
   };
   walk(r);
   if (commaStarts.length) warnings.push(`Eindcontrole: rapport bevat zin(nen) die met een komma beginnen (bijv. "${commaStarts.join('" / "')}"); dit zijn vrijwel zeker afgebroken zinnen — herschrijf tot volledige zinnen vóór export.`);
+  if (bracketStarts.length) warnings.push(`Eindcontrole: rapport bevat zin(nen) die met een los haakje beginnen (bijv. "${bracketStarts.join('" / "')}"); dit zijn vrijwel zeker afgebroken zinnen — herschrijf tot volledige zinnen vóór export.`);
   if (digitFrags.length) warnings.push(`Eindcontrole: rapport bevat mogelijk afgebroken zin(nen) die beginnen met een los cijferfragment (bijv. "${digitFrags.join('" / "')}"); controleer en herschrijf tot volledige zinnen.`);
+  if (onlogischeKosten.length) warnings.push(`Eindcontrole: rapport bevat een onlogische kostenformulering ("inclusief btw exclusief...", bijv. "${onlogischeKosten.join('" / "')}"); herschrijf dit label/deze zin eenduidig vóór export.`);
   if (hasEllipsis) warnings.push('Eindcontrole: rapport bevat "..." of "…" ergens in de tekst — mogelijk een afgebroken zin; herschrijf dit gedeelte tot een volledige zin vóór export.');
 }
 
@@ -1562,6 +1640,12 @@ function enforceQuality(r, vandaag, opts = {}) {
 
   /* 8b — voorwaarden/documentatie ontdubbelen op onderwerp (server-side afdwingen). */
   dedupeVoorwaardenOnderwerpen(r, internal);
+
+  /* 8c — cover moet juiste entiteiten tonen; zekerheden tekst/tabel consistent;
+     geen persoonsgegevens-dump als losse slotinformatie. */
+  enforceCoverEntities(r, warnings);
+  enforceZekerhedenConsistentie(r, warnings);
+  enforceNoPersonalDataDump(r, internal);
 
   /* 9b — eindcontrole (punt 9): laatste controlerende check vóór export. */
   enforceFinalChecklist(r, warnings);
