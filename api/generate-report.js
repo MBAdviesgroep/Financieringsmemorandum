@@ -386,7 +386,7 @@ AANVULLENDE KWALITEITSREGELS (verplicht, server-side ook gecontroleerd)
 - Voorwaarden & documentatie: elk onderwerp (hypotheekrecht, huurovereenkomst, eigen inbreng, oprichting entiteit, liquiditeitsmonitoring, oplevering/ingebruikname, bouwdepot/fasering, prognose) komt in het hele rapport precies één keer voor, met de vaste status en concrete toelichting uit de tabel hierboven — nooit hetzelfde onderwerp nogmaals als apart actiepunt, ontbrekend stuk of vervolgvraag.
 - Geen privégegevens of datadump als losse slotinformatie: neem aan het einde van het rapport nooit een aparte opsomming op van geboortedatum, privéadres, nationaliteit, volledige persoonsgegevens, technische KvK-dumps, oprichtingsdata die al elders staan, of detailtabellen die al in de partijentabel (hoofdstuk Juridische structuur) staan — die partijentabel is voldoende en wordt niet elders herhaald.
 - Cover: bevat de casus meerdere relevante entiteiten (werkmaatschappij, vastgoed-B.V., holding), toon dan op de cover altijd de logische combinatie — bijvoorbeeld "[Werkmaatschappij] / [Vastgoed-B.V.]" of "[Werkmaatschappij] / [Holding] / [Vastgoed-B.V.]" — of de groepsnaam als de bron die vermeldt; noem nooit alleen de werkmaatschappij als er ook een vastgoed-B.V. of holding feitelijk bij de financiering betrokken is.
-- De financieringssamenvatting (afsluiting van het laatste hoofdstuk) is 5 tot 7 regels (nooit korter, nooit één algemene zin) en benoemt kort: onderbouwing van de aanvraag, eigen inbreng, historische resultaten, (vastgoed)structuur, zekerheden, betaalcapaciteit en het vervolg richting de financier.
+- De financieringssamenvatting (afsluiting van het laatste hoofdstuk) is 5 tot 7 regels (nooit korter, nooit één algemene zin) en benoemt kort: onderbouwing van de aanvraag, eigen inbreng, historische resultaten, (vastgoed)structuur, zekerheden, betaalcapaciteit, belangrijkste aandachtspunten en het vervolg richting de financier.
 
 - Structuurschema: percentages in het organogram liggen altijd tussen 0 en 100 (nooit een fout als "1100%") en komen nooit dubbel voor dezelfde relatie voor. Geef beide schema's, indien aanwezig, de vaste titels "Structuur huidig" en "Structuur na wijziging". Is een schema niet foutloos te reconstrueren, teken het dan niet opnieuw met fouten — gebruik in dat geval het tekstuele structuurschema.
 
@@ -903,7 +903,7 @@ function enforceFinalChecklist(r, warnings) {
        enkele algemene afsluitzin. */
     const afsluitZinnen = String(afsluitTekst).split(/(?<=[.!?])\s+/).filter((z) => z.trim().length > 0);
     if (afsluitZinnen.length < 4) {
-      warnings.push('Eindcontrole: de financieringssamenvatting telt minder dan de gevraagde 5 tot 7 regels/zinnen en lijkt op één algemene afsluitzin; vul aan met onderbouwing van de aanvraag, eigen inbreng, historische resultaten, structuur, zekerheden, betaalcapaciteit en het vervolg richting financiers.');
+      warnings.push('Eindcontrole: de financieringssamenvatting telt minder dan de gevraagde 5 tot 7 regels/zinnen en lijkt op één algemene afsluitzin; vul aan met onderbouwing van de aanvraag, eigen inbreng, historische resultaten, structuur, zekerheden, betaalcapaciteit, belangrijkste aandachtspunten en het vervolg richting financiers.');
     }
   }
   /* Generieke bijlage-/contactkoppen zijn nooit toegestaan als zelfstandige
@@ -1292,6 +1292,31 @@ function dedupeFinancieleAnalyseRegels(r, internal) {
   fa.resultaten = dedupe(fa.resultaten, 'resultaten');
 }
 
+/* "Bedrijfsopbrengsten" die voor elk jaar exact hetzelfde bedrag toont als
+   "Omzet" voegt niets toe (vrijwel altijd is dit dezelfde post twee keer
+   gelabeld) — verwijder dan de Bedrijfsopbrengsten-regel en behoud Omzet. */
+function dedupeOmzetBedrijfsopbrengsten(r, internal) {
+  const fa = r.financiele_analyse;
+  const rows = A(fa?.resultaten);
+  if (rows.length < 2) return;
+  const omzet = rows.filter((x) => x && /^(netto[- ]?)?omzet$/i.test(String(x.label || '').trim()));
+  const opbrengsten = rows.filter((x) => x && /^bedrijfsopbrengsten$/i.test(String(x.label || '').trim()));
+  if (!omzet.length || !opbrengsten.length) return;
+  const omzetPerPeriode = new Map(omzet.map((x) => [String(x.periode || '').trim().toLowerCase(), num(x.bedrag)]));
+  const identiek = opbrengsten.filter((o) => {
+    const p = String(o.periode || '').trim().toLowerCase();
+    const ov = num(o.bedrag);
+    return omzetPerPeriode.has(p) && ov !== null && omzetPerPeriode.get(p) === ov;
+  });
+  /* Alleen verwijderen als ALLE Bedrijfsopbrengsten-regels overeenkomen met
+     Omzet (anders is het kennelijk een wezenlijk andere, bredere post en
+     blijft hij staan). */
+  if (identiek.length && identiek.length === opbrengsten.length) {
+    fa.resultaten = rows.filter((x) => !opbrengsten.includes(x));
+    internal.push(`Financiële analyse: "Bedrijfsopbrengsten" was voor elk jaar identiek aan "Omzet" en is als dubbele regel verwijderd (${identiek.length} periode(s)).`);
+  }
+}
+
 function enforceFinancialFigureQuality(r, internal) {
   const fa = r.financiele_analyse;
   if (!fa || (!Array.isArray(fa.resultaten) && !Array.isArray(fa.balans))) return;
@@ -1329,6 +1354,56 @@ function enforceFinancialFigureQuality(r, internal) {
       );
     }
   }
+}
+
+/* Signaleert (verwijdert niets automatisch) een verdacht cijfergat: een post
+   die voor een tussenliggend jaar ontbreekt terwijl eerdere én latere jaren
+   wél een bedrag hebben, of die voor het meest recente jaar ontbreekt
+   ("—") terwijl het jaar ervoor wel een bedrag heeft — vaak een teken dat een
+   bekend bedrag uit de bron is weggevallen (bijv. afschrijvingen die voor het
+   laatste jaar niet zijn meegenomen) in plaats van een echte lege waarde. */
+function enforceGeenVerdachteCijferGaten(r, warnings) {
+  const fa = r.financiele_analyse;
+  if (!fa) return;
+  const sortPeriods = (ps) =>
+    [...ps].sort((a, b) => {
+      const ay = parseInt((String(a).match(/\d{4}/) || [])[0] || '0', 10);
+      const by = parseInt((String(b).match(/\d{4}/) || [])[0] || '0', 10);
+      if (ay !== by) return ay - by;
+      return String(a).localeCompare(String(b));
+    });
+  const check = (arr, naam) => {
+    const rows = A(arr).filter((x) => x && hasTxt(x?.label) && hasTxt(x?.periode));
+    const periods = sortPeriods([...new Set(rows.map((x) => String(x.periode).trim()))]);
+    if (periods.length < 3) return;
+    const byLabel = new Map();
+    for (const row of rows) {
+      const key = String(row.label).trim();
+      if (!byLabel.has(key)) byLabel.set(key, new Map());
+      byLabel.get(key).set(String(row.periode).trim(), num(row.bedrag));
+    }
+    const gemeld = new Set();
+    for (const [label, vals] of byLabel) {
+      const present = periods.map((p) => vals.has(p) && vals.get(p) !== null);
+      const firstIdx = present.indexOf(true);
+      const lastIdx = present.lastIndexOf(true);
+      if (firstIdx === -1) continue;
+      /* interne hiaat: bekend … ontbrekend … bekend */
+      if (lastIdx > firstIdx && present.slice(firstIdx, lastIdx + 1).some((v) => !v) && !gemeld.has(label)) {
+        gemeld.add(label);
+        warnings.push(`Eindcontrole: post "${label}" in ${naam} ontbreekt voor een tussenliggend jaar terwijl eerdere en latere jaren wel een bedrag hebben; controleer of dit een echt ontbrekend cijfer is en niet een abusievelijk weggevallen bedrag uit de bron.`);
+        continue;
+      }
+      /* eindhiaat: laatste (meest recente) jaar ontbreekt, jaar ervoor wel bekend */
+      const laatsteIdx = periods.length - 1;
+      if (laatsteIdx > 0 && !present[laatsteIdx] && present[laatsteIdx - 1] && !gemeld.has(label)) {
+        gemeld.add(label);
+        warnings.push(`Eindcontrole: post "${label}" in ${naam} ontbreekt voor het meest recente jaar (${periods[laatsteIdx]}) terwijl ${periods[laatsteIdx - 1]} wel een bedrag heeft; controleer of de bron voor dit jaar echt geen cijfer geeft.`);
+      }
+    }
+  };
+  check(fa.resultaten, 'de resultatenontwikkeling');
+  check(fa.balans, 'de balansontwikkeling');
 }
 
 function enforceOrgDiagramQuality(r, warnings, internal) {
@@ -1673,12 +1748,14 @@ function enforceQuality(r, vandaag, opts = {}) {
      100%-labels, gebroken referenties) worden nooit getoond, ook niet als de
      AI zelf aanwezig=true teruggaf. */
   enforceOrgDiagramQuality(r, warnings, internal);
+  enforceGeenVerdachteCijferGaten(r, warnings);
 
   /* 4b.i.a — balansposten en winst-en-verliesposten die in de verkeerde tabel
      terecht zijn gekomen, worden eerst rechtgezet, vóórdat er verder iets met
      de financiële analyse gebeurt. */
   enforceFinancialStatementSeparation(r, internal);
   dedupeFinancieleAnalyseRegels(r, internal);
+  dedupeOmzetBedrijfsopbrengsten(r, internal);
 
   /* 4b.i.a2 — objecthoofdstuk: LTV als percentage, geen risicomatrix-tekst. */
   enforceObjectChapterQuality(r, internal);
