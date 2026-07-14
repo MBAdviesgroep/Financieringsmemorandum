@@ -1021,6 +1021,18 @@ function deepCleanStrings(node, warnings, path = '') {
       }
     }
     if (/^(undefined|null|NaN|\[object Object\])$/i.test(v.trim())) return '';
+    if (v.trim().length >= 20) {
+      const zinnen = v.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9(])/);
+      if (zinnen.length >= 2) {
+        const BROKEN_LEAD_RE = /^(,|\()|^[o0]{2,4}\s+in\s+\d{4}\b/i;
+        const gefilterd = zinnen.filter((zin) => !BROKEN_LEAD_RE.test(zin.trim()));
+        if (gefilterd.length < zinnen.length) {
+          v = gefilterd.join(' ').replace(/\s{2,}/g, ' ').trim();
+          const w = 'Een afgebroken zinfragment (bijv. een restant van een afgekapt bedrag of jaartal) is uit de rapporttekst verwijderd; controleer dit hoofdstuk op volledigheid.';
+          if (!warnings.includes(w)) warnings.push(w);
+        }
+      }
+    }
     const beforeEuro = v;
     v = fixEuroSigns(v);
     if (v !== beforeEuro) {
@@ -1447,6 +1459,7 @@ function scanBrokenSentencesReport(r, warnings) {
           if (/^,/.test(z) && commaStarts.length < 3) commaStarts.push(z.slice(0, 50));
           if (/^\(/.test(z) && bracketStarts.length < 3) bracketStarts.push(z.slice(0, 50));
           if (/^\d{1,3}(\s|$)/.test(z) && !/^\d{4}\b/.test(z) && digitFrags.length < 3) digitFrags.push(z.slice(0, 50));
+          if (/^[o0]{2,4}\s+in\s+\d{4}\b/i.test(z) && digitFrags.length < 3) digitFrags.push(z.slice(0, 50));
         }
       }
       return;
