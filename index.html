@@ -427,7 +427,7 @@ svg.chart{width:100%;height:auto;display:block}
 }
 
 /* ═══ Print — exact A4, geen schaal, geen chrome ══════════════════ */
-@page{size:A4;margin:0}
+@page{size:210mm 297mm;margin:0}
 /* Chromium's afdruk-/PDF-engine (window.print(), ook via de systeem-printdialoog)
    ondersteunt GEEN afwijkende paginaoriëntatie per pagina binnen één afdruktaak —
    de named-page koppeling hieronder (@page landscape + page:landscape) wordt door
@@ -439,7 +439,7 @@ svg.chart{width:100%;height:auto;display:block}
    pagina (.rp-landscape-rotate hieronder) — dat werkt wél betrouwbaar, in elke
    browser. De @page-regel hieronder blijft staan als onschadelijke progressive
    enhancement voor het geval een toekomstige printengine dit ooit wél ondersteunt. */
-@page landscape{size:A4 landscape;margin:0}
+@page landscape{size:297mm 210mm;margin:0}
 @media print{
   html,body{width:210mm;margin:0!important;padding:0!important;background:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .up-view,.loading-view,.toolbar,.no-print{display:none!important}
