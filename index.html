@@ -668,12 +668,12 @@ function resetStructInput(){
 }
 
 /* ══ Helpers ════════════════════════════════════════════════════════ */
-/* Vangnet tegen verminkte eurotekens ( , "EUR 123", "123 euro") die soms uit
+/* Vangnet tegen verminkte eurotekens (�, "EUR 123", "123 euro") die soms uit
    PDF-tekstextractie komen. De server fixt dit al in de brontekst; dit is een
    tweede laag die altijd meeloopt via esc(), voor elk dynamisch tekstveld. */
 function cleanTextForReport(value){
   return String(value??'')
-    .replace(/ 9\s?(?=\d)/g,'€ ')
+    .replace(/�9\s?(?=\d)/g,'€ ')
     .replace(/\uFFFD\s?(?=\d)/g,'€ ')
     .replace(/\bEUR\s?(?=\d)/gi,'€ ')
     .replace(/(\d[\d.,]*)\s?euro\b/gi,'€ $1')
@@ -1147,9 +1147,44 @@ function sterkteAandachtBlock(sterktes,aandachtspunten){
   return `<div class="twocol">${col(st,'Belangrijkste sterktes','green','gr')}${col(ap,'Belangrijkste aandachtspunten','orange','am')}</div>`;
 }
 
+/* Voegt periode-varianten voor hetzelfde jaar samen tot één kolom (bv. "2026"
+   en "2026 (prognose)") wanneer diezelfde post nooit tegelijk een waarde heeft
+   in beide varianten -- dat is dan puur een labelverschil uit de bron, geen
+   twee losse datapunten. Heeft een post voor hetzelfde jaar wel degelijk zowel
+   een kale als een prognose-/structurele waarde, dan blijven de kolommen apart
+   staan (samenvoegen zou dan brondetail laten verdwijnen). */
+function normalizePeriodeRows(rows){
+  const rs=A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag));
+  if(!rs.length) return rs;
+  const yearOf=p=>String(p).match(/\d{4}/)?.[0]||String(p).trim();
+  const byYear={};
+  rs.forEach(r=>{ const y=yearOf(r.periode); (byYear[y]=byYear[y]||new Set()).add(String(r.periode).trim()); });
+  const canonical={};
+  Object.entries(byYear).forEach(([y,set])=>{
+    const variants=[...set];
+    if(variants.length<=1) return;
+    const byLabel={};
+    rs.forEach(r=>{
+      if(yearOf(r.periode)!==y) return;
+      const l=r.label.trim();
+      (byLabel[l]=byLabel[l]||new Set()).add(String(r.periode).trim());
+    });
+    const overlap=Object.values(byLabel).some(s=>s.size>1);
+    if(overlap) return; // echte historisch+prognose-overlap: niet samenvoegen
+    const plain=variants.find(v=>/^\d{4}$/.test(v));
+    canonical[y]=plain||[...variants].sort()[0];
+  });
+  return rs.map(r=>{
+    const y=yearOf(r.periode);
+    const c=canonical[y];
+    if(c&&String(r.periode).trim()!==c) return {...r,periode:c};
+    return r;
+  });
+}
+
 /* Pivot: rijen {label,periode,bedrag} → label-rijen met periodekolommen */
 function pivotBlocks(rows,firstCol){
-  const rs=A(rows).filter(r=>hasVal(r?.label)&&isNum(r?.bedrag));
+  const rs=normalizePeriodeRows(rows);
   if(!rs.length) return [];
   const periods=[...new Set(rs.map(r=>String(r.periode||'').trim()))].filter(Boolean);
   const labels=[...new Set(rs.map(r=>r.label.trim()))];
@@ -1207,7 +1242,7 @@ function sortPeriods(periods){
    gebruikt om te bepalen of de balans- of resultatentabel "breed" is (meer dan
    4 jaarkolommen) en dus liggend/landscape moet worden weergegeven. */
 function finPeriodCount(rows){
-  return new Set(A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag)).map(x=>String(x.periode).trim())).size;
+  return new Set(normalizePeriodeRows(rows).map(x=>String(x.periode).trim())).size;
 }
 /* Aantal verschillende posten (rijen, niet kolommen) in een balans- of
    resultatentabel — gebruikt om "veel financiële posten" te herkennen als
@@ -1220,7 +1255,7 @@ function finDistinctPostCount(rows){
    zie promptinstructie) — een mix van beide naast elkaar in dezelfde tabel
    maakt kolomkoppen breder (langere periodelabels) en verdient landscape. */
 function finHasMixedHistForecast(rows){
-  const periods=new Set(A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag)).map(x=>String(x.periode).trim()));
+  const periods=new Set(normalizePeriodeRows(rows).map(x=>String(x.periode).trim()));
   let forecast=false,historical=false;
   for(const p of periods){
     if(/prognose|structureel/i.test(p)) forecast=true; else historical=true;
@@ -1228,7 +1263,7 @@ function finHasMixedHistForecast(rows){
   return forecast&&historical;
 }
 function finStatementTable(rows,order){
-  const rs=A(rows).filter(x=>hasVal(x?.label)&&hasVal(x?.periode)&&isNum(x?.bedrag));
+  const rs=normalizePeriodeRows(rows);
   if(!rs.length) return [];
   const periods=sortPeriods([...new Set(rs.map(x=>String(x.periode).trim()))]);
   const seenExtra=[];
