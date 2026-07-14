@@ -1062,15 +1062,37 @@ function deepCleanStrings(node, warnings, path = '') {
     }
     if (/^(undefined|null|NaN|\[object Object\])$/i.test(v.trim())) return '';
     if (v.trim().length >= 20) {
+      const BROKEN_LEAD_RE = /^(,|\()|^[o0]{2,4}\s+in\s+\d{4}\b/i;
+      let fragmentVerwijderd = false;
+      /* 1 — alineaniveau: de renderer (paraBlocks) splitst zelf al op een
+         dubbele regelafbreking, ONGEACHT of daarvóór een punt staat — een
+         afgebroken alinea zoals "…administratie\n\n000 in 2028, met…" heeft
+         vaak GEEN punt vóór de eigen regelafbreking (een kale, uit de bron
+         overgenomen paragraafbreuk). De eerdere, uitsluitend zin-gebaseerde
+         detectie (hieronder) miste dit geval juist daardoor: zonder een punt
+         ervoor werd het fragment nooit als aparte "zin" gezien en dus nooit
+         getoetst. Alinea's worden daarom eerst apart gecontroleerd. */
+      const paragrafen = v.split(/\n{2,}/);
+      if (paragrafen.length >= 2) {
+        const paraGefilterd = paragrafen.filter((p) => !BROKEN_LEAD_RE.test(p.trim()));
+        if (paraGefilterd.length < paragrafen.length) {
+          v = paraGefilterd.join('\n\n');
+          fragmentVerwijderd = true;
+        }
+      }
+      /* 2 — zinsniveau binnen wat overblijft (bestaande detectie, voor een
+         afgebroken fragment ná een punt maar vóór de volgende hoofdletter). */
       const zinnen = v.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9(])/);
       if (zinnen.length >= 2) {
-        const BROKEN_LEAD_RE = /^(,|\()|^[o0]{2,4}\s+in\s+\d{4}\b/i;
         const gefilterd = zinnen.filter((zin) => !BROKEN_LEAD_RE.test(zin.trim()));
         if (gefilterd.length < zinnen.length) {
           v = gefilterd.join(' ').replace(/\s{2,}/g, ' ').trim();
-          const w = 'Een afgebroken zinfragment (bijv. een restant van een afgekapt bedrag of jaartal) is uit de rapporttekst verwijderd; controleer dit hoofdstuk op volledigheid.';
-          if (!warnings.includes(w)) warnings.push(w);
+          fragmentVerwijderd = true;
         }
+      }
+      if (fragmentVerwijderd) {
+        const w = 'Een afgebroken zinfragment (bijv. een restant van een afgekapt bedrag of jaartal) is uit de rapporttekst verwijderd; controleer dit hoofdstuk op volledigheid.';
+        if (!warnings.includes(w)) warnings.push(w);
       }
     }
     const beforeEuro = v;
