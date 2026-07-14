@@ -1781,9 +1781,14 @@ function buildSections(r,ctx){
       const kp=A(ac.kernpunten).filter(hasVal).slice(0,4);
       if(kp.length) blocks.push(bulletBlocks(kp));
     }
+    /* Layoutregel 11: net als "Management" krijgt "Markt en afnemers" bewust
+       GEEN eigen secbar-kop meer (dat zou een eigen, pagina-splitsbare groep
+       vormen die als losse, dunne vervolgpagina kan eindigen) — het wordt als
+       compact panel aan de voorgaande inhoud (activiteiten/strategie)
+       gekoppeld, zodat markt+management altijd samen met die inhoud op
+       dezelfde pagina blijven of samen doorschuiven. */
     if(hasVal(mk.tekst)||A(mk.afhankelijkheden).filter(hasVal).length){
-      blocks.push(secbarB('Markt en afnemers'));
-      if(hasVal(mk.tekst)) blocks.push(paraBlocks(mk.tekst));
+      if(hasVal(mk.tekst)) blocks.push(panel('Markt en afnemers',mk.tekst));
       const afh=A(mk.afhankelijkheden).filter(hasVal).slice(0,3);
       if(afh.length) blocks.push(bulletBlocks(afh,'orange'));
     }
@@ -1913,7 +1918,13 @@ function buildSections(r,ctx){
     const pv=r.inkomen_vermogen_prive||{};
     const posten=A(pv.posten).filter(x=>hasVal(x?.label)&&hasVal(x?.waarde));
     if(posten.length){
-      blocks.push(secbarB('Inkomen en vermogen privé'));
+      /* Layoutregel 11: net als "Markt en afnemers" en "Management" krijgt
+         "Inkomen en vermogen privé" bewust GEEN eigen secbar-kop (die zou een
+         eigen, pagina-splitsbare groep vormen en als losse, bijna lege
+         vervolgpagina kunnen eindigen) — de titel wordt als lichte inline
+         label toegevoegd, die blijft daardoor onderdeel van dezelfde groep als
+         de voorgaande inhoud (Observaties/Resultatenontwikkeling). */
+      blocks.push('<div class="panel-h" style="margin:3mm 0 1mm 0.5mm">Inkomen en vermogen privé</div>');
       blocks.push(kvBlocks(posten));
       if(hasVal(pv.relevantie)) blocks.push(panel('Relevantie voor de financiering',pv.relevantie));
     }
