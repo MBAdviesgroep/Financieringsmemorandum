@@ -781,10 +781,15 @@ const kvkCell = v => (hasVal(v)&&!DATE_LIKE.test(String(v).trim())) ? esc(v) : '
 /* Zekerheden splitsen: definitief/gevestigd blijft in de hoofdtabel, een
    mogelijke/aan te reiken/nog te formaliseren zekerheid komt apart onder
    "Aanvullend mogelijk" te staan — nooit gemengd gepresenteerd als vaststaand. */
-const CONDITIONAL_STATUS_PAT = /mogelijk|aan te reiken|aan te bieden|te vestigen|aangeboden|voorwaardelijk|nog te formaliseren|nog te controleren/i;
+const CONDITIONAL_STATUS_PAT = /mogelijk|aan te reiken|aan te bieden|aangeboden|voorwaardelijk|nog te formaliseren|nog te controleren|nader af te stemmen/i;
+/* Primaire zekerheid (eerste hypotheekrecht op het bedrijfspand) staat altijd
+   bovenaan de hoofdtabel — nooit onder "Aanvullend mogelijk" en nooit ergens
+   halverwege de lijst. */
+const ZEKERHEID_PRIORITEIT_RE = /eerste\s+hypotheek|primaire\s+zekerheid/i;
 function splitZekerheden(list){
   const vast=[], mogelijk=[];
   for(const x of A(list)){ (CONDITIONAL_STATUS_PAT.test(String(x?.status||''))?mogelijk:vast).push(x); }
+  vast.sort((a,b)=>(ZEKERHEID_PRIORITEIT_RE.test(String(a?.zekerheid||''))?0:1)-(ZEKERHEID_PRIORITEIT_RE.test(String(b?.zekerheid||''))?0:1));
   return {vast,mogelijk};
 }
 
@@ -1243,13 +1248,13 @@ const RESULTAAT_ORDER=[
   {key:'bedrijfsopbrengsten',label:'Bedrijfsopbrengsten',re:/^bedrijfsopbrengsten$/i},
   {key:'kosten',label:'Kosten',re:/^(bedrijfs)?kosten$|^bedrijfslasten$/i},
   {key:'kostengrondhulpstoffen',label:'Kosten van grond- en hulpstoffen',re:/^kosten\s+van\s+grond-?\s*(en)?\s*hulpstoffen$/i},
-  {key:'personeelsbeloningen',label:'Personeelsbeloningen',re:/^personeelsbeloningen$|^personeelskosten$/i},
+  {key:'personeelsbeloningen',label:'Personeelsbeloningen',re:/personeelsbeloningen|personeelskosten/i},
   {key:'afschrijvingen_resultaat',label:'Afschrijvingen',re:/^afschrijvingen(\s+op\s+(im)?materi\u00eble\s+en\s+materi\u00eble\s+vaste\s+activa)?$/i},
   {key:'overigebedrijfskosten',label:'Overige bedrijfskosten',re:/^overige\s+bedrijfskosten$/i},
   {key:'bedrijfsresultaat',label:'Bedrijfsresultaat',re:/^bedrijfsresultaat$|^ebitda?$/i,total:true},
   {key:'finbatenlasten',label:'Financi\u00eble baten en lasten',re:/^financi[e\u00eb]le\s+baten(\s+en\s+lasten)?$/i},
   {key:'resultaatvoorbelasting',label:'Resultaat voor belasting',re:/^resultaat[^]*voor[^]*belasting$/i},
-  {key:'belasting',label:'Belasting',re:/^belasting(en)?$/i},
+  {key:'belasting',label:'Belasting',re:/^belasting(en)?$|belastingen?\s+over\s+de\s+winst|vennootschapsbelasting/i},
   {key:'resultaatnabelasting',label:'Resultaat na belasting',re:/^resultaat[^]*na[^]*belasting$/i,total:true},
 ];
 function sortPeriods(periods){
@@ -1506,7 +1511,7 @@ function buildCompactIntakeSections(r,ctx){
   /* 1 · Kernsamenvatting — met "Doel van de aanvraag"; de financieringssamenvatting
      staat als apart slothoofdstuk (rapporttype A-structuur). */
   {
-    const blocks=[`<div class="chips">${dekChip(ctx.dek)}<span class="chip">Adviseurcontrole vereist</span><span class="chip">${esc(ctx.status)}</span></div>`];
+    const blocks=[];
     const doel=hasVal(av.besluitvormingsvraag)?av.besluitvormingsvraag:(hasVal(av.aanleiding)?av.aanleiding:'');
     if(hasVal(doel)) blocks.push(panel('Doel van de aanvraag',doel));
     blocks.push(paraBlocks(ms.kernboodschap||av.tekst));
@@ -1684,7 +1689,6 @@ function buildSections(r,ctx){
   const ms=r.managementsamenvatting||{};
   {
     const blocks=[
-      `<div class="chips">${dekChip(ctx.dek)}<span class="chip">Adviseurcontrole vereist</span><span class="chip">${esc(ctx.status)}</span></div>`,
       paraBlocks(ms.kernboodschap),
     ];
     const av=r.aanvraag_en_transactie||{};
@@ -1765,7 +1769,11 @@ function buildSections(r,ctx){
         {protect:true}
       ));
     }
-    if(bes.length){ blocks.push(secbarB('Bestuur en tekenbevoegdheid')); blocks.push(bulletBlocks(bes)); }
+    /* Compacter (minder witruimte in hoofdstuk 2): "Bestuur en
+       tekenbevoegdheid" krijgt een compact panel i.p.v. een volle secbar +
+       bullet-lijst, en blijft zo bovendien in dezelfde groep als de
+       partijentabel (geen risico op een aparte, dunne vervolgpagina). */
+    if(bes.length){ blocks.push(panel('Bestuur en tekenbevoegdheid',bes.join('\n'))); }
     /* Activiteiten, verdienmodel & strategie + compacte markt- en managementinfo
        horen in ditzelfde hoofdstuk (02) — geen losse hoofdstukken meer. */
     const ac=r.activiteiten_onderneming||{};
