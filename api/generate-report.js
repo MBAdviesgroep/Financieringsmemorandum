@@ -269,7 +269,7 @@ TRANSFORMATIE-MODUS — VOLG DE BRON
 8. Een bouwdepot of opnametermijnen (termijn 1 t/m n) zijn een opnameplanning/uitsplitsing van de lening — NOOIT een extra financieringsbron naast die lening, tenzij de bron dit expliciet zo presenteert. Zet de fasering in bouwdepot_fasering.
 9. Ratio's zijn geen geldbedragen. DSCR als "3,11" of "3,11x" (nooit "€ 3"), LTV als percentage ("84,7%"), Debt/EBITDA als ratio ("5,90x"). Neem het aantal decimalen exact over uit de bron: staat er "3,11", schrijf dan "3,11" en rond dit nooit af naar "3". Gebruik de "x"-notatie consistent: als de bron "17,40x" geeft, schrijf geen "17,4" zonder x.
 10. Gebruik voor resultaatposten de exacte labels uit de bron: onderscheid bedrijfsresultaat, resultaat voor belastingen en resultaat na belastingen; verwissel deze nooit.
-11. Behoud de hoofdstukstructuur van de bron: hoofdstukken niet onnodig samenvoegen of splitsen. Bronhoofdstukken die niet in het schema passen (bijv. detailgegevens van betrokken personen of rechtspersonen) zet je in overige_secties, elk met titel, tekst en eventueel een tabel met {label, waarde}-rijen. Zet NOOIT een structuurschema, organogram of iets met "structuur" in de titel in overige_secties: dat hoort uitsluitend thuis in juridische_structuur (organogram_bestaand/organogram_nieuw/structuur_tekstueel), dat al zijn eigen plek in hoofdstuk 2 heeft — een tweede versie ervan in overige_secties zou verderop in het rapport (bijv. bij Voorwaarden & documentatie) als ongewenst duplicaat verschijnen.
+11. Behoud de hoofdstukstructuur van de bron: hoofdstukken niet onnodig samenvoegen of splitsen. Bronhoofdstukken die niet in het schema passen zet je in overige_secties, elk met titel, tekst en eventueel een tabel met {label, waarde}-rijen — maar ZET NOOIT detailgegevens van betrokken personen of rechtspersonen (naam, KvK-nummer, rechtsvorm, oprichtingsdatum, adres) in overige_secties: die staan al volledig in de partijentabel van juridische_structuur (hoofdstuk 2), en een los blok "Detail gegevens betrokken partij(en)" of vergelijkbaar verderop in het rapport is een ongewenste, herhalende datadump. Zet ook NOOIT een structuurschema, organogram of iets met "structuur" in de titel in overige_secties: dat hoort uitsluitend thuis in juridische_structuur (organogram_bestaand/organogram_nieuw/structuur_tekstueel), dat al zijn eigen plek in hoofdstuk 2 heeft — een tweede versie ervan in overige_secties zou verderop in het rapport (bijv. bij Voorwaarden & documentatie) als ongewenst duplicaat verschijnen.
 12. Bij twijfel: volg de bron letterlijk en neem een controlepunt op in coverage_check.waarschuwingen.
 
 WERKWIJZE — EERST INVENTARISEREN, DAN SCHRIJVEN
@@ -299,7 +299,7 @@ Gebruik dit type bij complexere financieringen: vastgoedfinanciering, aankoop be
 - Financiële analyse: geen vast paginamaximum van één pagina meer — de financiële analyse moet volledig zijn als de bron dit draagt, compact en overzichtelijk, en mag daarvoor desnoods meer ruimte innemen dan de andere hoofdstukken. Bevat de bron een volledige financiële analyse (balans, resultatenrekening, ratio's), verwerk deze dan volledig en gestructureerd — beperk je nooit tot alleen omzet, resultaat na belasting, liquide middelen en eigen vermogen. Bouw het hoofdstuk op uit twee aparte, overzichtelijke tabellen in plaats van één te brede tabel: (1) Balansontwikkeling — vaste activa, vlottende activa, liquide middelen, totaal activa, eigen vermogen, langlopende schulden, kortlopende schulden, totaal passiva; (2) Resultatenontwikkeling — omzet, bedrijfsopbrengsten, kosten, bedrijfsresultaat, financiële baten en lasten, resultaat voor belasting, belasting, resultaat na belasting. Rijen zijn de posten, kolommen zijn de jaren/periodes die de bron daadwerkelijk vermeldt (historische jaren, prognosejaren en eventueel een structureel jaar na een overgangsfase) — gebruik nooit vaste of verzonnen jaartallen en laat nooit een jaar weg dat de bron voor deze posten geeft. Neem alleen de posten en tabellen op die de bron daadwerkelijk draagt; blijft de bron beperkt tot enkele kerncijfers, toon dan ook alleen die kerncijfers (geen lege rijen verzinnen). Sluit af met 4 tot 6 sterke, feitelijke observatiebullets die minimaal ingaan op: omzetontwikkeling, resultaatontwikkeling, liquiditeitspositie, eigen vermogen, schuldpositie, en (indien van toepassing) de overgangsfase/prognosejaren en wat dit betekent voor de financier. Ratio's (DSCR, Debt/EBITDA, solvabiliteit, rentabiliteit, kasstroom, rente- en aflossingsruimte) en de toelichting op de terugbetaalcapaciteit horen thuis in het hoofdstuk Betaalcapaciteit & ratio's — herhaal ze niet in dit hoofdstuk, om dubbeling te voorkomen; volstaat in de tekst hier met een korte verwijzing als de bron ratio's bevat. Geen grafieken en geen KPI-blokken in dit hoofdstuk. Balansposten (activa/passiva) en winst-en-verliesposten mogen NOOIT door elkaar in dezelfde tabel staan: de balanspost "Eigen vermogen" hoort uitsluitend in Balansontwikkeling, de resultaatpost "Bedrijfsresultaat" uitsluitend in Resultatenontwikkeling — plaats elke post exact één keer, in de tabel waar hij hoort. Meerjarenoverzichten mogen best breed zijn en de tabellen mogen best veel posten bevatten: de renderer kiest voor dit hoofdstuk automatisch een liggende (landscape) pagina zodra dat de leesbaarheid ten goede komt (o.a. bij meer dan 4 jaarkolommen, veel posten, zowel een balans- als een resultatentabel, of een mix van historische en prognose-/structurele jaren) — landscape is hier de voorkeursweergave, geen fallback, dus je hoeft historische of prognosejaren, of posten, nooit weg te laten om een tabel smal te houden.
 - Betaalcapaciteit: maximaal één pagina — korte toelichting (maximaal 5 regels), DSCR-tabel per jaar (jaar | situatie | DSCR | toelichting; DSCR altijd als ratio zoals "3,11", NOOIT als eurobedrag), compact Debt/EBITDA of overige kengetallen in dezelfde of een korte tweede tabel, en maximaal 3 interpretatiebullets. Herhaal geen cijfers uit de financiële analyse.
 - Risico's: maximaal 5, in één tabel Aandachtspunt | Toelichting | Mitigerende factor / vervolgstap; elk risico heeft altijd een mitigerende factor of vervolgstap, nooit een afwijzende toon; geen aparte lange lijst bancaire aandachtspunten als dezelfde punten al bij voorwaarden staan.
-- Voorwaarden voor verdere beoordeling & documentatie (één hoofdstuk, tevens het laatste hoofdstuk van het rapport): één compacte tabel van bij voorkeur 6 tot 7 rijen (MAXIMAAL 7) met de kolommen Onderdeel | Status | Belang voor financier — compact is geen excuus om te mager te blijven: vul, voor zover de bron dit draagt, altijd de relevante standaardonderwerpen in, zoals oprichting/inschrijving van de kredietnemer of vastgoed-B.V., de zakelijke huurovereenkomst tussen vastgoed-B.V. en werkmaatschappij, het (eerste) hypotheekrecht, bewijs van eigen inbreng, onderbouwing van afnemers/omzetverdeling, liquiditeitsontwikkeling tijdens een bouw-/overgangsfase, en gescheiden administratie tussen de entiteiten (geen aparte kolommen Type/Prioriteit, geen lege toelichtingen met "—", en gebruik nooit "voorwaarde", "actiepunt", "op te vragen", "te controleren" en "vervolgvraag" door elkaar voor hetzelfde onderwerp — elk onderwerp komt precies één keer voor. Gebruik per onderwerp de bijbehorende, vaste status ÉN een concrete, onderwerp-specifieke toelichting (nooit bij elke regel dezelfde kale zin "Relevant voor de financieringsbeoordeling"): hypotheekrecht/pandrecht/borgstelling → "Te vestigen" ("Borgt de primaire zekerheid."); huurovereenkomst → "Op te vragen / te ondertekenen" ("Onderbouwt de huurkasstroom."); eigen inbreng → "Te verifiëren" ("Bevestigt beschikbaarheid van de middelen."); liquiditeitsontwikkeling → "Te monitoren" ("Bewaakt tijdelijke druk tijdens de bouwfase."); prognose/omzetontwikkeling → "Te onderbouwen" ("Onderbouwt de structurele betaalcapaciteit."); bouwdepot/opnameplanning/fasering → "Op te vragen" ("Verduidelijkt de opnameplanning."); oprichting/inschrijving van een entiteit → "Te controleren"; gebruik "Nader af te stemmen" alleen als geen van deze onderwerpen van toepassing is. Koppel een status NOOIT aan een onderwerp waar hij niet bij past — bijvoorbeeld "aflossingsvrije periode, te vestigen" of "prognose, te vestigen" zijn altijd fout: een aflossingsvrije periode is geen zekerheid en hoort dus niet bij "Te vestigen", en een prognose hoort bij "Te onderbouwen", nooit bij "Te vestigen". Gebruik voor de documentatie uitsluitend twee compacte blokken — géén andere koppen: "Ontvangen / gebruikt" (bronmemorandum, jaarrekening/aangifte, taxatiegegevens, erfpachtinformatie, prognose-/kasstroominformatie, objectinformatie, bouwdepot-/faseringsoverzicht en overige daadwerkelijk aangeleverde of expliciet in de bron opgenomen stukken — neem hier ALLE stukken op die in de bron als aangeleverd/gebruikt worden genoemd, niet slechts een selectie) en "Nog te controleren / op te vragen" (ontbrekende documenten, definitieve overeenkomsten, bewijs eigen inbreng, zekerheidsstukken, actuele cijfers — alleen wat relevant is voor de financieringsbeoordeling). Nooit interne foutmeldingen of kwaliteitscontrole-taal in deze lijsten (dus nooit dingen als "bronnen en aanwendingen sluiten niet", "kerncijfers niet onderbouwd" of "bronregel staat verkeerd") — dat soort constateringen los je vóór oplevering zelf op in de brondata, ze verschijnen nooit in het externe rapport. Gebruik nooit een aparte kop "Bijlage", "Bijlage(n)" of "Contactgegevens" in dit hoofdstuk.
+- Voorwaarden voor verdere beoordeling & documentatie (één hoofdstuk, tevens het laatste hoofdstuk van het rapport): één compacte tabel van bij voorkeur 7 tot 8 rijen (MAXIMAAL 8) met de kolommen Onderdeel | Status | Belang voor financier — compact is geen excuus om te mager te blijven: vul, voor zover de bron dit draagt, altijd de relevante standaardonderwerpen in, zoals oprichting/inschrijving van de kredietnemer of vastgoed-B.V., de zakelijke huurovereenkomst tussen vastgoed-B.V. en werkmaatschappij, de vestiging van het (eerste) hypotheekrecht, bewijs van eigen inbreng, onderbouwing van afnemers/omzetverdeling of prognose/omzetgroei, liquiditeitsontwikkeling/-monitoring tijdens een bouw-/overgangsfase, bouwdepot/opnameplanning indien van toepassing, aanvullende zekerheden indien relevant, en gescheiden administratie tussen de entiteiten (geen aparte kolommen Type/Prioriteit, geen lege toelichtingen met "—", en gebruik nooit "voorwaarde", "actiepunt", "op te vragen", "te controleren" en "vervolgvraag" door elkaar voor hetzelfde onderwerp — elk onderwerp komt precies één keer voor. Gebruik per onderwerp de bijbehorende, vaste status ÉN een concrete, onderwerp-specifieke toelichting (nooit bij elke regel dezelfde kale zin "Relevant voor de financieringsbeoordeling"): hypotheekrecht/pandrecht/borgstelling → "Te vestigen" ("Borgt de primaire zekerheid."); huurovereenkomst → "Op te vragen / te ondertekenen" ("Onderbouwt de huurkasstroom."); eigen inbreng → "Te verifiëren" ("Bevestigt beschikbaarheid van de middelen."); liquiditeitsontwikkeling → "Te monitoren" ("Bewaakt tijdelijke druk tijdens de bouwfase."); prognose/omzetontwikkeling → "Te onderbouwen" ("Onderbouwt de structurele betaalcapaciteit."); bouwdepot/opnameplanning/fasering → "Op te vragen" ("Verduidelijkt de opnameplanning."); oprichting/inschrijving van een entiteit → "Te controleren"; gebruik "Nader af te stemmen" alleen als geen van deze onderwerpen van toepassing is. Koppel een status NOOIT aan een onderwerp waar hij niet bij past — bijvoorbeeld "aflossingsvrije periode, te vestigen" of "prognose, te vestigen" zijn altijd fout: een aflossingsvrije periode is geen zekerheid en hoort dus niet bij "Te vestigen", en een prognose hoort bij "Te onderbouwen", nooit bij "Te vestigen". Gebruik voor de documentatie uitsluitend twee compacte blokken — géén andere koppen: "Ontvangen / gebruikt" (bronmemorandum, jaarrekening/aangifte, taxatiegegevens, erfpachtinformatie, prognose-/kasstroominformatie, objectinformatie, bouwdepot-/faseringsoverzicht en overige daadwerkelijk aangeleverde of expliciet in de bron opgenomen stukken — neem hier ALLE stukken op die in de bron als aangeleverd/gebruikt worden genoemd, niet slechts een selectie) en "Nog te controleren / op te vragen" (ontbrekende documenten, definitieve overeenkomsten, bewijs eigen inbreng, zekerheidsstukken, actuele cijfers — alleen wat relevant is voor de financieringsbeoordeling). Nooit interne foutmeldingen of kwaliteitscontrole-taal in deze lijsten (dus nooit dingen als "bronnen en aanwendingen sluiten niet", "kerncijfers niet onderbouwd" of "bronregel staat verkeerd") — dat soort constateringen los je vóór oplevering zelf op in de brondata, ze verschijnen nooit in het externe rapport. Gebruik nooit een aparte kop "Bijlage", "Bijlage(n)" of "Contactgegevens" in dit hoofdstuk.
 - Financieringssamenvatting: GEEN apart hoofdstuk en GEEN losse laatste pagina — plaats deze als afsluiting onderaan ditzelfde hoofdstuk (08, na de documentatieblokken), maximaal 6 tot 8 regels, geen hard oordeel (zie CONCLUSIEBELEID). Dit is de inhoudelijke afsluiting van het hele rapport: eindig niet abrupt en niet leeg. Kantoor/adviseur en rapportdatum staan al op de cover en in de paginafooter — herhaal deze niet als apart contactblok.
 - Cover/klantnaam en kredietnemer: bepaal de kredietnemer strikt volgens de bron. Noemt de bron een vastgoed-B.V. (eventueel i.o.) als beoogde kredietnemer/vastgoedhouder en de werkmaatschappij als huurder, gebruik dan NOOIT een formulering waarbij de werkmaatschappij als kredietnemer wordt weergegeven — vermeld beide met hun juiste rol, bijv. "[Vastgoed-B.V.] / [Werkmaatschappij] groep", en verwijs er verderop naar als "de vastgoed-B.V." resp. "de werkmaatschappij".
 Kernonderdelen (financiële analyse, betaalcapaciteit, risico's, financieringssamenvatting, documentatie) mogen compact zijn of gecombineerd worden, maar mogen nooit volledig verdwijnen als de bron er inhoud voor biedt. Kort hoofdstukken in vóórdat je ze schrapt — het rapport moet korter zijn dan de bron, maar niet inhoudelijk leeg. Geen enkel klein inhoudelijk punt mag twee keer in het rapport voorkomen: is de financieringsduiding feitelijk al in de kernboodschap benoemd, herhaal hem dan niet nogmaals elders; is een aandachtspunt over management al bij de betrokken partijen genoemd, herhaal het niet als losse managementregel; is een aflossingsvoorwaarde al in de financieringstabel of bouwdepottekst verwerkt, zet hem niet ook nog los bij de voorwaarden; is een zekerheidsvoorwaarde al bij zekerheden benoemd, herhaal hem niet nogmaals bij documentatie; en is een risico al in de risicomatrix opgenomen, noem het niet nogmaals als apart aandachtspunt elders. Schrijf elk klein feit één keer, op de plek waar het inhoudelijk het beste past.
@@ -722,6 +722,17 @@ function enforceFinalChecklist(r, warnings) {
     warnings.push('Eindcontrole: partijentabel is leeg terwijl er wel een structuurschema is; controleer of alle betrokken partijen zijn opgenomen.');
   }
 
+  /* Hoofdstuk 8 (Voorwaarden & documentatie) mag niet te mager blijven: bij
+     een volwaardige aanvraag (voldoende bronhoofdstukken) is een tabel van
+     minder dan 5 rijen een indicator dat relevante standaardonderwerpen
+     (oprichting, huurovereenkomst, hypotheekrecht, eigen inbreng, liquiditeit,
+     prognose, bouwdepot, aanvullende zekerheden) ontbreken. */
+  const ccVoorwaarden = A(r.conclusie?.voorwaarden).filter(hasTxt).length;
+  const bronchapCount = A(r.bronrapport?.hoofdstukken).filter(hasTxt).length;
+  if (r.metadata?.rapport_type !== 'compact_intake' && bronchapCount >= 4 && ccVoorwaarden < 5) {
+    warnings.push('Eindcontrole: hoofdstuk 8 (Voorwaarden & documentatie) telt minder dan 5 rijen terwijl de bron voldoende hoofdstukken bevat; vul aan met relevante standaardonderwerpen (oprichting/inschrijving, huurovereenkomst, hypotheekrecht, eigen inbreng, liquiditeitsmonitoring, prognose/omzetgroei, bouwdepot/opnameplanning, aanvullende zekerheden) voor zover de bron dit draagt.');
+  }
+
   const ms = r.managementsamenvatting || {};
   const woorden = String(ms.kernboodschap || '').trim().split(/\s+/).filter(Boolean).length;
   if (r.metadata?.rapport_type !== 'compact_intake' && hasTxt(ms.kernboodschap) && woorden < 150) {
@@ -895,12 +906,24 @@ function enforceFinalChecklist(r, warnings) {
      overige_secties (bijv. hoofdstuk 8), dan is dat altijd een ongewenst
      duplicaat en wordt het hier verwijderd. */
   if (Array.isArray(r.overige_secties)) {
-    const GENERIEKE_TITEL = /^(bijlage(n)?|bijlage\s*[:\-]|contactgegevens|bronvermelding|persoonsgegevens|personalia|kvk[- ]?gegevens|geboortegegevens)\b/i;
+    const GENERIEKE_TITEL = /^(bijlage(n)?|bijlage\s*[:\-]|contactgegevens|bronvermelding|persoonsgegevens|personalia|kvk[- ]?gegevens|geboortegegevens|detail\s*gegevens\s+betrokken\s+partij(en)?|detailgegevens\s+partij(en)?)\b/i;
     const STRUCTUUR_TITEL = /structuur|organogram/i;
+    /* Content-check (title-onafhankelijk): een overige_sectie waarvan de
+       tabelrijen overwegend uit partij-identificatievelden bestaan (naam,
+       KvK-nummer, rechtsvorm, oprichtingsdatum, adres) is altijd een
+       herhaling van de partijentabel uit hoofdstuk 2, ongeacht de titel die
+       de AI eraan gaf. */
+    const PARTIJ_VELD_RE = /^naam$|kvk|rechtsvorm|opricht|vestigingsadres|^adres$|statutaire\s+naam|handelsnaam|geboortedatum/i;
+    const isPartijDump = (os) => {
+      const tabel = A(os?.tabel).filter((rw) => hasTxt(rw?.label));
+      if (tabel.length < 2) return false;
+      const treffers = tabel.filter((rw) => PARTIJ_VELD_RE.test(String(rw.label).trim())).length;
+      return treffers / tabel.length >= 0.6;
+    };
     const voor = r.overige_secties.length;
-    r.overige_secties = r.overige_secties.filter((os) => !GENERIEKE_TITEL.test(String(os?.titel || '').trim()) && !STRUCTUUR_TITEL.test(String(os?.titel || '').trim()));
+    r.overige_secties = r.overige_secties.filter((os) => !GENERIEKE_TITEL.test(String(os?.titel || '').trim()) && !STRUCTUUR_TITEL.test(String(os?.titel || '').trim()) && !isPartijDump(os));
     if (r.overige_secties.length < voor) {
-      warnings.push('Eindcontrole: een generieke bijlage-/contactgegevens-sectie of een dubbel structuurschema/organogram is verwijderd uit overige_secties; die vormde geen volwaardige, zelfstandige of unieke inhoud.');
+      warnings.push('Eindcontrole: een generieke bijlage-/contactgegevens-sectie, een dubbel structuurschema/organogram, of een herhaling van de partijentabel (detailgegevens betrokken partij(en)) is verwijderd uit overige_secties; die vormde geen volwaardige, zelfstandige of unieke inhoud.');
     }
   }
   return warnings;
@@ -992,6 +1015,10 @@ const PHRASE_FIXES = [
   [/\bsubstantifte\b/gi, 'substantiële'],
   [/\bprivé\s+persoon\b/gi, 'privépersoon'],
   [/\bWoz\b/g, 'WOZ'],
+  [/\baflossingsvrij\s+periode\b/gi, 'aflossingsvrije periode'],
+  [/\bMaterie(l|le)\s+vaste\s+activa\b/gi, 'Materiële vaste activa'],
+  [/\bImmaterie(l|le)\s+vaste\s+activa\b/gi, 'Immateriële vaste activa'],
+  [/\bFinancie(l|le)\s+vaste\s+activa\b/gi, 'Financiële vaste activa'],
 ];
 
 /* Eurotekens die door PDF-tekstextractie zijn verminkt (bijv. bij Type3/custom-font
@@ -1221,6 +1248,37 @@ function enforceFinancialStatementSeparation(r, internal) {
    worden bij deze signalering sowieso genegeerd: een nul is voor veel posten
    (financiële baten en lasten, belasting, kortlopende schulden, enz.) een
    volstrekt legitieme, veelvoorkomende waarde en geen fabricagesignaal. */
+/* Exact dubbele regels (zelfde post + zelfde periode) in balans of resultaten
+   verwijderen — bijv. "Materiële vaste activa" die twee keer voor hetzelfde
+   jaar is opgenomen. Bij een dubbele match met één keer een bekend bedrag en
+   één keer null wordt de rij met het bekende bedrag behouden. */
+function dedupeFinancieleAnalyseRegels(r, internal) {
+  const fa = r.financiele_analyse;
+  if (!fa) return;
+  const dedupe = (arr, naam) => {
+    const rows = A(arr);
+    const seen = new Map();
+    const out = [];
+    let verwijderd = 0;
+    for (const row of rows) {
+      if (!row || !hasTxt(row.label) || !hasTxt(row.periode)) { out.push(row); continue; }
+      const key = `${String(row.label).trim().toLowerCase()}|${String(row.periode).trim().toLowerCase()}`;
+      if (seen.has(key)) {
+        const idx = seen.get(key);
+        if (out[idx] && num(out[idx].bedrag) === null && num(row.bedrag) !== null) out[idx] = row;
+        verwijderd++;
+        continue;
+      }
+      seen.set(key, out.length);
+      out.push(row);
+    }
+    if (verwijderd) internal.push(`Financiële analyse (${naam}): ${verwijderd} exact dubbele regel(s) (zelfde post + periode) verwijderd.`);
+    return out;
+  };
+  fa.balans = dedupe(fa.balans, 'balans');
+  fa.resultaten = dedupe(fa.resultaten, 'resultaten');
+}
+
 function enforceFinancialFigureQuality(r, internal) {
   const fa = r.financiele_analyse;
   if (!fa || (!Array.isArray(fa.resultaten) && !Array.isArray(fa.balans))) return;
@@ -1295,6 +1353,20 @@ function normalizeLtvValue(v) {
   return pctStr;
 }
 const RISICOMATRIX_WOORDEN_RE = /\b(kans|impact|mitigant|risicomatrix)\b/i;
+/* Algemene bedrijfs-/risico-onderwerpen die uitsluitend in het hoofdstuk
+   Risico's, mitiganten & aandachtspunten (of Juridische structuur,
+   activiteiten & strategie voor de kale bedrijfsomschrijving) thuishoren —
+   nooit in het objecthoofdstuk, dat zich beperkt tot object, taxatiewaarde,
+   LTV, erfpacht, gebruik, zekerheden en dekkingspositie. */
+const OBJECT_OFF_TOPIC_RE = /ondernemersafhankelijkheid|dubbele\s+lasten|omzetgroei|omzetontwikkeling|omzetverdeling|marktrisico|debiteuren|crediteuren|werkkapitaal|voorraadrisico|prognoserisico|schaalgrootte|klantconcentratie|afnemersafhankelijkheid|handel\s+in\s+gebruikte|actief\s+sinds\s+\d{4}\s+in\b/i;
+function stripObjectOffTopicText(v) {
+  if (typeof v !== 'string' || v.trim().length < 20) return v;
+  const zinnen = v.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9(])/);
+  if (zinnen.length < 2) return v;
+  const gefilterd = zinnen.filter((zin) => !OBJECT_OFF_TOPIC_RE.test(zin));
+  if (gefilterd.length === zinnen.length) return v;
+  return gefilterd.join(' ').replace(/\s{2,}/g, ' ').trim();
+}
 function enforceObjectChapterQuality(r, internal) {
   const fo = r.financieringsopzet || {};
   const kc = fo.kerncijfers;
@@ -1304,6 +1376,13 @@ function enforceObjectChapterQuality(r, internal) {
     if (kc.ltv !== before) internal.push(`kerncijfers.ltv "${before}" genormaliseerd naar "${kc.ltv}".`);
   }
   const ov = (r.object_en_vastgoed = r.object_en_vastgoed || {});
+  if (hasTxt(ov.tekst) && OBJECT_OFF_TOPIC_RE.test(ov.tekst)) {
+    const before = ov.tekst;
+    ov.tekst = stripObjectOffTopicText(ov.tekst);
+    if (ov.tekst !== before) {
+      internal.push('Algemene bedrijfs-/risicotekst (bijv. ondernemersafhankelijkheid, dubbele lasten, omzetgroei, bedrijfsactiviteiten) verwijderd uit object_en_vastgoed.tekst; dit hoort uitsluitend in het hoofdstuk Risico\'s of Juridische structuur & activiteiten.');
+    }
+  }
   ov.kenmerken = A(ov.kenmerken).map((k) => {
     if (!k || !hasTxt(k.label)) return k;
     if (!/\bltv\b/i.test(String(k.label))) return k;
@@ -1313,9 +1392,9 @@ function enforceObjectChapterQuality(r, internal) {
     return { ...k, waarde: na };
   });
   const voorAP = A(ov.aandachtspunten).length;
-  ov.aandachtspunten = A(ov.aandachtspunten).filter((t) => !(hasTxt(t) && RISICOMATRIX_WOORDEN_RE.test(t)));
+  ov.aandachtspunten = A(ov.aandachtspunten).filter((t) => !(hasTxt(t) && (RISICOMATRIX_WOORDEN_RE.test(t) || OBJECT_OFF_TOPIC_RE.test(t))));
   if (ov.aandachtspunten.length < voorAP) {
-    internal.push('Risicomatrix-achtige tekst (kans/impact/mitigant) verwijderd uit object_en_vastgoed.aandachtspunten; risico\'s horen uitsluitend in het hoofdstuk Risico\'s, mitiganten & aandachtspunten.');
+    internal.push('Risicomatrix-achtige tekst of algemene bedrijfsrisico\'s (kans/impact/mitigant, ondernemersafhankelijkheid, dubbele lasten, omzetgroei e.d.) verwijderd uit object_en_vastgoed.aandachtspunten; dat hoort uitsluitend in het hoofdstuk Risico\'s, mitiganten & aandachtspunten.');
   }
 }
 
@@ -1586,6 +1665,7 @@ function enforceQuality(r, vandaag, opts = {}) {
      terecht zijn gekomen, worden eerst rechtgezet, vóórdat er verder iets met
      de financiële analyse gebeurt. */
   enforceFinancialStatementSeparation(r, internal);
+  dedupeFinancieleAnalyseRegels(r, internal);
 
   /* 4b.i.a2 — objecthoofdstuk: LTV als percentage, geen risicomatrix-tekst. */
   enforceObjectChapterQuality(r, internal);
