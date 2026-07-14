@@ -1170,7 +1170,7 @@ function normalizePeriodeRows(rows){
       (byLabel[l]=byLabel[l]||new Set()).add(String(r.periode).trim());
     });
     const overlap=Object.values(byLabel).some(s=>s.size>1);
-    if(overlap) return; // echte historisch+prognose-overlap: niet samenvoegen
+    if(overlap) return;
     const plain=variants.find(v=>/^\d{4}$/.test(v));
     canonical[y]=plain||[...variants].sort()[0];
   });
@@ -2222,13 +2222,37 @@ function layoutPages(sections,opts={}){
     return groups;
   };
 
+  /* Eén los tabelblok (<table class="t...">...</table>, incl. "protect"-tabellen
+     zoals de partijentabel) over de paginagrens splitsen op rijniveau, i.p.v.
+     het te laten overlopen. Dit verliest GEEN gegevens (in tegenstelling tot
+     capTableRows, dat rijen laat vallen) — alleen de weergave wordt verdeeld
+     over twee (of meer) pagina's: zoveel mogelijk rijen die nog passen in de
+     resterende ruimte, de rest als eigen vervolgtabel (met herhaalde kop). */
+  const splitTableRows=(html,avail)=>{
+    const m=html.match(/^(<table class="t[^"]*"><thead>[\s\S]*?<\/thead><tbody>)([\s\S]*)(<\/tbody><\/table>)$/);
+    if(!m) return null;
+    const [,head,body,tail]=m;
+    const rows=body.match(/<tr[\s\S]*?<\/tr>/g)||[];
+    if(rows.length<=1) return null;
+    let n=rows.length-1;
+    while(n>=1){
+      if(measure(head+rows.slice(0,n).join('')+tail)<=avail) break;
+      n--;
+    }
+    if(n<1) return null;
+    return {first:head+rows.slice(0,n).join('')+tail, rest:head+rows.slice(n).join('')+tail};
+  };
+
   /* Plaats één kop+inhoud-groep atomair: eerst proberen op de huidige pagina,
      anders in zijn geheel op een nieuwe pagina. Past de groep zelfs niet op een
      lege pagina (zeldzaam: een zeer grote combinatie), splits dan pas op
      blokniveau — en houd de kop daarbij altijd samen met minimaal het eerste
-     volgende inhoudsblok, zodat de kop nooit geïsoleerd raakt. Grote losse
-     blokken (bijv. een lange tabel) kunnen zo nog wel naar een vervolgpagina
-     doorschuiven, maar nooit een kop zonder enige inhoud erbij. */
+     volgende inhoudsblok, zodat de kop nooit geïsoleerd raakt. Past een los
+     blok (bijv. een lange tabel) zelf ook niet op een lege pagina, dan wordt
+     een tabelblok op rijniveau gesplitst (splitTableRows) zodat een rij nooit
+     meer middenin door de paginavoettekst wordt afgesneden; een niet-tabel-
+     blok dat nog steeds niet past (zeer zeldzaam, bijv. een grote afbeelding)
+     wordt als laatste redmiddel alsnog in zijn geheel geplaatst. */
   const placeGroup=(sec,group)=>{
     const groupHtml=group.join('');
     const groupH=measure(groupHtml);
@@ -2242,14 +2266,24 @@ function layoutPages(sections,opts={}){
       return;
     }
     if(cur.h>0){ close(); open(sec.label+' — vervolg'); }
-    let i=0;
-    while(i<group.length){
-      const chunk = i===0&&group.length>1 ? [group[0],group[1]] : [group[i]];
-      const chunkHtml=chunk.join('');
-      const h=measure(chunkHtml);
+    const queue=group.slice();
+    if(queue.length>1){ queue[0]=queue[0]+queue[1]; queue.splice(1,1); }
+    let guard=0;
+    while(queue.length&&guard++<200){
+      const block=queue.shift();
+      const h=measure(block);
       if(cur.h>0&&cur.h+h>budget){ close(); open(sec.label+' — vervolg'); }
-      cur.html+=chunkHtml; cur.h+=h;
-      i+=chunk.length;
+      const avail=budget-cur.h;
+      if(h>avail){
+        const split=splitTableRows(block,avail);
+        if(split){
+          cur.html+=split.first; cur.h+=measure(split.first);
+          close(); open(sec.label+' — vervolg');
+          queue.unshift(split.rest);
+          continue;
+        }
+      }
+      cur.html+=block; cur.h+=h;
     }
   };
 
@@ -2721,3 +2755,4 @@ window.__credionRender = async (r)=>{
 };
 </script>
 </body>
+</html>
