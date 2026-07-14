@@ -737,15 +737,33 @@ function sanitizeAdvisorNotes(items){
    kiest de bijbehorende, vaste terminologie; herkent het niets, dan blijft de
    meegegeven fallback-status staan (die zelf ook al onderwerp-specifiek is
    ingesteld per bronarray in de aanroep hieronder). */
-function inferConditionStatus(text,fallback){
+/* Layoutregel 14 (status juridisch correct + concreet belang voor financier):
+   per herkend onderwerp horen een vaste status ÉN een concrete, onderwerp-
+   specifieke toelichting samen — nooit een generieke status voor een onderwerp
+   waar hij niet bij past (bijv. "aflossingsvrije periode, te vestigen" of
+   "prognose, te vestigen"), en nooit dezelfde kale zin "Relevant voor de
+   financieringsbeoordeling" bij elke rij. Herkent de tekst geen van de vaste
+   onderwerpen, dan is de neutrale status "Nader af te stemmen" veiliger dan een
+   geraden, mogelijk onjuiste specifieke status. */
+function inferConditionMeta(text,fallbackStatus){
   const t=String(text||'').toLowerCase();
-  if(/hypotheekrecht|hypotheek recht|pandrecht|verpanding|borgstelling|zekerheidsrecht/.test(t)) return 'Te vestigen';
-  if(/huurovereenkomst|huurcontract/.test(t)) return 'Op te vragen / te ondertekenen';
-  if(/eigen inbreng/.test(t)) return 'Te verifiëren';
-  if(/liquiditeit/.test(t)) return 'Te monitoren';
-  if(/prognose|omzetontwikkeling|omzetverdeling|afnemers/.test(t)) return 'Te onderbouwen';
-  if(/oprichting|inschrijving|kvk\b/.test(t)) return 'Te controleren';
-  return fallback;
+  if(/hypotheekrecht|hypotheek recht|pandrecht|verpanding|borgstelling|zekerheidsrecht/.test(t))
+    return {status:'Te vestigen', belang:'Borgt de primaire zekerheid voor de financier.'};
+  if(/huurovereenkomst|huurcontract/.test(t))
+    return {status:'Op te vragen / te ondertekenen', belang:'Onderbouwt de huurkasstroom.'};
+  if(/eigen inbreng/.test(t))
+    return {status:'Te verifiëren', belang:'Bevestigt de beschikbaarheid van de eigen middelen.'};
+  if(/bouwdepot|fasering|opnameplanning|opnametermijn/.test(t))
+    return {status:'Op te vragen', belang:'Verduidelijkt de opnameplanning.'};
+  if(/aflossingsvrij/.test(t))
+    return {status:'Nader af te stemmen', belang:'Onderdeel van de financieringsvoorwaarden, geen zekerheid of documentatiepunt.'};
+  if(/liquiditeit/.test(t))
+    return {status:'Te monitoren', belang:'Bewaakt tijdelijke druk op de liquiditeit, bijvoorbeeld tijdens de bouwfase.'};
+  if(/prognose|omzetontwikkeling|omzetverdeling|omzetgroei|afnemers/.test(t))
+    return {status:'Te onderbouwen', belang:'Onderbouwt de structurele betaalcapaciteit.'};
+  if(/oprichting|inschrijving|kvk\b/.test(t))
+    return {status:'Te controleren', belang:'Bevestigt de juridische status van de entiteit.'};
+  return {status:fallbackStatus, belang:''};
 }
 const isNum = v => typeof v==='number' && isFinite(v);
 const money = v => isNum(v) ? '€ '+Math.round(v).toLocaleString('nl-NL') : null;
@@ -1987,12 +2005,16 @@ function buildSections(r,ctx){
   {
     const cc2=r.conclusie||{};
     const dc2=r.documentatiecheck||{};
+    const metaRow=(item,note,fallbackStatus)=>{
+      const m=inferConditionMeta(item,fallbackStatus);
+      return {item,status:m.status,note:hasVal(note)?note:(m.belang||undefined)};
+    };
     const rows=[
-      ...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>({item:x.item,status:inferConditionStatus(x.item,'Op te vragen'),note:x.toelichting})),
-      ...A(cc2.voorwaarden).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Te vestigen')})),
-      ...A(cc2.actiepunten).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Te controleren')})),
-      ...A(dc2.separaat_te_controleren).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Te controleren')})),
-      ...A(dc2.vervolgvragen).filter(hasVal).map(x=>({item:x,status:inferConditionStatus(x,'Op te vragen')})),
+      ...A(dc2.ontbrekend).filter(x=>hasVal(x?.item)).map(x=>metaRow(x.item,x.toelichting,'Op te vragen')),
+      ...A(cc2.voorwaarden).filter(hasVal).map(x=>metaRow(x,null,'Nader af te stemmen')),
+      ...A(cc2.actiepunten).filter(hasVal).map(x=>metaRow(x,null,'Te controleren')),
+      ...A(dc2.separaat_te_controleren).filter(hasVal).map(x=>metaRow(x,null,'Te controleren')),
+      ...A(dc2.vervolgvragen).filter(hasVal).map(x=>metaRow(x,null,'Op te vragen')),
     ];
     /* Ontdubbelen: dezelfde kwestie (huurovereenkomst, eigen inbreng, taxatie, …)
        mag maar één keer voorkomen — niet als voorwaarde én actiepunt én vraag. */
@@ -2247,12 +2269,16 @@ function layoutPages(sections,opts={}){
      anders in zijn geheel op een nieuwe pagina. Past de groep zelfs niet op een
      lege pagina (zeldzaam: een zeer grote combinatie), splits dan pas op
      blokniveau — en houd de kop daarbij altijd samen met minimaal het eerste
-     volgende inhoudsblok, zodat de kop nooit geïsoleerd raakt. Past een los
-     blok (bijv. een lange tabel) zelf ook niet op een lege pagina, dan wordt
-     een tabelblok op rijniveau gesplitst (splitTableRows) zodat een rij nooit
-     meer middenin door de paginavoettekst wordt afgesneden; een niet-tabel-
-     blok dat nog steeds niet past (zeer zeldzaam, bijv. een grote afbeelding)
-     wordt als laatste redmiddel alsnog in zijn geheel geplaatst. */
+     volgende inhoudsblok, zodat de kop nooit geïsoleerd raakt. Een kort
+     afsluitend ".verdict"-blok (financieringsduiding in hoofdstuk 1, de
+     financieringssamenvatting in hoofdstuk 8) wordt altijd samengevoegd met
+     het blok ervoor, zodat het nooit alleen — met veel lege ruimte eronder —
+     op een eigen vervolgpagina belandt. Past een los blok (bijv. een lange
+     tabel) zelf ook niet op een lege pagina, dan wordt een tabelblok op
+     rijniveau gesplitst (splitTableRows) zodat een rij nooit meer middenin
+     door de paginavoettekst wordt afgesneden; een niet-tabel-blok dat nog
+     steeds niet past (zeer zeldzaam, bijv. een grote afbeelding) wordt als
+     laatste redmiddel alsnog in zijn geheel geplaatst. */
   const placeGroup=(sec,group)=>{
     const groupHtml=group.join('');
     const groupH=measure(groupHtml);
@@ -2268,6 +2294,10 @@ function layoutPages(sections,opts={}){
     if(cur.h>0){ close(); open(sec.label+' — vervolg'); }
     const queue=group.slice();
     if(queue.length>1){ queue[0]=queue[0]+queue[1]; queue.splice(1,1); }
+    if(queue.length>1&&/^<div class="verdict"/.test(queue[queue.length-1])){
+      queue[queue.length-2]+=queue[queue.length-1];
+      queue.pop();
+    }
     let guard=0;
     while(queue.length&&guard++<200){
       const block=queue.shift();
