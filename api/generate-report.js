@@ -294,7 +294,7 @@ Gebruik dit type bij eenvoudige financieringen: financial lease, bedrijfsmiddele
 
 RAPPORTTYPE B — STRUCTUUR (volledig financieringsmemorandum, richtlengte 11-13 pagina's, maximaal 15)
 Gebruik dit type bij complexere financieringen: vastgoedfinanciering, aankoop bedrijfspand, overnamefinanciering, herfinanciering, meerdere entiteiten (vastgoed-B.V./holding/werkmaatschappij), beschikbare prognoses en betaalcapaciteit, zekerheden zoals hypotheekrecht, verpanding of borgstelling, of substantiële aanvragen waarbij financiers een volledig beeld nodig hebben. Vaste indeling: pagina 1 cover; pagina 2 inhoudsopgave (eigen pagina); pagina 3 managementsamenvatting; daarna één pagina per hoofdstuk; geen achterblad. Richtlengte 11 tot 13 pagina's, maximaal 15 — gebruik extra pagina's zodra dat nodig is voor een rustige lay-out en om te voorkomen dat hoofdstukken worden afgekapt of inhoud sneuvelt. Volledigheid gaat vóór kunstmatig inkorten: alles moet er netjes en compleet in staan — structuur, activiteiten, financieringsopzet, object en zekerheden, financiële analyse mét prognosecijfers, betaalcapaciteit, risico's, voorwaarden en documentatie — liever een paar pagina's extra dan iets weglaten of afkappen. De vaste hoofdstukken (exact 8): 01 Managementsamenvatting; 02 Juridische structuur, activiteiten & strategie; 03 Financieringsopzet / bronnen en aanwendingen; 04 Objectgegevens & zekerheden; 05 Financiële analyse (incl. prognose); 06 Betaalcapaciteit & ratio's; 07 Risico's, mitiganten & aandachtspunten; 08 Voorwaarden voor verdere beoordeling & documentatie — met de financieringssamenvatting als afsluiting van dit hoofdstuk (GEEN apart negende hoofdstuk en GEEN losse laatste pagina).
-- Managementsamenvatting: dit hoofdstuk is de commerciële kern van het rapport — een financier moet er direct uit begrijpen waarom het dossier interessant is, wat de financieringsvraag is en welke punten aandacht vragen. Kernboodschap van 180 tot 220 woorden (mag oplopen tot 250 als de casus dat rechtvaardigt, nooit korter dan 180), krachtig en financieringsgericht geschreven als aaneengesloten LOPENDE TEKST in volledige zinnen — geen droge opsomming, geen rij losse telegramzinnen en geen kernboodschap die uit fragmenten zonder duidelijk onderwerp bestaat. Elke zin heeft een duidelijk, expliciet onderwerp; begin een zin nooit met een verwijzend voornaamwoord zonder helder referent (bijv. "Deze worden beperkt door…") — herhaal het onderwerp (de onderneming, de ondernemer, de aanvraag) zo nodig expliciet in plaats van vaag te verwijzen. Benoem in doorlopende tekst: de onderneming en haar activiteiten, de ondernemer, het doel van de financiering, de structuur (incl. eventuele vastgoed-B.V.), de totale investering, de gevraagde financiering, de eigen inbreng, de historische resultaten, de prognose, de betaalcapaciteit, de voorgestelde zekerheden en de belangrijkste aandachtspunten. Gebruik nooit de titel of het begrip "voorlopig oordeel". Controleer dat de volgende onderdelen allemaal compact terugkomen in hoofdstuk 01 (in de kernboodschap, de kpi_cards of de sterktes/aandachtspunten): onderneming en ondernemer, activiteiten, doel van de financiering, structuur, totale investering, gevraagde financiering, eigen inbreng, belangrijkste historische resultaten, prognose/structureel jaar, betaalcapaciteit, zekerheden en de belangrijkste aandachtspunten — hoofdstuk 01 mag hiervoor een volle pagina beslaan. kpi_cards bevat minimaal deze kerncijfers (label - waarde): Gevraagde financiering, Totale investering, Eigen inbreng, Loan-to-value (LTV), Looptijd, Rente, DSCR (van het structurele/eerste volle jaar, met dat jaar in het label, bijv. "DSCR 2028"), en Omzet (van het structurele/prognosejaar, met dat jaar in het label, bijv. "Omzet 2028") — alleen vullen met daadwerkelijke brondata, nooit gokken of 0 invullen als het onbekend is. belangrijkste_sterktes: maximaal 5, concreet en specifiek voor dit dossier (nooit generiek zoals "goede onderneming"). aandachtspunten: maximaal 5, concreet en specifiek (bijv. definitieve oprichting/inschrijving van een vastgoed-B.V., vastlegging van een huurovereenkomst, liquiditeitsbewaking tijdens een bouw-/overgangsfase, realisatie van de prognose, ondernemersafhankelijkheid). financieringsduiding: een korte, zelfstandige afsluiting van maximaal 5 regels die dit hoofdstuk afrondt — een andere formulering dan voorlopig_oordeel (dat als afsluiting onderaan hoofdstuk 08 — Voorwaarden & documentatie — verschijnt, niet als apart hoofdstuk): benoem kort waarom de aanvraag voldoende aanknopingspunten biedt voor verdere beoordeling én wat de belangrijkste aandachtspunten zijn, zonder de tekst van voorlopig_oordeel te herhalen.
+- Managementsamenvatting: dit hoofdstuk is de commerciële kern van het rapport — een financier moet er direct uit begrijpen waarom het dossier interessant is, wat de financieringsvraag is en welke punten aandacht vragen. Kernboodschap van 180 tot 220 woorden (mag oplopen tot 250 als de casus dat rechtvaardigt, nooit korter dan 180), krachtig en financieringsgericht geschreven als aaneengesloten LOPENDE TEKST in volledige zinnen — geen droge opsomming, geen rij losse telegramzinnen en geen kernboodschap die uit fragmenten zonder duidelijk onderwerp bestaat. Elke zin heeft een duidelijk, expliciet onderwerp; begin een zin nooit met een verwijzend voornaamwoord zonder helder referent (bijv. "Deze worden beperkt door…") — herhaal het onderwerp (de onderneming, de ondernemer, de aanvraag) zo nodig expliciet in plaats van vaag te verwijzen. Benoem in doorlopende tekst: de onderneming en haar activiteiten, de ondernemer, het doel van de financiering, de structuur (incl. eventuele vastgoed-B.V.), de totale investering, de gevraagde financiering, de eigen inbreng, de historische resultaten, de prognose, de betaalcapaciteit, de voorgestelde zekerheden en de belangrijkste aandachtspunten. Gebruik nooit de titel of het begrip "voorlopig oordeel". Controleer dat de volgende onderdelen allemaal compact terugkomen in hoofdstuk 01 (in de kernboodschap, de kpi_cards of de sterktes/aandachtspunten): onderneming en ondernemer, activiteiten, doel van de financiering, structuur, totale investering, gevraagde financiering, eigen inbreng, belangrijkste historische resultaten, prognose/structureel jaar, betaalcapaciteit, zekerheden en de belangrijkste aandachtspunten — hoofdstuk 01 mag hiervoor een volle pagina beslaan. kpi_cards bevat minimaal deze kerncijfers (label - waarde): Gevraagde financiering, Totale investering, Eigen inbreng, Loan-to-value (LTV), Looptijd, Rente, DSCR (van het structurele/eerste volle jaar, met dat jaar in het label, bijv. "DSCR 2028"), en Omzet (van het structurele/prognosejaar, met dat jaar in het label, bijv. "Omzet 2028") — alleen vullen met daadwerkelijke brondata, nooit gokken of 0 invullen als het onbekend is. belangrijkste_sterktes: maximaal 5, concreet en specifiek voor dit dossier (nooit generiek zoals "goede onderneming"). aandachtspunten: maximaal 5, concreet en specifiek (bijv. definitieve oprichting/inschrijving van een vastgoed-B.V., vastlegging van een huurovereenkomst, liquiditeitsbewaking tijdens een bouw-/overgangsfase, realisatie van de prognose, ondernemersafhankelijkheid). financieringsduiding: een zelfstandige afsluiting van minimaal 4 en maximaal 6 regels die dit hoofdstuk afrondt (nooit korter dan 4 regels en nooit maar één algemene zin) — een andere formulering dan voorlopig_oordeel (dat als afsluiting onderaan hoofdstuk 08 — Voorwaarden & documentatie — verschijnt, niet als apart hoofdstuk): benoem kort waarom de aanvraag voldoende aanknopingspunten biedt voor verdere beoordeling én wat de belangrijkste aandachtspunten zijn, zonder de tekst van voorlopig_oordeel te herhalen.
 - Juridische structuur: maximaal een halve pagina, toelichting maximaal 5 bullets; activiteiten, verdienmodel & strategie maximaal 6 bullets (historie, activiteiten, omzetstromen, klanten, verdienmodel, strategie) — geen herhaling van de managementsamenvatting. Toon iedere entiteit en iedere persoon maximaal één keer in het structuurschema of organogram; nooit dubbele 100%-labels voor dezelfde relatie.
 - Financiële analyse: geen vast paginamaximum van één pagina meer — de financiële analyse moet volledig zijn als de bron dit draagt, compact en overzichtelijk, en mag daarvoor desnoods meer ruimte innemen dan de andere hoofdstukken. Bevat de bron een volledige financiële analyse (balans, resultatenrekening, ratio's), verwerk deze dan volledig en gestructureerd — beperk je nooit tot alleen omzet, resultaat na belasting, liquide middelen en eigen vermogen. Bouw het hoofdstuk op uit twee aparte, overzichtelijke tabellen in plaats van één te brede tabel: (1) Balansontwikkeling — vaste activa, vlottende activa, liquide middelen, totaal activa, eigen vermogen, langlopende schulden, kortlopende schulden, totaal passiva; (2) Resultatenontwikkeling — omzet, bedrijfsopbrengsten, kosten, bedrijfsresultaat, financiële baten en lasten, resultaat voor belasting, belasting, resultaat na belasting. Rijen zijn de posten, kolommen zijn de jaren/periodes die de bron daadwerkelijk vermeldt (historische jaren, prognosejaren en eventueel een structureel jaar na een overgangsfase) — gebruik nooit vaste of verzonnen jaartallen en laat nooit een jaar weg dat de bron voor deze posten geeft. Neem alleen de posten en tabellen op die de bron daadwerkelijk draagt; blijft de bron beperkt tot enkele kerncijfers, toon dan ook alleen die kerncijfers (geen lege rijen verzinnen). Sluit af met 4 tot 6 sterke, feitelijke observatiebullets die minimaal ingaan op: omzetontwikkeling, resultaatontwikkeling, liquiditeitspositie, eigen vermogen, schuldpositie, en (indien van toepassing) de overgangsfase/prognosejaren en wat dit betekent voor de financier. Ratio's (DSCR, Debt/EBITDA, solvabiliteit, rentabiliteit, kasstroom, rente- en aflossingsruimte) en de toelichting op de terugbetaalcapaciteit horen thuis in het hoofdstuk Betaalcapaciteit & ratio's — herhaal ze niet in dit hoofdstuk, om dubbeling te voorkomen; volstaat in de tekst hier met een korte verwijzing als de bron ratio's bevat. Geen grafieken en geen KPI-blokken in dit hoofdstuk. Balansposten (activa/passiva) en winst-en-verliesposten mogen NOOIT door elkaar in dezelfde tabel staan: de balanspost "Eigen vermogen" hoort uitsluitend in Balansontwikkeling, de resultaatpost "Bedrijfsresultaat" uitsluitend in Resultatenontwikkeling — plaats elke post exact één keer, in de tabel waar hij hoort. Meerjarenoverzichten mogen best breed zijn en de tabellen mogen best veel posten bevatten: de renderer kiest voor dit hoofdstuk automatisch een liggende (landscape) pagina zodra dat de leesbaarheid ten goede komt (o.a. bij meer dan 4 jaarkolommen, veel posten, zowel een balans- als een resultatentabel, of een mix van historische en prognose-/structurele jaren) — landscape is hier de voorkeursweergave, geen fallback, dus je hoeft historische of prognosejaren, of posten, nooit weg te laten om een tabel smal te houden.
 - Betaalcapaciteit: maximaal één pagina — korte toelichting (maximaal 5 regels), DSCR-tabel per jaar (jaar | situatie | DSCR | toelichting; DSCR altijd als ratio zoals "3,11", NOOIT als eurobedrag), compact Debt/EBITDA of overige kengetallen in dezelfde of een korte tweede tabel, en maximaal 3 interpretatiebullets. Herhaal geen cijfers uit de financiële analyse.
@@ -376,6 +376,15 @@ RAPPORTTYPE — MINIMUMEISEN
 
 METADATA
 klantnaam: de kredietnemer/onderneming zoals in de bron. Let op de juiste kredietnemer: wordt de financiering feitelijk aangevraagd door een nieuw op te richten (vastgoed-)B.V., benoem dan niet alleen de werkmaatschappij maar beide, in het format "[Vastgoed-B.V.] i.o. / [Werkmaatschappij] groep" — met de daadwerkelijke namen uit de bron, nooit deze placeholder-tekst zelf. financieringsdoel: één compacte zin. status: altijd "Concept · ter beoordeling". kantoor_adviseur: het Credion-kantoor en/of de adviseur zoals vermeld in de bron; leeg indien onbekend. datadekking: jouw eerlijke inschatting (wordt server-side geverifieerd).
+
+AANVULLENDE KWALITEITSREGELS (verplicht, server-side ook gecontroleerd)
+- Geen restzinnen of afgebroken tekst waar dan ook in het rapport: geen losse getallen als zin ("000 in 2028"), geen zin die met een komma begint (", waarmee vastgoed en activiteiten worden gescheiden"), geen tekstfragment zonder onderwerp. Wordt tekst ingekort, dan blijft de zin grammaticaal volledig — nooit halverwege afbreken.
+- Objectgegevens: gebruik altijd de correcte veldnamen. Schrijf "Energielabel" (nooit "Energie label"). Schrijf "Erfpachtcanon per jaar" voor het jaarlijkse erfpachtbedrag (nooit "Aantal erfpachters per jaar" — dat is geen zinnig begrip bij één object). Schrijf LTV altijd als percentage ("84,7%" of "85%"), nooit als kale verhouding ("0,85"). Schrijf "Privé" met accent (nooit "Prive" of "Prive9"). Neem in het objecthoofdstuk (object_en_vastgoed) nooit risicomatrix-achtige tekst op (kans/impact/mitigant-formuleringen) — risico's horen uitsluitend thuis in het hoofdstuk Risico's, mitiganten & aandachtspunten.
+- Bronnen en aanwendingen moeten zuiver optellen: zijn bijkomende kosten al uitgesplitst in aparte regels (notaris, taxateur, financieringskosten, advieskosten, onvoorzien, btw over bijkomende kosten), voeg dan NIET nogmaals een aparte totaalregel "Bijkomende kosten" toe naast die uitsplitsing, tenzij dit aantoonbaar een ander, afzonderlijk bedrag betreft. Controleer dat totaal aanwendingen = totaal bronnen, dat subtotalen niet dubbel meetellen, en dat btw-regels logisch zijn verwerkt.
+- Financiële analyse blijft strikt gescheiden: afschrijvingen (op immateriële en materiële vaste activa) zijn een resultatenpost en horen NOOIT in de balansontwikkeling, ook al bevat het postlabel de woorden "vaste activa" — plaats afschrijvingen altijd in de resultatentabel.
+- Geen lege of te dunne vervolgpagina's: een hoofdstuk met slechts één kort tekstblok (bijv. markt en afnemers, of management) wordt inhoudelijk gecombineerd met het voorgaande hoofdstuk in plaats van een nieuwe, nauwelijks gevulde pagina te starten.
+- Voorwaarden & documentatie: elk onderwerp (hypotheekrecht, huurovereenkomst, eigen inbreng, oprichting entiteit, liquiditeitsmonitoring, oplevering, prognose) komt in het hele rapport precies één keer voor, met de vaste status uit de tabel hierboven — nooit hetzelfde onderwerp nogmaals als apart actiepunt, ontbrekend stuk of vervolgvraag.
+- De financieringssamenvatting (afsluiting van het laatste hoofdstuk) benoemt kort: onderbouwing van de aanvraag, eigen inbreng, historische resultaten, structuur, zekerheden, betaalcapaciteit, aandachtspunten en het vervolg richting de financier — maximaal 8 tot 10 regels, nooit een lege of te dunne afsluiting.
 
 OUTPUT
 Antwoord uitsluitend met valide JSON volgens het schema. Geen markdown, geen tekst buiten de JSON.`;
@@ -583,6 +592,29 @@ function enforceBnA(fo, warnings) {
    ontwikkelaar (staat letterlijk op de verbodslijst voor externe controlepunten)
    en gaat daarom naar `internal`, nooit naar `warnings`/coverage_check.waarschuwingen.
    Een ontbrekend organogram is wél een zakelijk relevant controlepunt en blijft extern. */
+/* Voorkomt dubbeltelling: als bijkomende kosten al zijn uitgesplitst in losse
+   regels (notaris, taxateur, financieringskosten, advieskosten, onvoorzien,
+   btw over bijkomende kosten), mag er niet ook nog een aparte, generieke regel
+   "Bijkomende kosten" naast die uitsplitsing staan die (ongeveer) hetzelfde
+   totaal nogmaals optelt. Alleen verwijderen als het bedrag van de generieke
+   regel binnen een kleine marge overeenkomt met de som van de losse
+   componenten — anders betreft het aantoonbaar een ander, apart bedrag. */
+const BIJKOMENDE_COMPONENT_PAT = /notaris|taxat|financieringskosten|afsluitprovisie|advieskosten|onvoorzien|\bbtw\b/i;
+const BIJKOMENDE_GENERIEK_PAT = /^bijkomende\s+kosten$/i;
+function dedupeBijkomendeKosten(fo, warnings) {
+  const rows = A(fo.bronnen_en_aanwendingen);
+  const generiek = rows.filter((x) => x?.type === 'aanwending' && !x.totaalregel && BIJKOMENDE_GENERIEK_PAT.test(String(x?.label || '').trim()));
+  if (!generiek.length) return;
+  const componenten = rows.filter((x) => x?.type === 'aanwending' && !x.totaalregel && BIJKOMENDE_COMPONENT_PAT.test(String(x?.label || '')) && !BIJKOMENDE_GENERIEK_PAT.test(String(x?.label || '').trim()));
+  if (!componenten.length) return;
+  const compSom = componenten.reduce((t, x) => t + (num(x.bedrag) || 0), 0);
+  if (compSom <= 0) return;
+  const teVerwijderen = generiek.filter((g) => num(g.bedrag) !== null && Math.abs(num(g.bedrag) - compSom) <= Math.max(compSom, 1) * 0.03);
+  if (!teVerwijderen.length) return;
+  fo.bronnen_en_aanwendingen = rows.filter((x) => !teVerwijderen.includes(x));
+  warnings.push(`Dubbele regel "Bijkomende kosten" verwijderd: dit bedrag was al uitgesplitst in ${componenten.map((c) => c.label).join(', ')}.`);
+}
+
 function enforceCoverage(r, warnings, internal) {
   const cv = (r.coverage_check = r.coverage_check || {});
   cv.waarschuwingen = A(cv.waarschuwingen).filter(hasTxt);
@@ -855,6 +887,10 @@ const PHRASE_FIXES = [
   [/\brealizatie\b/g, 'realisatie'],
   [/Priv[eé]\s?9/g, 'Privé'],
   [/priv[eé]\s?9/g, 'privé'],
+  [/\bPrive\b/g, 'Privé'],
+  [/\bprive\b/g, 'privé'],
+  [/\bEnergie\s*label\b/gi, 'Energielabel'],
+  [/\bAantal\s+erfpachters?\s+per\s+jaar\b/gi, 'Erfpachtcanon per jaar'],
   [/([A-Za-zÀ-ÿ])\uFFFD9/g, '$1é'],
   [/\bfinancie\s?9le\b/gi, 'financiële'],
   [/\bsamenwerking\s+van\s+(?=huur)/gi, 'samenloop van '],
@@ -1022,6 +1058,13 @@ function isMessyOrganogram(org) {
    verliezen op basis van een onzekere classificatie. */
 const RESULTAAT_ONLY_RE = /omzet|bedrijfsopbrengsten|bedrijfsresultaat|^ebitda?$|financi[eë]le\s+baten|resultaat[^]*voor[^]*belasting|^belasting(en)?$|resultaat[^]*na[^]*belasting|^(bedrijfs)?kosten$|bedrijfslasten/i;
 const BALANS_ONLY_RE = /vaste\s+activa|vlottende\s+activa|liquide\s+middelen|totaal\s+activa|eigen\s*vermogen|langlopende?\s+schuld|kortlopende?\s+schuld|totaal\s+passiva/i;
+/* Afschrijvingen zijn altijd een resultatenpost (winst-en-verliesrekening),
+   ook al noemt het label "(im)materiële vaste activa" — daardoor zou de
+   generieke BALANS_ONLY_RE-toets ("vaste activa") deze post anders ten
+   onrechte als balanspost classificeren. Deze klantcorrectie (afschrijvingen
+   horen nooit in de balansontwikkeling) krijgt daarom expliciet voorrang
+   boven de generieke classificatie hieronder. */
+const AFSCHRIJVING_RE = /afschrijving|amortisatie|waardevermindering/i;
 function enforceFinancialStatementSeparation(r, internal) {
   const fa = r.financiele_analyse;
   if (!fa) return;
@@ -1032,6 +1075,7 @@ function enforceFinancialStatementSeparation(r, internal) {
   const fromResultatenToBalans = [];
   for (const row of resultatenIn) {
     const label = String(row?.label || '');
+    if (AFSCHRIJVING_RE.test(label)) { resultatenStay.push(row); continue; }
     if (BALANS_ONLY_RE.test(label) && !RESULTAAT_ONLY_RE.test(label)) fromResultatenToBalans.push(row);
     else resultatenStay.push(row);
   }
@@ -1040,6 +1084,7 @@ function enforceFinancialStatementSeparation(r, internal) {
   const fromBalansToResultaten = [];
   for (const row of balansIn) {
     const label = String(row?.label || '');
+    if (AFSCHRIJVING_RE.test(label)) { fromBalansToResultaten.push(row); continue; }
     if (RESULTAAT_ONLY_RE.test(label) && !BALANS_ONLY_RE.test(label)) fromBalansToResultaten.push(row);
     else balansStay.push(row);
   }
@@ -1132,6 +1177,47 @@ function enforceOrgDiagramQuality(r, warnings, internal) {
    letterlijke, ongewijzigde regels van de adviseur; bij een afbeelding wordt
    alleen het AI-organogram uitgeschakeld (de afbeelding zelf wordt client-side
    geplaatst, met de bytes die de browser al lokaal heeft). */
+/* Objecthoofdstuk (object_en_vastgoed): LTV altijd als percentage tonen (nooit
+   een kale verhouding als "0,85"), en risicomatrix-achtige formuleringen
+   (kans/impact/mitigant) horen hier nooit thuis — dat is uitsluitend het
+   hoofdstuk Risico's, mitiganten & aandachtspunten. Labelcorrecties zelf
+   (Energielabel, Erfpachtcanon per jaar, Privé) lopen via PHRASE_FIXES in
+   deepCleanStrings, die op elke string in de hele boom wordt toegepast. */
+function normalizeLtvValue(v) {
+  if (typeof v !== 'string') return v;
+  const t = v.trim();
+  if (!t || /%/.test(t)) return v;
+  const f = parseFloat(t.replace(',', '.'));
+  if (!(f > 0 && f < 1)) return v;
+  const pct = Math.round(f * 1000) / 10;
+  const pctStr = (Number.isInteger(pct) ? String(pct) : String(pct).replace('.', ',')) + '%';
+  return pctStr;
+}
+const RISICOMATRIX_WOORDEN_RE = /\b(kans|impact|mitigant|risicomatrix)\b/i;
+function enforceObjectChapterQuality(r, internal) {
+  const fo = r.financieringsopzet || {};
+  const kc = fo.kerncijfers;
+  if (kc && typeof kc.ltv === 'string') {
+    const before = kc.ltv;
+    kc.ltv = normalizeLtvValue(kc.ltv);
+    if (kc.ltv !== before) internal.push(`kerncijfers.ltv "${before}" genormaliseerd naar "${kc.ltv}".`);
+  }
+  const ov = (r.object_en_vastgoed = r.object_en_vastgoed || {});
+  ov.kenmerken = A(ov.kenmerken).map((k) => {
+    if (!k || !hasTxt(k.label)) return k;
+    if (!/\bltv\b/i.test(String(k.label))) return k;
+    const before = k.waarde;
+    const na = normalizeLtvValue(k.waarde);
+    if (na !== before) internal.push(`object_en_vastgoed.kenmerken LTV-waarde "${before}" genormaliseerd naar "${na}".`);
+    return { ...k, waarde: na };
+  });
+  const voorAP = A(ov.aandachtspunten).length;
+  ov.aandachtspunten = A(ov.aandachtspunten).filter((t) => !(hasTxt(t) && RISICOMATRIX_WOORDEN_RE.test(t)));
+  if (ov.aandachtspunten.length < voorAP) {
+    internal.push('Risicomatrix-achtige tekst (kans/impact/mitigant) verwijderd uit object_en_vastgoed.aandachtspunten; risico\'s horen uitsluitend in het hoofdstuk Risico\'s, mitiganten & aandachtspunten.');
+  }
+}
+
 function enforceStructOverride(r, structuurOverride, internal) {
   const mode = structuurOverride && structuurOverride.mode;
   if (!mode || mode === 'auto') return;
@@ -1152,6 +1238,83 @@ function enforceStructOverride(r, structuurOverride, internal) {
     ju.structuur_afbeelding_aangeleverd = true;
     internal.push('Structuurschema: adviseur leverde een afbeelding aan; AI-organogram uitgeschakeld, afbeelding wordt apart geplaatst.');
   }
+}
+
+/* Elk onderwerp (hypotheekrecht, huurovereenkomst, eigen inbreng, oprichting
+   entiteit, liquiditeit, oplevering, prognose) mag maar één keer voorkomen in
+   het hele rapport — nooit tegelijk als voorwaarde, actiepunt, ontbrekend stuk
+   én vervolgvraag. De prompt vraagt de AI dit zelf al te doen; dit is de
+   server-side vangnet-laag die het afdwingt ongeacht wat de AI teruggeeft.
+   Eerste vermelding (in vaste volgorde: voorwaarden → actiepunten → ontbrekend
+   → vervolgvragen) wint; latere dubbele vermeldingen van hetzelfde onderwerp
+   worden verwijderd. */
+const VOORWAARDE_ONDERWERPEN = [
+  { key: 'hypotheekrecht', re: /hypotheekrecht|pandrecht|borgstelling/i },
+  { key: 'huurovereenkomst', re: /huurovereenkomst/i },
+  { key: 'eigen_inbreng', re: /eigen\s+inbreng/i },
+  { key: 'oprichting_entiteit', re: /oprichting|inschrijving/i },
+  { key: 'liquiditeit', re: /liquiditeit/i },
+  { key: 'oplevering', re: /oplevering/i },
+  { key: 'prognose', re: /prognose|omzetontwikkeling/i },
+];
+function dedupeVoorwaardenOnderwerpen(r, internal) {
+  const seen = new Set();
+  const dedupe = (arr, veldnaam) => {
+    const out = [];
+    for (const item of A(arr)) {
+      const txt = typeof item === 'string' ? item : item?.item;
+      if (!hasTxt(txt)) { out.push(item); continue; }
+      const onderwerp = VOORWAARDE_ONDERWERPEN.find((o) => o.re.test(txt));
+      if (onderwerp) {
+        if (seen.has(onderwerp.key)) {
+          internal.push(`Dubbele vermelding van onderwerp "${onderwerp.key}" verwijderd uit ${veldnaam}: "${txt}".`);
+          continue;
+        }
+        seen.add(onderwerp.key);
+      }
+      out.push(item);
+    }
+    return out;
+  };
+  const cc = (r.conclusie = r.conclusie || {});
+  cc.voorwaarden = dedupe(cc.voorwaarden, 'conclusie.voorwaarden');
+  cc.actiepunten = dedupe(cc.actiepunten, 'conclusie.actiepunten');
+  const dc = (r.documentatiecheck = r.documentatiecheck || {});
+  dc.ontbrekend = dedupe(dc.ontbrekend, 'documentatiecheck.ontbrekend');
+  dc.vervolgvragen = dedupe(dc.vervolgvragen, 'documentatiecheck.vervolgvragen');
+}
+
+/* Brede eindscan op afgebroken zinnen/restteksten, over het HELE rapport (niet
+   alleen de kernboodschap): losse zinnen die met een komma beginnen, zinnen
+   die met een kaal 1-3-cijferig fragment beginnen (zoals "000 in 2028" — een
+   echt jaartal is altijd 4 cijfers), en losse "..."/"…" ergens in de tekst.
+   Repareert niets automatisch (vrije tekst mag niet blind worden herschreven)
+   maar zorgt dat dit altijd als controlepunt wordt opgemerkt vóór export. */
+function scanBrokenSentencesReport(r, warnings) {
+  const commaStarts = [];
+  const digitFrags = [];
+  let hasEllipsis = false;
+  const walk = (node) => {
+    if (typeof node === 'string') {
+      if (/(\.\.\.|…)/.test(node)) hasEllipsis = true;
+      if (node.trim().length >= 20) {
+        const zinnen = node.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9])/);
+        for (const zin of zinnen) {
+          const z = zin.trim();
+          if (!z) continue;
+          if (/^,/.test(z) && commaStarts.length < 3) commaStarts.push(z.slice(0, 50));
+          if (/^\d{1,3}(\s|$)/.test(z) && !/^\d{4}\b/.test(z) && digitFrags.length < 3) digitFrags.push(z.slice(0, 50));
+        }
+      }
+      return;
+    }
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node && typeof node === 'object') { for (const k of Object.keys(node)) walk(node[k]); }
+  };
+  walk(r);
+  if (commaStarts.length) warnings.push(`Eindcontrole: rapport bevat zin(nen) die met een komma beginnen (bijv. "${commaStarts.join('" / "')}"); dit zijn vrijwel zeker afgebroken zinnen — herschrijf tot volledige zinnen vóór export.`);
+  if (digitFrags.length) warnings.push(`Eindcontrole: rapport bevat mogelijk afgebroken zin(nen) die beginnen met een los cijferfragment (bijv. "${digitFrags.join('" / "')}"); controleer en herschrijf tot volledige zinnen.`);
+  if (hasEllipsis) warnings.push('Eindcontrole: rapport bevat "..." of "…" ergens in de tekst — mogelijk een afgebroken zin; herschrijf dit gedeelte tot een volledige zin vóór export.');
 }
 
 function enforceQuality(r, vandaag, opts = {}) {
@@ -1214,6 +1377,7 @@ function enforceQuality(r, vandaag, opts = {}) {
      enforceBnA levert zowel zakelijke controlepunten (sluiting, herclassificatie)
      als een puur tekstuele euroteken-fix (cleanRatios) — die laatste is intern. */
   enforceBnA(fo, warnings);
+  dedupeBijkomendeKosten(fo, warnings);
   cleanRatios(r, internal);
   const bnaSide = (type) => A(fo.bronnen_en_aanwendingen).filter((x) => x?.type === type && num(x.bedrag) !== null);
   const sideTotals = (type) => {
@@ -1263,6 +1427,9 @@ function enforceQuality(r, vandaag, opts = {}) {
      terecht zijn gekomen, worden eerst rechtgezet, vóórdat er verder iets met
      de financiële analyse gebeurt. */
   enforceFinancialStatementSeparation(r, internal);
+
+  /* 4b.i.a2 — objecthoofdstuk: LTV als percentage, geen risicomatrix-tekst. */
+  enforceObjectChapterQuality(r, internal);
 
   /* 4b.i.b — financiële posten die voor hetzelfde jaar 3x hetzelfde
      (mogelijk gefabriceerde/gedupliceerde) bedrag teruggeven, worden als
@@ -1393,8 +1560,14 @@ function enforceQuality(r, vandaag, opts = {}) {
   /* 9 — coverage */
   enforceCoverage(r, warnings, internal);
 
+  /* 8b — voorwaarden/documentatie ontdubbelen op onderwerp (server-side afdwingen). */
+  dedupeVoorwaardenOnderwerpen(r, internal);
+
   /* 9b — eindcontrole (punt 9): laatste controlerende check vóór export. */
   enforceFinalChecklist(r, warnings);
+
+  /* 9c — brede scan op afgebroken zinnen/restteksten over het hele rapport. */
+  scanBrokenSentencesReport(r, warnings);
 
   /* 10 — kwaliteitscontrole bijwerken: uitsluitend advisorWarnings naar buiten.
      internalWarnings (tool-/debugcorrecties) gaan nooit mee in het rapport of de
