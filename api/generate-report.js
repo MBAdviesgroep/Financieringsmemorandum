@@ -1780,14 +1780,14 @@ async function createResponse(client, model, content) {
   return client.responses.create({
     model,
     input: [{ role: 'user', content }],
-    /* Vercel Hobby heeft een harde functietijdlimiet van 60s (maxDuration
-       hieronder) die niet verhoogd kan worden. Generatietijd schaalt ongeveer
-       lineair met het aantal output-tokens; 22000 (i.p.v. voorheen 28000)
-       geeft ruimte voor een volledig financieringsmemorandum inclusief de
-       uitgebreide financiële analyse, met wat meer veiligheidsmarge tegen de
-       tijdlimiet. Verhoog dit gerust weer als het account naar Vercel Pro
-       (300s) gaat. */
-    max_output_tokens: 22000,
+    /* Met Fluid Compute AAN (gratis instelling, ook op Hobby — zie
+       maxDuration hieronder) is de functietijdlimiet 300s in plaats van de
+       standaard 10s. Generatietijd schaalt ongeveer lineair met het aantal
+       output-tokens; 28000 geeft ruimte voor een volledig financierings-
+       memorandum inclusief de uitgebreide financiële analyse, met nog altijd
+       marge tegen de 300s-limiet. Staat Fluid Compute uit, verlaag dit dan
+       weer naar circa 15000-18000 om binnen 60s te blijven. */
+    max_output_tokens: 28000,
     text: {
       format: {
         type: 'json_schema',
@@ -1861,10 +1861,14 @@ function buildDocumentContent(documents) {
   return { content, names };
 }
 
-/* Vercel's default functietimeout is te kort voor een PDF-analyse door het model.
-   Deze regel verlengt de limiet naar het maximum dat het Vercel-abonnement toelaat
-   (Hobby: 60s, Pro: 300s, Enterprise: 900s) — zet 'm hoger als het plan dat toestaat. */
-export const maxDuration = 60;
+/* Vercel's default functietimeout (10s) is te kort voor een PDF-analyse door
+   het model. Met Fluid Compute AAN — een gratis instelling onder Project
+   Settings > Functions, ook beschikbaar op het Hobby-plan, GEEN betaalde
+   upgrade — is 300s (5 minuten) het maximum op zowel Hobby als Pro/Enterprise.
+   Zonder Fluid Compute blijft Hobby hard op 10s hangen, ongeacht deze waarde.
+   Zet dit dus op 300 zodra Fluid Compute aan staat; alleen als Fluid Compute
+   uit blijft, verlaag dit dan naar 10. */
+export const maxDuration = 300;
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -1959,15 +1963,15 @@ export default async function handler(req, res) {
     const prompt = buildPrompt({ notities, docSummary, vandaag, bytesPageCount, uitgebreid, structuurOverride });
     const content = [{ type: 'input_text', text: prompt }, ...docContent];
 
-    /* Vercel Hobby: harde functietijdlimiet van 60s (zie maxDuration hieronder),
-       niet te verhogen. Generatietijd hangt sterk samen met bronomvang en
-       gevraagde diepgang (uitgebreid rapport, veel pagina's) — voor die
-       zwaarste gevallen kiezen we daarom vooraf al het snellere nano-model
-       i.p.v. pas ná een mislukte poging, want een verstreken functietijdlimiet
-       kan (in tegenstelling tot een 429) niet meer binnen dezelfde aanroep
-       worden opgevangen. Voor de meeste (normale) aanvragen blijft mini de
-       standaard, voor de beste nauwkeurigheid. Een expliciete OPENAI_MODEL
-       env-var overschrijft deze keuze altijd. */
+    /* Functietijdlimiet is nu 300s (met Fluid Compute aan, zie maxDuration
+       hierboven) in plaats van de vroegere 60s. Generatietijd hangt nog altijd
+       sterk samen met bronomvang en gevraagde diepgang (uitgebreid rapport,
+       veel pagina's) — voor de zwaarste gevallen kiezen we daarom vooraf al
+       het snellere nano-model i.p.v. pas ná een mislukte poging, want een
+       verstreken functietijdlimiet kan (in tegenstelling tot een 429) niet
+       meer binnen dezelfde aanroep worden opgevangen. Voor de meeste (normale)
+       aanvragen blijft mini de standaard, voor de beste nauwkeurigheid. Een
+       expliciete OPENAI_MODEL env-var overschrijft deze keuze altijd. */
     const isZwareAanvraag = uitgebreid || (typeof bytesPageCount === 'number' && isFinite(bytesPageCount) && bytesPageCount > 15);
     const model = process.env.OPENAI_MODEL || (isZwareAanvraag ? 'gpt-4.1-nano' : 'gpt-4.1-mini');
     let response;
