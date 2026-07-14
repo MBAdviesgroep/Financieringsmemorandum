@@ -2283,15 +2283,23 @@ function layoutPages(sections,opts={}){
      door de paginavoettekst wordt afgesneden; een niet-tabel-blok dat nog
      steeds niet past (zeer zeldzaam, bijv. een grote afbeelding) wordt als
      laatste redmiddel alsnog in zijn geheel geplaatst. */
+  /* Veiligheidsmarge tegen het atomair plaatsen van een groep die de
+     offscreen meetpagina als "past nét" beoordeelt, terwijl de daadwerkelijke
+     opmaak (bijv. een tabel met een paginavoettekst erna) in de praktijk toch
+     over de voettekst heen loopt. Een groep die BINNEN deze marge van het
+     budget zit, wordt daarom niet meer atomair geplaatst maar altijd via de
+     onderstaande blok-voor-blok/splitTableRows-route afgehandeld — die route
+     meet en splitst op rijniveau tegen de werkelijk resterende ruimte, dus
+     een tabelrij kan daar nooit meer door de voettekst worden afgesneden. */
+  const groupSafety=8*MMpx;
   const placeGroup=(sec,group)=>{
     const groupHtml=group.join('');
     const groupH=measure(groupHtml);
-    if(cur.h>0&&cur.h+groupH<=budget){
+    if(cur.h>0&&cur.h+groupH<=budget-groupSafety){
       cur.html+=groupHtml; cur.h+=groupH;
       return;
     }
-    if(groupH<=budget){
-      if(cur.h>0){ close(); open(sec.label+' — vervolg'); }
+    if(cur.h===0&&groupH<=budget-groupSafety){
       cur.html+=groupHtml; cur.h+=groupH;
       return;
     }
