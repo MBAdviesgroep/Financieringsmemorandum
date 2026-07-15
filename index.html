@@ -1299,9 +1299,9 @@ const RESULTAAT_ORDER=[
   {key:'totaalbedrijfskosten',label:'Totaal bedrijfskosten',re:/^totaa?l\s+(bedrijfs)?kosten$|^totale\s+kosten$/i,total:true,group:'Kosten'},
   {key:'bedrijfsresultaat',label:'Bedrijfsresultaat',re:/^bedrijfsresultaat$|^ebitda?$/i,total:true,group:'Resultaat'},
   {key:'finbatenlasten',label:'Financi\u00eble baten en lasten',re:/^financi[e\u00eb]le\s+baten(\s+en\s+lasten)?$/i,group:'Resultaat'},
-  {key:'resultaatvoorbelasting',label:'Resultaat voor belasting',re:/^resultaat[^]*voor[^]*belasting$/i,group:'Resultaat'},
+  {key:'resultaatvoorbelasting',label:'Resultaat voor belasting',re:/^resultaat[^]*voor[^]*belasting(en)?$/i,group:'Resultaat'},
   {key:'belasting',label:'Belasting',re:/^belasting(en)?$|belastingen?\s+over\s+de\s+winst|vennootschapsbelasting/i,group:'Resultaat'},
-  {key:'resultaatnabelasting',label:'Resultaat na belasting',re:/^resultaat[^]*na[^]*belasting$/i,total:true,group:'Resultaat'},
+  {key:'resultaatnabelasting',label:'Resultaat na belasting',re:/^resultaat[^]*na[^]*belasting(en)?$/i,total:true,group:'Resultaat'},
 ];
 function sortPeriods(periods){
   return [...periods].sort((a,b)=>{
@@ -1369,12 +1369,19 @@ function finStatementTable(rows,order){
   const ACTIVA_HINT=/activa|liquide|vlottende/i;
   const PASSIVA_HINT=/passiva|eigen\s*vermogen|schuld/i;
   const OPBRENGST_HINT=/omzet|opbrengst/i;
+  /* Een label dat zelf al "resultaat"/"belasting"/"ebitda" noemt (bijv. een
+     bronvariant als "Resultaat na belastingen" met een meervoud dat niet exact
+     matcht met de vaste regex) is overduidelijk een RESULTAAT-post, geen
+     kostenpost — die hoort aan het EIND van de tabel, na de laatste vaste
+     resultaatregel, niet vlak vóór Bedrijfsresultaat onder "Kosten". */
+  const RESULTAAT_HINT=/resultaat|belasting|ebitda/i;
   const merged=[...order];
   for(const extra of seenExtra){
     let ankerKey=null;
     if(ACTIVA_HINT.test(extra.label)){ ankerKey='totaalactiva'; extra.group='Activa'; }
     else if(PASSIVA_HINT.test(extra.label)){ ankerKey='totaalpassiva'; extra.group='Passiva'; }
     else if(OPBRENGST_HINT.test(extra.label)){ ankerKey='bedrijfsresultaat'; extra.group='Opbrengsten'; }
+    else if(RESULTAAT_HINT.test(extra.label)){ ankerKey=null; extra.group='Resultaat'; }
     else { ankerKey='bedrijfsresultaat'; extra.group='Kosten'; }
     const idx=ankerKey?merged.findIndex(o=>o.key===ankerKey):-1;
     merged.splice(idx===-1?merged.length:idx,0,extra);
