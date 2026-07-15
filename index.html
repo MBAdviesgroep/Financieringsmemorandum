@@ -737,7 +737,11 @@ function cleanTextForReport(value){
     .replace(/\bRepresentatievelijkste\b/g,'Meest representatieve')
     .replace(/\brepresentatievelijkste\b/g,'meest representatieve')
     .replace(/\bNieuwbouwbedrijfspand\b/g,'Nieuwbouw bedrijfspand')
-    .replace(/\bnieuwbouwbedrijfspand\b/g,'nieuwbouw bedrijfspand');
+    .replace(/\bnieuwbouwbedrijfspand\b/g,'nieuwbouw bedrijfspand')
+    .replace(/\bVerantwoordelijke\s+financieringsstructuur\b/g,'Verantwoorde financieringsstructuur')
+    .replace(/\bverantwoordelijke\s+financieringsstructuur\b/g,'verantwoorde financieringsstructuur')
+    .replace(/\bAfname\s+bouwfase\s+last\b/g,'Afname van tijdelijke bouw- en overgangslasten')
+    .replace(/\bafname\s+bouwfase\s+last\b/g,'afname van tijdelijke bouw- en overgangslasten');
 }
 const esc = v => cleanTextForReport(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* "N.v.t.", "n.v.t", "nvt" en "niet van toepassing" zijn geen inhoudelijke
@@ -1297,18 +1301,25 @@ function pivotBlocks(rows,firstCol){
    specifieker label (bijv. "Materi\u00eble vaste activa", "Immateri\u00eble vaste
    activa") komt daardoor terecht als eigen, apart getoonde regel in plaats van
    stilzwijgend te worden samengevoegd met of overschreven door de hoofdpost. */
+/* "Totaal van activa", "Totaal van het eigen vermogen", "Totaal van vlottende
+   activa" e.d. zijn geen aparte posten maar labelvarianten van de canonieke
+   rij ernaast — de regex’en tolereren daarom een optioneel
+   "totaal (van) (het/de) "-voorvoegsel zodat zulke varianten altijd op
+   dezelfde vaste rij landen in plaats van als losse, dubbele extra-regel te
+   verschijnen (dat zou de balans per run een andere opbouw kunnen geven). */
+const TOTAAL_VAN_PREFIX='(?:totaa?l\\s+(?:van\\s+)?(?:het\\s+|de\\s+)?)?';
 const BALANS_ORDER=[
-  {key:'materieelvasteactiva',label:'Materiële vaste activa',re:/^materi[e\u00eb]le\s+vaste\s+activa$/i,group:'Activa'},
-  {key:'immaterieelvasteactiva',label:'Immateriële vaste activa',re:/^immateri[e\u00eb]le\s+vaste\s+activa$/i,group:'Activa'},
-  {key:'financieelvasteactiva',label:'Financiële vaste activa',re:/^financi[e\u00eb]le\s+vaste\s+activa$/i,group:'Activa'},
-  {key:'vasteactiva',label:'Vaste activa',re:/^vaste\s+activa$/i,group:'Activa'},
-  {key:'vlottendeactiva',label:'Vlottende activa',re:/^vlottende\s+activa$/i,group:'Activa'},
-  {key:'liquide',label:'Liquide middelen',re:/^liquide\s+middelen$/i,group:'Activa'},
-  {key:'totaalactiva',label:'Totaal activa',re:/^totaal\s+activa$/i,total:true,group:'Activa'},
-  {key:'eigenvermogen',label:'Eigen vermogen',re:/^eigen\s*vermogen$/i,group:'Passiva'},
-  {key:'langlopend',label:'Langlopende schulden',re:/^langlopende?\s+schulden?$/i,group:'Passiva'},
-  {key:'kortlopend',label:'Kortlopende schulden',re:/^kortlopende?\s+schulden?$/i,group:'Passiva'},
-  {key:'totaalpassiva',label:'Totaal passiva',re:/^totaal\s+passiva$/i,total:true,group:'Passiva'},
+  {key:'materieelvasteactiva',label:'Materiële vaste activa',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'materi[e\u00eb]le\\s+vaste\\s+activa$','i'),group:'Activa'},
+  {key:'immaterieelvasteactiva',label:'Immateriële vaste activa',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'immateri[e\u00eb]le\\s+vaste\\s+activa$','i'),group:'Activa'},
+  {key:'financieelvasteactiva',label:'Financiële vaste activa',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'financi[e\u00eb]le\\s+vaste\\s+activa$','i'),group:'Activa'},
+  {key:'vasteactiva',label:'Vaste activa',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'vaste\\s+activa$','i'),group:'Activa'},
+  {key:'vlottendeactiva',label:'Vlottende activa',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'vlottende\\s+activa$','i'),group:'Activa'},
+  {key:'liquide',label:'Liquide middelen',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'liquide\\s+middelen$','i'),group:'Activa'},
+  {key:'totaalactiva',label:'Totaal activa',re:/^totaal\s+(van\s+)?(het\s+|de\s+)?activa$/i,total:true,group:'Activa'},
+  {key:'eigenvermogen',label:'Eigen vermogen',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'eigen\\s*vermogen$','i'),group:'Passiva'},
+  {key:'langlopend',label:'Langlopende schulden',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'langlopende?\\s+schulden?$','i'),group:'Passiva'},
+  {key:'kortlopend',label:'Kortlopende schulden',re:new RegExp('^'+TOTAAL_VAN_PREFIX+'kortlopende?\\s+schulden?$','i'),group:'Passiva'},
+  {key:'totaalpassiva',label:'Totaal passiva',re:/^totaal\s+(van\s+)?(het\s+|de\s+)?passiva$/i,total:true,group:'Passiva'},
 ];
 const RESULTAAT_ORDER=[
   {key:'omzet',label:'Omzet',re:/^(netto[- ]?)?omzet$/i,group:'Opbrengsten'},
@@ -1397,11 +1408,25 @@ function finStatementTable(rows,order){
      kostenpost — die hoort aan het EIND van de tabel, na de laatste vaste
      resultaatregel, niet vlak vóór Bedrijfsresultaat onder "Kosten". */
   const RESULTAAT_HINT=/resultaat|belasting|ebitda/i;
+  /* Klantcorrectie: de resultatenrekening mag nooit balansposten (ACTIVA/
+     PASSIVA) tonen en de balans mag nooit winst-en-verliesposten tonen — een
+     post die qua herkomst duidelijk bij het andere overzicht hoort (bijv.
+     "Eigen vermogen" of "Totaal van activa" die per ongeluk in fa.resultaten
+     staat) wordt hier stilzwijgend NIET getoond in deze tabel, in plaats van
+     als los blok onderaan te verschijnen — de post staat immers al correct in
+     de eigen tabel (Balansontwikkeling resp. Resultatenontwikkeling) als de
+     bron hem daar ook echt geeft. */
+  const isBalansTabel=order.some(o=>o.key==='totaalactiva');
+  const isResultaatTabel=order.some(o=>o.key==='bedrijfsresultaat');
   const merged=[...order];
   for(const extra of seenExtra){
+    const isActivaAchtig=ACTIVA_HINT.test(extra.label);
+    const isPassivaAchtig=PASSIVA_HINT.test(extra.label);
+    if(isResultaatTabel&&(isActivaAchtig||isPassivaAchtig)) continue;
+    if(isBalansTabel&&!isActivaAchtig&&!isPassivaAchtig&&(OPBRENGST_HINT.test(extra.label)||RESULTAAT_HINT.test(extra.label))) continue;
     let ankerKey=null;
-    if(ACTIVA_HINT.test(extra.label)){ ankerKey='totaalactiva'; extra.group='Activa'; }
-    else if(PASSIVA_HINT.test(extra.label)){ ankerKey='totaalpassiva'; extra.group='Passiva'; }
+    if(isActivaAchtig){ ankerKey='totaalactiva'; extra.group='Activa'; }
+    else if(isPassivaAchtig){ ankerKey='totaalpassiva'; extra.group='Passiva'; }
     else if(OPBRENGST_HINT.test(extra.label)){ ankerKey='bedrijfsresultaat'; extra.group='Opbrengsten'; }
     else if(RESULTAAT_HINT.test(extra.label)){ ankerKey=null; extra.group='Resultaat'; }
     else { ankerKey='bedrijfsresultaat'; extra.group='Kosten'; }
@@ -1962,9 +1987,12 @@ function buildSections(r,ctx){
     const side=(rows,label)=>{
       if(!rows.length) return '';
       const isTot=x=>x.totaalregel===true||TOTAL_ROW.test(String(x.label||''));
-      const detail=rows.filter(x=>!isTot(x));
+      /* Klantcorrectie: geen informatieve nulregels (bijv. "Bijkomende kosten —
+         Geen specifieke bijkomende kosten uitgesplitst...") tonen in bronnen/
+         aanwendingen — alleen echte, optelbare bedragregels horen in de tabel. */
+      const detail=rows.filter(x=>!isTot(x)&&isNum(x.bedrag));
       const totRow=rows.find(isTot);
-      const computed=detail.length&&detail.every(x=>isNum(x.bedrag))?detail.reduce((s,x)=>s+x.bedrag,0):null;
+      const computed=detail.length?detail.reduce((s,x)=>s+x.bedrag,0):null;
       const totVal=totRow&&isNum(totRow.bedrag)?totRow.bedrag:computed;
       const totLbl=totRow&&hasVal(totRow.label)?totRow.label:'Totaal';
       const totSub=totRow?'':'berekend op basis van bronregels';
