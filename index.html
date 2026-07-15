@@ -1152,6 +1152,17 @@ function panel(title,text,tint=true){
   const ps=String(text).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p class="para">${esc(x)}</p>`).join('');
   return `<div class="panel${tint?' tint':''}"><div class="panel-h">${esc(title)}</div>${ps}</div>`;
 }
+/* Vouwt korte, losse kernpunten (voorheen decoratieve bullets zonder vaste
+   betekenis) samen tot lopende zinnen, zodat ze als normale tekst binnen een
+   panel passen in plaats van als losse gekleurde bolletjes zonder legenda. */
+function sentenceize(items){
+  return A(items).filter(hasVal).map(x=>{
+    const t=String(x).trim();
+    if(!t) return '';
+    const cap=t.charAt(0).toUpperCase()+t.slice(1);
+    return /[.!?]$/.test(cap)?cap:cap+'.';
+  }).filter(Boolean).join(' ');
+}
 /* Jaartal + optioneel "(prognose)"/"(structureel)"-achtervoegsel apart
    opmaken (zie table.t.fin th .periodtag) — alleen gebruikt voor de
    financiële-analysetabellen (periodTag:true), niet voor gewone tabelkoppen. */
@@ -1883,9 +1894,11 @@ function buildSections(r,ctx){
       /* Historie/verdienmodel/strategie in één compact panel i.p.v. drie aparte
          panels — bespaart kopregels en padding, houdt hoofdstuk 2 op één pagina. */
       const hvs=[hasVal(ac.historie)&&`Historie: ${ac.historie}`,hasVal(ac.verdienmodel)&&`Verdienmodel: ${ac.verdienmodel}`,hasVal(ac.strategie)&&`Strategie: ${ac.strategie}`].filter(Boolean).join('\n\n');
-      if(hvs) blocks.push(panel('Onderneming',hvs));
       const kp=A(ac.kernpunten).filter(hasVal).slice(0,4);
-      if(kp.length) blocks.push(bulletBlocks(kp));
+      /* Kernpunten zijn geen losse gekleurde bullets zonder vaste betekenis:
+         verwerkt als lopende zin binnen hetzelfde Onderneming-panel. */
+      const ondernemingTekst=[hvs,sentenceize(kp)].filter(hasVal).join('\n\n');
+      if(ondernemingTekst) blocks.push(panel('Onderneming',ondernemingTekst));
     }
     /* Layoutregel 11: net als "Management" krijgt "Markt en afnemers" bewust
        GEEN eigen secbar-kop meer (dat zou een eigen, pagina-splitsbare groep
@@ -1894,9 +1907,11 @@ function buildSections(r,ctx){
        gekoppeld, zodat markt+management altijd samen met die inhoud op
        dezelfde pagina blijven of samen doorschuiven. */
     if(hasVal(mk.tekst)||A(mk.afhankelijkheden).filter(hasVal).length){
-      if(hasVal(mk.tekst)) blocks.push(panel('Markt en afnemers',mk.tekst));
       const afh=A(mk.afhankelijkheden).filter(hasVal).slice(0,3);
-      if(afh.length) blocks.push(bulletBlocks(afh,'orange'));
+      /* Afhankelijkheden zijn geen losse oranje bullets zonder legenda:
+         verwerkt als lopende zin binnen hetzelfde Markt en afnemers-panel. */
+      const marktTekst=[mk.tekst,sentenceize(afh)].filter(hasVal).join('\n\n');
+      if(marktTekst) blocks.push(panel('Markt en afnemers',marktTekst));
     }
     const team=A(mg.team).filter(x=>hasVal(x?.naam));
     if(team.length){
@@ -2088,7 +2103,7 @@ function buildSections(r,ctx){
         ken.map(x=>`<tr><td>${esc(x.ratio)}</td><td>${cell(x.periode)}</td><td class="num">${cell(x.waarde)}</td><td>${cell(x.toelichting||x.norm)}</td></tr>`)));
     }
     const kp=A(bc.kernpunten).filter(hasVal).slice(0,3);
-    if(kp.length) blocks.push(bulletBlocks(kp));
+    if(kp.length){ blocks.push(secbarB('Kernpunten')); blocks.push(bulletBlocks(kp)); }
     add("Betaalcapaciteit & ratio's",'Betaalcapaciteit',"Betaalcapaciteit & ratio's",blocks);
   }
 
