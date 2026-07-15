@@ -323,6 +323,7 @@ SECTIES (vul alleen wat de bron ondersteunt)
 - activiteiten_onderneming: historie, bedrijfsactiviteiten, verdienmodel, strategie, omzetstromen, operationele aandachtspunten.
 - markt_en_omgeving: marktpositie, concurrentie, trends, afnemers, leveranciers, afhankelijkheden, seizoenspatroon, debiteuren-/crediteurenrisico.
 - management_en_organisatie: ondernemer(s) en team met rol en achtergrond/ervaring, externe adviseurs, KPI's/rapportages.
+- Klantcorrectie hoofdstuk 2 (Juridische structuur, activiteiten & strategie): markt_en_omgeving en management_en_organisatie horen inhoudelijk bij ditzelfde hoofdstuk en mogen NOOIT samen een bijna lege vervolgpagina vormen (bijv. een pagina 6 met alleen een paar regels "Markt en afnemers" en "Management"). Is de bron voor deze twee onderdelen kort, schrijf ze dan compact en beknopt (kort tekstblok + maximaal 3-4 bullets elk) zodat ze samen met activiteiten_onderneming binnen hetzelfde hoofdstuk blijven, in plaats van uit te dijen tot een eigen, nauwelijks gevulde vervolgpagina. Is er te weinig broninhoud voor een zelfstandig blok, vat markt en management dan samen in een paar korte zinnen bij activiteiten_onderneming in plaats van ze als aparte, dunne kopjes te tonen.
 - financieringsopzet: kerncijfers, bronnen en aanwendingen, bestaande én nieuwe faciliteiten met condities, bouwdepot/fasering, btw-aspecten, voorwaarden. Vul kerncijfers zo volledig mogelijk voor de cover: gevraagde financiering, totale investering, eigen inbreng (en herkomst), looptijd, rente, aflossingsstructuur (incl. aflossingsvrije periode en start aflossing) en LTV bij vastgoed. Benoem condities kort in de tekst: hoofdsom, rente, looptijd, aflossing, bouwdepot/fasering indien relevant. Bronnen en aanwendingen moeten EXACT op elkaar aansluiten: de som van alle aanwendingsposten (of de totaalregel) moet precies gelijk zijn aan de som van alle bronposten én aan kerncijfers.totale_investering — nooit een verschil laten staan en nooit een btw-post laten wegvallen om op een ronder totaal uit te komen. Gebruik bij voorkeur deze volgorde en posten aan de aanwendingenkant, zonder dat losse componenten en een samenvattende regel dezelfde kosten dubbel tellen: "Koop- en aanneemsom", "Btw over koop- en aanneemsom" (indien van toepassing), "Bijkomende kosten" (of de losse componenten zoals notaris-, taxatie-, advies- en financieringskosten), "Btw over bijkomende kosten", "Totale investering" als totaalregel. Toon nooit een subtotaal dat posten dubbel of onvolledig telt: kies óf de samenvattende regel óf de losse componenten, nooit beide naast elkaar voor hetzelfde bedrag.
 - object_en_vastgoed: adres, type object, oppervlakte, taxatiewaarde en taxatiedatum, energielabel, erfpacht, gebruik/verhuur, LTV — als kenmerken-rijen {label, waarde}.
 - financiele_analyse: historische cijfers én prognose — neem ELK jaar op dat de bron voor financiële posten vermeldt, historisch én prognose; laat nooit een jaar volledig weg alleen om het rapport korter te maken — dat is kernwaarheid, geen opvulling die onder een paginabudget mag sneuvelen. resultaten en balans als rijen {label, periode, bedrag}; gebruik consistente labels per periode zodat er een tabel per jaar van te maken is (bijv. label "Omzet" met periode "2024"). Prognosejaren markeren met "(prognose)" in de periode, en een structureel jaar na een eventuele bouw-/overgangsfase duidelijk herkenbaar laten (bijv. "2028 (structureel)"). Bevat de bron een volledige financiële analyse, neem dan VOLLEDIG en gestructureerd op — niet alleen de kerncijfers omzet, resultaat na belasting, liquide middelen en eigen vermogen: balans met (voor zover aanwezig) vaste activa, vlottende activa, liquide middelen, totaal activa, eigen vermogen, langlopende schulden, kortlopende schulden en totaal passiva; resultaten met (voor zover aanwezig) omzet, bedrijfsopbrengsten, kosten van grond- en hulpstoffen, personeelsbeloningen, afschrijvingen, overige bedrijfskosten, bedrijfsresultaat, financiële baten en lasten, resultaat voor belasting, belasting en resultaat na belasting — geef deze kostensoorten apart weer zoals de bron ze presenteert en vat ze nooit samen tot één generieke post "Kosten" als de bron ze uitsplitst. Gebruik voor de kernposten bij voorkeur EXACT deze labels, zodat het rapport ze herkent en netjes groepeert: balans — "Materiële vaste activa" (of "Vaste activa" als de bron geen onderscheid maakt), "Vlottende activa", "Liquide middelen", "Totaal activa", "Eigen vermogen", "Langlopende schulden", "Kortlopende schulden", "Totaal passiva"; resultaten — "Omzet", "Bedrijfsopbrengsten", "Kosten van grond- en hulpstoffen", "Personeelsbeloningen", "Afschrijvingen", "Overige bedrijfskosten", "Totaal bedrijfskosten" (optionele subtotaalregel, alleen als de bron dit als apart totaal geeft — nooit naast de losse kostenposten tellen als de bron geen expliciet subtotaal geeft), "Bedrijfsresultaat", "Financiële baten en lasten", "Resultaat voor belasting", "Belasting", "Resultaat na belasting" — gebruik "Kosten" alleen nog als de bron de kosten niet verder uitsplitst. Markeer totaal-, subtotaal- en saldoregels (zoals "Totaal activa", "Totaal passiva") herkenbaar met exact dat label, zodat deze in het rapport als totaalregel getoond kunnen worden. Bevat de bron een verdere onderverdeling van een kernpost (bijv. materiële/immateriële/financiële vaste activa, of een specifieke kostensoort), neem die dan op als extra, apart gelabelde rij mét het eigen brondetail-label, naast (niet in plaats van) de samengevatte hoofdpost als de bron beide niveaus vermeldt — zo'n detailregel wordt in het rapport automatisch als aanvullende rij getoond en gaat nooit verloren. Bevat de bron alleen enkele kerncijfers (geen volledige balans/resultatenrekening), neem dan ook alleen die kerncijfers op — verzin nooit ontbrekende posten of lege rijen om de tabel voller te laten lijken. Vul observaties met 4 tot 6 sterke, feitelijke observaties die minimaal ingaan op: omzetontwikkeling, marge/resultaatontwikkeling, ontwikkeling eigen vermogen, liquiditeitspositie, schuldpositie, en (indien van toepassing) de tijdelijke impact van een bouw-/overgangsfase, het structurele jaar en de betekenis daarvan voor de financier. Elke observatie noemt een concreet cijfer, bedrag of percentage uit de tabellen (bijv. "de omzet groeit van € 78.510 in 2024 naar € 210.000 in het structurele jaar 2028") — een observatie zonder cijfermatige onderbouwing is niet toegestaan. Controleer bij elke observatie dat de gebruikte trendrichting (stijgt/groeit/neemt toe versus daalt/neemt af) daadwerkelijk klopt met de genoemde cijfers: schrijf NOOIT "stijgt van € X naar € Y" als € Y lager is dan € X (of omgekeerd "daalt" als Y hoger is dan X) — dat is een rekenfout die de geloofwaardigheid van het hele rapport ondermijnt. Is er een dip in een tussenliggend jaar (bijv. door een bouw-/overgangsfase) gevolgd door herstel, beschrijf dat dan expliciet zo, bijvoorbeeld: "het resultaat na belasting ligt in de prognosejaren lager dan de sterke historische jaren, maar herstelt van € 12.870 in 2026 naar € 28.948 in 2028" — in plaats van één enkele stijgt/daalt-claim over de hele periode die de tussenliggende cijfers tegenspreekt. Vul ratios (DSCR, Debt/EBITDA, solvabiliteit, rentabiliteit, kasstroom, rente- en aflossingsruimte) als de bron dit draagt; deze kengetallen worden in het rapport getoond in het hoofdstuk Betaalcapaciteit & ratio's (samen met betaalcapaciteit.kengetallen, zonder dubbeling) — herhaal ze daarom niet nogmaals als aparte tabel in de financiële-analysetekst zelf. BELANGRIJK — nooit hetzelfde bedrag verzinnen voor verschillende posten: omzet, bedrijfsopbrengsten, kosten, bedrijfsresultaat, financiële baten en lasten, resultaat voor belasting, belasting, resultaat na belasting, vaste activa, vlottende activa, liquide middelen, totaal activa, eigen vermogen, langlopende schulden, kortlopende schulden en totaal passiva zijn voor elk jaar in beginsel afzonderlijke, wezenlijk andere bedragen. Bevat de bron voor een bepaald jaar geen gegevens voor een bepaalde post, laat die rij dan voor dat jaar gewoon WEG in plaats van een ander cijfer te herhalen of te kopiëren naar die post — een lege/ontbrekende post is altijd beter dan een gefabriceerd of gedupliceerd bedrag. Komen twee posten met exact hetzelfde bedrag in hetzelfde jaar voor in de bron (bijv. resultaat na belasting dat toevallig gelijk is aan de liquide middelen, of bedrijfsresultaat dat gelijk is aan resultaat voor belasting bij nihil financiële baten/lasten), dan is dat een legitieme samenloop — neem BEIDE cijfers gewoon over zoals de bron ze vermeldt; laat nooit een cijfer weg of vervang het door een streepje alleen omdat het toevallig gelijk is aan een ander cijfer. Dit geldt ook voor bedragen van € 0 (bijv. geen financiële baten/lasten of geen belasting in een jaar): een echte nul uit de bron blijft gewoon staan als 0, ook als andere posten toevallig ook 0 zijn. Alleen bij drie of meer wezenlijk verschillende posten met exact hetzelfde (niet-nul) bedrag in hetzelfde jaar is voorzichtigheid op zijn plaats: controleer dan of dat werkelijk zo in de bron staat, en neem anders alleen de post over die de bron daadwerkelijk vermeldt. Toon nooit een streepje in de financiële tabel voor een post waarvan het bedrag wél in de bron staat. Controleer specifiek nogmaals afschrijvingen, overige bedrijfskosten, totaal bedrijfskosten, bedrijfsresultaat, resultaat voor belasting en resultaat na belasting per jaar tegen de bron: verschuif nooit een bedrag naar een ander jaar, trek een bedrag nooit zelf door naar een jaar waarvoor de bron geen cijfer geeft, en dupliceer nooit een bedrag van het ene jaar naar het andere als de bron voor dat andere jaar een ander bedrag vermeldt.
@@ -341,7 +342,7 @@ AFBEELDINGEN UIT DE BRON
 Je kunt beeldmateriaal uit een PDF niet als afbeelding opnieuw aanleveren. Registreer daarom elk relevant beeld (rendering, objectfoto, plattegrond, bouwplanning, grafiek, schema) in bronrapport.gevonden_afbeeldingen met een korte, concrete omschrijving. Organogrammen reconstrueer je als data (zie boven). Feitelijke informatie die alleen in beelden staat (adres op een rendering, oppervlaktes op een plattegrond) verwerk je in de betreffende sectie als tekst of kenmerk.
 
 SCHRIJFSTIJL
-Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld. Schrijf uitsluitend Nederlands: geen Engelse restwoorden zoals "expected", "fluctuations", "report", "source" of "business case" — gebruik "verwacht", "schommelingen", enzovoort. Verboden in de output: "undefined", "null", "NaN", "deelnemers wordt aanbevolen", "goedgekeurd de aanvraag", "verifiren" (schrijf "verifiëren"), "Risicos" (schrijf "risico's"), "continuiteit" (schrijf "continuïteit"), "Realizatie" (schrijf "realisatie"), "be%C3%AFnvloedt" of andere URL-encoded tekens in lopende tekst (schrijf "beïnvloedt" — dit duidt op een encoderingsfout), "privgedeelte" (schrijf "privégedeelte"), "formaliteren" (schrijf "formaliseren"), "persoonlijke borgstelling" als de bron alleen hoofdelijke aansprakelijkheid noemt, "volledig in gebruik" bij nieuwbouw als de bron een latere oplevering noemt. Verboden restteksten en taalfouten: "Risicomatrix met mitigatie: 1" of vergelijkbare kop-plus-cijfer-restanten (schrijf de kop zonder los cijfer), "betrouwdheid" (schrijf "betrouwbaarheid"), "geprognotciseerd" (schrijf "geprognosticeerd"), "privéswoning" (schrijf "privéwoning"), "mitigaties zijn aanwezig" als inhoudsloze restzin (benoem de mitigant concreet in plaats van deze lege zin). Verboden bij zekerheden: "nog aan te vestigen" (schrijf "te vestigen"), "op te richten eerste hypotheekrecht" (schrijf "te vestigen eerste hypotheekrecht"), "zekerheid dekt volledig" (schrijf een afgewogen formulering met "onder voorbehoud van definitieve vestiging en acceptatie door financier"). Meer taalcorrecties: "Privepersoon" (schrijf "Privépersoon"), "wordt beïnvloedt" (schrijf "wordt beïnvloed"), "rente betalingen" (schrijf het samengesteld: "rentebetalingen"), "overgangsjaar gesloten financiering" (onduidelijke restzin — schrijf in plaats daarvan iets in de trant van "tijdelijk verhoogd door de bouw- en overgangsfase"), "juridische formele aspecten" (schrijf "juridische formaliteiten"). Beschrijf de aflossingsvorm altijd exact zoals de bron die presenteert (bijv. "aflossingsvrij [periode uit de bron], daarna reguliere aflossing"); neem NOOIT aan dat de aflossing annuïtair is tenzij de bron dit woord expliciet gebruikt. GEEN PRIVACYWAARSCHUWINGEN: neem nooit een zin op als "Privacygevoelige gegevens van privépersonen en achterliggende vennootschappen zijn opgenomen" of vergelijkbare privacydisclaimers — dat hoort niet in een financieringsrapport en wordt alleen toegevoegd als de adviseursnotities dit expliciet vragen. Gebruik voor bouwdepot-opnames de term uit de bron (meestal "afgeroepen worden voor verzending/uitbetaling"); vervang dit nooit door "verpand worden" — verpanding is een zekerheidsrecht en betekent iets heel anders dan het opvragen/afroepen van een bouwdepottermijn. Geen dubbele koppen: herhaal een hoofdstuktitel niet als eerste zin van de sectietekst. Let op correcte accenten in Nederlandse woorden (financiële, privé, ratio's). Let op correcte vaktermen ("verzwaring" of "tijdelijke druk", nooit "verzuring"). Vermijd "circa" waar het exacte broncijfer beschikbaar is. Controleer taal en opmaak vóór oplevering: geen slordigheden zoals "wins", "definitive", "Most representatieve ratio", woorden met een losse spatie erin ("gevestig d"), afgebroken woorden of half-Engelse koppen. Gebruik in lopende tekst nooit "aan te reiken" — wel "aanvullend aan te bieden", "mogelijk aanvullend te vestigen" of "nader te bepalen". Meer taalcorrecties: "Personal holding" (schrijf "Persoonlijke holding"), "wordt primair gedekt door" (schrijf "wordt ondersteund door een te vestigen eerste hypotheekrecht"). Gebruik "directeur-grootaandeelhouder" of "dga" uitsluitend als de bron deze term letterlijk gebruikt; noem de betrokkene anders neutraal "ondernemer" of "bestuurder".
+Zakelijk Nederlands in Credion-stijl: helder, professioneel, adviserend, bancair. Korte alinea's, duidelijke bullets. Geen marketingtaal, geen superlatieven, geen wollige AI-taal, geen onnodig juridisch jargon. Behoud de nuance uit de bron; verbeter de taal waar de bron wollig of herhalend is. Het rapport moet voelen alsof een ervaren financieringsadviseur het heeft opgesteld. Schrijf uitsluitend Nederlands: geen Engelse restwoorden zoals "expected", "fluctuations", "report", "source" of "business case" — gebruik "verwacht", "schommelingen", enzovoort. Verboden in de output: "undefined", "null", "NaN", "deelnemers wordt aanbevolen", "goedgekeurd de aanvraag", "verifiren" (schrijf "verifiëren"), "Risicos" (schrijf "risico's"), "continuiteit" (schrijf "continuïteit"), "Realizatie" (schrijf "realisatie"), "be%C3%AFnvloedt" of andere URL-encoded tekens in lopende tekst (schrijf "beïnvloedt" — dit duidt op een encoderingsfout), "privgedeelte" (schrijf "privégedeelte"), "formaliteren" (schrijf "formaliseren"), "persoonlijke borgstelling" als de bron alleen hoofdelijke aansprakelijkheid noemt, "volledig in gebruik" bij nieuwbouw als de bron een latere oplevering noemt. Verboden restteksten en taalfouten: "Risicomatrix met mitigatie: 1" of vergelijkbare kop-plus-cijfer-restanten (schrijf de kop zonder los cijfer), "betrouwdheid" (schrijf "betrouwbaarheid"), "geprognotciseerd" (schrijf "geprognosticeerd"), "privéswoning" (schrijf "privéwoning"), "mitigaties zijn aanwezig" als inhoudsloze restzin (benoem de mitigant concreet in plaats van deze lege zin). Verboden bij zekerheden: "nog aan te vestigen" (schrijf "te vestigen"), "op te richten eerste hypotheekrecht" (schrijf "te vestigen eerste hypotheekrecht"), "zekerheid dekt volledig" (schrijf een afgewogen formulering met "onder voorbehoud van definitieve vestiging en acceptatie door financier"). Meer taalcorrecties: "Privepersoon" (schrijf "Privépersoon"), "wordt beïnvloedt" (schrijf "wordt beïnvloed"), "rente betalingen" (schrijf het samengesteld: "rentebetalingen"), "overgangsjaar gesloten financiering" (onduidelijke restzin — schrijf in plaats daarvan iets in de trant van "tijdelijk verhoogd door de bouw- en overgangsfase"), "juridische formele aspecten" (schrijf "juridische formaliteiten"). Beschrijf de aflossingsvorm altijd exact zoals de bron die presenteert (bijv. "aflossingsvrij [periode uit de bron], daarna reguliere aflossing"); neem NOOIT aan dat de aflossing annuïtair is tenzij de bron dit woord expliciet gebruikt. GEEN PRIVACYWAARSCHUWINGEN: neem nooit een zin op als "Privacygevoelige gegevens van privépersonen en achterliggende vennootschappen zijn opgenomen" of vergelijkbare privacydisclaimers — dat hoort niet in een financieringsrapport en wordt alleen toegevoegd als de adviseursnotities dit expliciet vragen. Gebruik voor bouwdepot-opnames de term uit de bron (meestal "afgeroepen worden voor verzending/uitbetaling"); vervang dit nooit door "verpand worden" — verpanding is een zekerheidsrecht en betekent iets heel anders dan het opvragen/afroepen van een bouwdepottermijn. Geen dubbele koppen: herhaal een hoofdstuktitel niet als eerste zin van de sectietekst. Let op correcte accenten in Nederlandse woorden (financiële, privé, ratio's). Let op correcte vaktermen ("verzwaring" of "tijdelijke druk", nooit "verzuring"). Vermijd "circa" waar het exacte broncijfer beschikbaar is. Controleer taal en opmaak vóór oplevering: geen slordigheden zoals "wins", "definitive", "Most representatieve ratio", woorden met een losse spatie erin ("gevestig d"), afgebroken woorden of half-Engelse koppen. Gebruik in lopende tekst nooit "aan te reiken" — wel "aanvullend aan te bieden", "mogelijk aanvullend te vestigen" of "nader te bepalen". Meer taalcorrecties: "Personal holding" (schrijf "Persoonlijke holding"), "wordt primair gedekt door" (schrijf "wordt ondersteund door een te vestigen eerste hypotheekrecht"). Gebruik "directeur-grootaandeelhouder" of "dga" uitsluitend als de bron deze term letterlijk gebruikt; noem de betrokkene anders neutraal "ondernemer" of "bestuurder". Schrijf nooit een kale opsomming "zekerheden omvatten tweede hypotheek en hoofdelijke aansprakelijkheid" of "hoofdelijke aansprakelijkheid DGA" zonder nuance — een tweede hypotheek, hoofdelijke aansprakelijkheid en borgstelling zijn per definitie AANVULLENDE, niet-primaire zekerheden (tenzij ze al bestaan bij een lopende financiering); formuleer dit altijd met "aanvullend mogelijk", "indien gewenst door financier" of "nader af te stemmen", bijvoorbeeld: "De primaire zekerheid bestaat uit een te vestigen eerste hypotheekrecht. Eventuele aanvullende zekerheden, zoals een tweede hypotheek of borgstelling, zijn nader af te stemmen met de financier."
 
 GEEN DUBBELE UITLEG — ANTI-HERHALING
 Leg de juridische structuur één keer volledig uit in juridische_structuur; verwijs daarna alleen kort ("via de vastgoed-B.V.", "binnen de beschreven groepsstructuur", "tussen de vastgoed-B.V. en de werkmaatschappij"). Herhaal niet telkens opnieuw wie de UBO is, dat de holding 100% houdt, dat de vastgoed-B.V. het pand koopt of dat de werkmaatschappij het pand huurt. Herhaal financieringsdoel, eigen inbreng, LTV, zekerheden, bouwdepot, DSCR, risico's en documentatie niet in meerdere secties met vrijwel dezelfde formulering: de eerste keer volledig, daarna alleen een korte verwijzing als dat voor de onderbouwing nodig is. Wat al in de managementsamenvatting staat, komt later alleen terug in kortere vorm. Controleer vóór oplevering dat dezelfde boodschap niet twee keer vrijwel letterlijk voorkomt.
@@ -695,12 +696,19 @@ function stripKasstroomRegelsUitAanwendingen(fo, warnings) {
 }
 
 /* Klantcorrectie: "eigen inbreng" mag maar één keer als optelbare bronregel
-   voorkomen. Een nadere specificatie (bijv. "eigen inbreng btw-kosten koper")
-   die al onderdeel is van het totaalbedrag eigen inbreng, mag niet nogmaals
-   als aparte, optelbare bron meetellen — anders wordt eigen inbreng dubbel
-   geteld en sluiten bronnen niet meer op aanwendingen aan. De grootste regel
-   geldt als het totaal; kleinere regels worden als toelichting (subtekst)
-   samengevoegd in plaats van los te blijven meetellen. */
+   voorkomen. Twee situaties zijn mogelijk en moeten UIT ELKAAR gehouden worden:
+   (a) een echte dubbeltelling — een totaalregel (bijv. "Eigen inbreng"
+   € 174.880) staat naast een deelspecificatie die daar al in zit (bijv.
+   "Eigen inbreng btw-kosten koper" € 3.530) — dan mag het kleinere bedrag
+   NIET nogmaals meetellen; of (b) een echte, additieve opsplitsing zonder
+   totaalregel (bijv. "Eigen inbreng regulier" € 171.350 + "Eigen inbreng
+   btw-kosten koper" € 3.530, samen € 174.880) — dan MOETEN beide bedragen
+   worden opgeteld, anders "verdwijnt" er geld uit bronnen en sluit de tabel
+   niet meer op de aanwendingen/totale investering. Welke van de twee zich
+   voordoet, kan alleen betrouwbaar worden bepaald door te toetsen tegen het
+   bekende referentietotaal (aanwendingen-totaalregel of
+   kerncijfers.totale_investering) — nooit blind aannemen dat de grootste
+   regel al "het totaal" is. */
 const EIGEN_INBRENG_PAT = /eigen\s+inbreng/i;
 function dedupeEigenInbreng(fo, warnings) {
   const rows = A(fo.bronnen_en_aanwendingen);
@@ -711,19 +719,43 @@ function dedupeEigenInbreng(fo, warnings) {
   const hoofd = sorted[0];
   const subs = sorted.slice(1);
   const subSom = subs.reduce((t, x) => t + x.bedrag, 0);
+  const somAlsOpgeteld = hoofd.bedrag + subSom; // variant B: alle regels samen zijn het totaal
+  const somAlsAlleenHoofd = hoofd.bedrag; // variant A: hoofdregel IS al het totaal, rest is duplicaat
 
-  /* Alleen samenvoegen als aannemelijk is dat de overige regels een subset
-     van het hoofdbedrag zijn (het hoofdbedrag is minstens zo groot als de
-     som van de rest) — anders geen aanname, alleen een controlepunt. */
-  if (hoofd.bedrag < subSom) {
-    warnings.push('Controlepunt: er zijn meerdere "eigen inbreng"-regels in bronnen waarvan geen enkele overduidelijk het totaal is; verifieer handmatig of eigen inbreng dubbel wordt geteld.');
-    return;
+  const overigeBronnenSom = rows
+    .filter((x) => x?.type === 'bron' && !x.totaalregel && !eiRows.includes(x) && num(x.bedrag) !== null)
+    .reduce((t, x) => t + x.bedrag, 0);
+  const aanwRows = rows.filter((x) => x?.type === 'aanwending' && num(x.bedrag) !== null);
+  const aanwTotRow = aanwRows.find((x) => x.totaalregel);
+  const aanwDetailSom = aanwRows.filter((x) => !x.totaalregel).reduce((t, x) => t + x.bedrag, 0);
+  const referentie = aanwTotRow ? aanwTotRow.bedrag : (num(fo.kerncijfers?.totale_investering) ?? (aanwDetailSom > 0 ? aanwDetailSom : null));
+
+  let optellen;
+  if (referentie !== null && referentie > 0) {
+    const diffOpgeteld = Math.abs(overigeBronnenSom + somAlsOpgeteld - referentie);
+    const diffAlleenHoofd = Math.abs(overigeBronnenSom + somAlsAlleenHoofd - referentie);
+    optellen = diffOpgeteld <= diffAlleenHoofd;
+  } else {
+    /* Geen referentietotaal bekend om tegen te toetsen: veiligste keuze is
+       optellen (bedrag "kwijtraken" is een grotere fout dan een klein
+       theoretisch dubbeltellingsrisico), tenzij het hoofdbedrag al
+       overduidelijk (ruim) groter is dan de rest samen. */
+    optellen = hoofd.bedrag < subSom * 1.5;
   }
 
   fo.bronnen_en_aanwendingen = rows.filter((x) => !subs.includes(x));
   const specificatie = subs.map((x) => `${x.label} (€ ${Math.round(x.bedrag).toLocaleString('nl-NL')})`).join(', ');
-  hoofd.toelichting = [hoofd.toelichting, `Waarvan: ${specificatie}.`].filter(hasTxt).join(' ');
-  warnings.push(`Eigen inbreng stond in meerdere optelbare bronregels (${eiRows.map((x) => x.label).join(', ')}), waardoor eigen inbreng dubbel werd geteld. Samengevoegd tot één bronregel "${hoofd.label}"; de specificatie staat nu als toelichting, niet meer als aparte optelregel.`);
+  const eiLabels = eiRows.map((x) => x.label).join(', ');
+
+  if (optellen) {
+    hoofd.bedrag = somAlsOpgeteld;
+    if (!/totaal/i.test(hoofd.label)) hoofd.label = `${hoofd.label} totaal`;
+    hoofd.toelichting = [hoofd.toelichting, `Waarvan: ${specificatie}.`].filter(hasTxt).join(' ');
+    warnings.push(`Eigen inbreng stond opgesplitst in meerdere bronregels zonder totaalregel (${eiLabels}), waardoor bronnen niet op aanwendingen aansloten. De bedragen zijn opgeteld tot één bronregel "${hoofd.label}" (€ ${Math.round(hoofd.bedrag).toLocaleString('nl-NL')}); de specificatie staat als toelichting.`);
+  } else {
+    hoofd.toelichting = [hoofd.toelichting, `Waarvan: ${specificatie}.`].filter(hasTxt).join(' ');
+    warnings.push(`Eigen inbreng stond in meerdere optelbare bronregels (${eiLabels}), waarbij de kleinere regel(s) al onderdeel waren van het totaalbedrag "${hoofd.label}" (€ ${Math.round(hoofd.bedrag).toLocaleString('nl-NL')}). Samengevoegd tot die ene bronregel; de specificatie staat als toelichting, niet meer als aparte optelregel.`);
+  }
 }
 
 /* Aanwendingen moeten exact aansluiten op kerncijfers.totale_investering,
@@ -808,6 +840,23 @@ function enforceFinalChecklist(r, warnings) {
   }
   if (!hasPartijen && (hasOrg || hasStructTekst)) {
     warnings.push('Eindcontrole: partijentabel is leeg terwijl er wel een structuurschema is; controleer of alle betrokken partijen zijn opgenomen.');
+  }
+
+  /* Klantcorrectie: markt_en_omgeving en management_en_organisatie horen bij
+     hoofdstuk 2 (Juridische structuur, activiteiten & strategie) en mogen
+     samen geen bijna lege vervolgpagina vormen. Een grove woordtelling van
+     beide blokken samen is de enige signaal dat generate-report.js hierover
+     kan geven (de daadwerkelijke pagina-opmaak zit in de renderer) — is dit
+     samen erg dun terwijl beide toch als aparte kopjes worden getoond, dan is
+     de kans op zo'n bijna lege vervolgpagina reëel en wordt dit gemeld. */
+  const woordenTellen = (...teksten) => teksten.filter(hasTxt).join(' ').split(/\s+/).filter(Boolean).length;
+  const mo = r.markt_en_omgeving || {};
+  const mgt = r.management_en_organisatie || {};
+  const moWoorden = woordenTellen(mo.tekst, mo.afnemers, mo.leveranciers, mo.concurrentie_en_trends, ...A(mo.afhankelijkheden));
+  const mgtWoorden = woordenTellen(mgt.tekst, ...A(mgt.kernpunten));
+  const heeftInhoud = moWoorden > 0 || mgtWoorden > 0 || A(mgt.team).length > 0;
+  if (heeftInhoud && moWoorden + mgtWoorden < 70) {
+    warnings.push('Eindcontrole: "Markt en afnemers" en "Management" zijn samen zeer beknopt; controleer vóór export of dit geen bijna lege vervolgpagina van hoofdstuk 2 oplevert — combineer waar nodig met activiteiten_onderneming op dezelfde pagina.');
   }
 
   /* Hoofdstuk 8 (Voorwaarden & documentatie) mag niet te mager blijven: bij
@@ -1292,6 +1341,32 @@ function deepCleanStrings(node, warnings, path = '') {
           v = gefilterd.join(' ').replace(/\s{2,}/g, ' ').trim();
           fragmentVerwijderd = true;
         }
+      }
+      /* 2b — Klantcorrectie: dezelfde afgebroken-opsommingsaankondiging
+         ("(o.a."/"e.d."/"enz."/"etc." zonder vervolg) mag niet alleen aan
+         het EINDE van het hele tekstveld worden gecorrigeerd (zie hierboven),
+         maar ook wanneer dit MIDDEN in een langer tekstblok voorkomt — bijv.
+         "De ratio's en de toelichting op de terugbetaalcapaciteit (o.a.
+         Overigens is de solvabiliteit..." Elke afzonderlijke zin wordt
+         daarom nogmaals op een dergelijk afgebroken zinseinde gecontroleerd,
+         niet alleen de zin die toevallig laatste in het veld is. Zo'n
+         halve zin wordt nooit geëxporteerd: de aankondiging wordt verwijderd
+         en de zin netjes met een punt afgesloten. */
+      const TRAILING_OPSOMMING_RE = /\s*\(?\s*(o\.a\.|e\.d\.|enz\.|etc\.)\s*$/i;
+      const zinnenNaLead = v.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9(])/);
+      let halveZinGecorrigeerd = false;
+      const zinnenSchoon = zinnenNaLead.map((zin) => {
+        const t = zin.trim();
+        if (t.length > 15 && TRAILING_OPSOMMING_RE.test(t)) {
+          halveZinGecorrigeerd = true;
+          return t.replace(TRAILING_OPSOMMING_RE, '.');
+        }
+        return zin;
+      });
+      if (halveZinGecorrigeerd) {
+        v = zinnenSchoon.join(' ').replace(/\s{2,}/g, ' ').trim();
+        const w = 'Een halve zin met een afgebroken opsommingsaankondiging (bijv. "(o.a." zonder vervolg) is midden in een tekstblok gecorrigeerd tot een volledige zin; controleer of de zin nog logisch afsluit.';
+        if (!warnings.includes(w)) warnings.push(w);
       }
       if (fragmentVerwijderd) {
         const w = 'Een afgebroken zinfragment (bijv. een restant van een afgekapt bedrag of jaartal) is uit de rapporttekst verwijderd; controleer dit hoofdstuk op volledigheid.';
@@ -1979,6 +2054,56 @@ function enforceZekerhedenConsistentie(r, warnings) {
   check('Aanvullende zekerheid', /aanvullende\s+zekerhe(id|den)/i);
 }
 
+/* Klantcorrectie: een tweede hypotheek, hoofdelijke aansprakelijkheid of
+   borgstelling is per definitie een AANVULLENDE, niet-primaire zekerheid —
+   die mag nooit als definitief/al gevestigd gepresenteerd worden (status
+   "gevestigd", of een kale opsomming "zekerheden omvatten X en Y" zonder
+   enige nuance), tenzij het uitdrukkelijk om een BESTAANDE zekerheid van een
+   lopende financiering gaat. Dit wordt hier hard gecorrigeerd naar de
+   voorzichtige standaardvocabulaire (status "aanvullend aan te bieden" +
+   een nuancerende toelichting "aanvullend mogelijk, nader af te stemmen met
+   de financier indien gewenst"), in plaats van alleen te waarschuwen. */
+const AANVULLENDE_ZEKERHEID_RE = /tweede\s+hypotheek|hoofdelijke\s+aansprakelijkheid|\bborgstelling\b/i;
+const ZEKERHEID_NUANCE_RE = /nader\s+af\s+te\s+stemmen|indien\s+(door\s+)?(de\s+)?financier\s+(ge)?w[ei]nst|aanvullend\s+(aan\s+te\s+bieden|mogelijk)|voorwaardelijk|nog\s+te\s+formaliseren/i;
+const ZEKERHEID_BESTAAND_CONTEXT_RE = /bestaand(e)?|reeds\s+gevestigd|lopende\s+financiering/i;
+function enforceAanvullendeZekerhedenNuance(r, warnings) {
+  const zr = r.zekerheden_en_risico || {};
+  const rows = A(zr.zekerheden);
+  let gewijzigd = false;
+  for (const z of rows) {
+    if (!z || !hasTxt(z.zekerheid) || !AANVULLENDE_ZEKERHEID_RE.test(z.zekerheid)) continue;
+    const context = `${z.zekerheid} ${z.toelichting || ''}`;
+    if (ZEKERHEID_BESTAAND_CONTEXT_RE.test(context)) continue; // legitiem bestaande zekerheid: niet aanpassen
+    if (/^gevestigd$/i.test(String(z.status || '').trim())) {
+      z.status = 'aanvullend aan te bieden';
+      gewijzigd = true;
+    }
+    if (!ZEKERHEID_NUANCE_RE.test(context)) {
+      z.toelichting = [z.toelichting, 'Aanvullend mogelijk, nader af te stemmen met de financier indien gewenst.'].filter(hasTxt).join(' ');
+      gewijzigd = true;
+    }
+  }
+  if (gewijzigd) {
+    warnings.push('Eén of meer aanvullende zekerheden (tweede hypotheek/hoofdelijke aansprakelijkheid/borgstelling) waren als definitief geformuleerd zonder nuance; status en/of toelichting zijn aangepast naar "aanvullend aan te bieden"/"nader af te stemmen met de financier" — verifieer dit tegen de bron.');
+  }
+
+  /* Kale opsomming "zekerheden omvatten X en Y" in vrije tekst nooit als
+     harde, definitieve claim laten staan als X/Y een aanvullende zekerheid
+     betreft — herformuleer hard naar een voorzichtige variant. */
+  for (const veld of ['tekst', 'dekkingspositie']) {
+    if (!hasTxt(zr[veld])) continue;
+    const voor = zr[veld];
+    const na = voor.replace(/\b(?:aanvullende\s+)?zekerheden\s+omvatten\s+([^.;\n]+)/gi, (m, rest) => {
+      if (!AANVULLENDE_ZEKERHEID_RE.test(rest) || ZEKERHEID_NUANCE_RE.test(rest)) return m;
+      return `Eventuele aanvullende zekerheden omvatten mogelijk ${rest}, nader af te stemmen met de financier`;
+    });
+    if (na !== voor) {
+      zr[veld] = na;
+      warnings.push(`Kale opsomming van zekerheden in zekerheden_en_risico.${veld} genuanceerd (aanvullende zekerheden zijn mogelijk/nader af te stemmen, geen definitieve claim) — verifieer dit tegen de bron.`);
+    }
+  }
+}
+
 /* Geen privégegevens of brondata-dump als losse slotinformatie. */
 const PERSOONSGEGEVENS_LABEL_RE = /geboortedatum|geboren\s+op|privé[- ]?adres|woonadres|nationaliteit|paspoortnummer|\bbsn\b/i;
 function enforceNoPersonalDataDump(r, internal) {
@@ -2422,6 +2547,7 @@ function enforceQuality(r, vandaag, opts = {}) {
      geen persoonsgegevens-dump als losse slotinformatie. */
   enforceCoverEntities(r, warnings);
   enforceZekerhedenConsistentie(r, warnings);
+  enforceAanvullendeZekerhedenNuance(r, warnings);
   enforceNoPersonalDataDump(r, internal);
 
   /* 9b — eindcontrole (punt 9): laatste controlerende check vóór export. */
