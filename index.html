@@ -1869,7 +1869,16 @@ function buildSections(r,ctx){
     const mk=r.markt_en_omgeving||{};
     const mg=r.management_en_organisatie||{};
     if(hasVal(ac.tekst)||hasVal(ac.historie)||hasVal(ac.verdienmodel)||hasVal(ac.strategie)||A(ac.kernpunten).filter(hasVal).length){
-      blocks.push(secbarB('Activiteiten, verdienmodel & strategie'));
+      /* Layoutregel (klantcorrectie): GEEN eigen secbar-kop meer voor
+         "Activiteiten, verdienmodel & strategie" — dat zou een eigen,
+         pagina-splitsbare groep vormen die als bijna lege vervolgpagina kan
+         eindigen (precies "Activiteiten..." alleen op een nieuwe pagina,
+         terwijl Betrokken partijen/Bestuur nog ruimte over hadden). Een
+         lichte inline kop (net als bij Bestuur en tekenbevoegdheid) houdt dit
+         blok in dezelfde plaatsingsgroep als het voorgaande (structuurschema/
+         partijentabel/bestuur), zodat ze altijd samen op een pagina staan of
+         samen doorschuiven. */
+      blocks.push(`<div class="panel-h" style="margin:3mm 0 1mm 0.5mm">Activiteiten, verdienmodel & strategie</div>`);
       blocks.push(paraBlocks(ac.tekst));
       /* Historie/verdienmodel/strategie in één compact panel i.p.v. drie aparte
          panels — bespaart kopregels en padding, houdt hoofdstuk 2 op één pagina. */
