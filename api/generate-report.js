@@ -906,6 +906,25 @@ function enforceFinalChecklist(r, warnings) {
     }
   }
 
+  /* Klantcorrectie: financiële analyse (resultatenrekening + balans) mag
+     nooit stilzwijgend volledig leeg blijven terwijl de bron duidelijk
+     financiële cijfers bevat, of terwijl dit een volwaardig financierings-
+     memorandum betreft (dat rapporttype vereist een uitgebreide financiële
+     analyse). Een volledig lege sectie hier is vrijwel altijd een teken van
+     een onvolledige generatie (bijv. het model liep tegen het output-
+     tokenbudget aan en liet deze sectie leeg om binnen budget toch een
+     schemageldig antwoord te geven) — dit wordt daarom als kritiek
+     controlepunt gemeld, niet als een stille, geldige lege tabel. */
+  const faVolledigLeeg = !A(r.financiele_analyse?.resultaten).length && !A(r.financiele_analyse?.balans).length;
+  if (faVolledigLeeg) {
+    const bronTxt = JSON.stringify([r.bronrapport?.hoofdstukken, r.coverage_check?.bronhoofdstukken]).toLowerCase();
+    const bronHeeftFinancieel = /jaarrekening|resultatenrekening|balans|winst-?\s*en\s*-?\s*verliesrekening|financi[eë]le\s+cijfers/i.test(bronTxt);
+    const isVolwaardig = r.metadata?.rapport_type === 'volwaardig_financieringsmemorandum';
+    if (bronHeeftFinancieel || isVolwaardig) {
+      warnings.push('KRITIEKE EINDCONTROLE: financiële analyse (resultatenrekening én balans) is volledig leeg, terwijl de bron financiële cijfers lijkt te bevatten en/of dit een volwaardig financieringsmemorandum betreft. Dit duidt vrijwel zeker op een onvolledige generatie (bijv. door een tokenbudgetlimiet) — regenereer het rapport of vul deze sectie handmatig aan; verstuur dit rapport niet in deze vorm.');
+    }
+  }
+
   const finRows = [...A(r.financiele_analyse?.resultaten), ...A(r.financiele_analyse?.balans)]
     .filter((x) => hasTxt(x?.label) && hasTxt(x?.periode) && num(x?.bedrag) !== null);
   if (r.metadata?.rapport_type !== 'compact_intake' && finRows.length && new Set(finRows.map((x) => x.periode)).size < 2) {
@@ -2605,11 +2624,21 @@ async function createResponse(client, model, content) {
     /* Met Fluid Compute AAN (gratis instelling, ook op Hobby — zie
        maxDuration hieronder) is de functietijdlimiet 300s in plaats van de
        standaard 10s. Generatietijd schaalt ongeveer lineair met het aantal
-       output-tokens; 28000 geeft ruimte voor een volledig financierings-
-       memorandum inclusief de uitgebreide financiële analyse, met nog altijd
-       marge tegen de 300s-limiet. Staat Fluid Compute uit, verlaag dit dan
-       weer naar circa 15000-18000 om binnen 60s te blijven. */
-    max_output_tokens: 28000,
+       output-tokens. Klantcorrectie: bij een volwaardig memorandum kwam de
+       financiële analyse (resultatenrekening/balans) soms volledig leeg terug
+       terwijl de JSON verder geldig was — een teken dat het model tegen het
+       output-tokenbudget aanliep en secties liet vallen om binnen budget een
+       schemageldig antwoord af te ronden (strict-mode dwingt alle top-level
+       velden af, dus het model "bespaart" dan op array-inhoud in plaats van
+       de JSON ongeldig te laten worden). Het budget stond op 28000, vrij krap
+       voor een volledig financieringsmemorandum inclusief uitgebreide
+       financiële analyse; nu verhoogd naar 40000 voor meer marge. Dat blijft
+       ruim binnen de 300s-limiet zolang de generatietijd inderdaad ongeveer
+       lineair schaalt (28000 tokens liet al marge over). Staat Fluid Compute
+       uit, verlaag dit dan naar circa 15000-18000 om binnen 60s te blijven —
+       met dat lagere budget is de kans op een leeg gebleven sectie bij een
+       lang brondocument wel weer groter. */
+    max_output_tokens: 40000,
     text: {
       format: {
         type: 'json_schema',
