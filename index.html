@@ -731,10 +731,21 @@ function cleanTextForReport(value){
     .replace(/\bnieuw\s+financial\s+lease\b/gi,'nieuwe financial lease')
     .replace(/\bStructurele\s+dubbel(?:e)?\s+woonlasten\b/gi,'Tijdelijke dubbele huisvestingslasten')
     .replace(/\bbetaaldcapaciteit\b/gi,'betaalcapaciteit')
-    .replace(/\bverschil\s+btw-teruggave\s+en\s+financieringsbedrag\s+woning\b/gi,'verwerking van btw-teruggave binnen de financieringsopzet');
+    .replace(/\bverschil\s+btw-teruggave\s+en\s+financieringsbedrag\s+woning\b/gi,'verwerking van btw-teruggave binnen de financieringsopzet')
+    .replace(/\bSubstantiëel\b/g,'Substantieel')
+    .replace(/\bsubstantiëel\b/g,'substantieel')
+    .replace(/\bRepresentatievelijkste\b/g,'Meest representatieve')
+    .replace(/\brepresentatievelijkste\b/g,'meest representatieve')
+    .replace(/\bNieuwbouwbedrijfspand\b/g,'Nieuwbouw bedrijfspand')
+    .replace(/\bnieuwbouwbedrijfspand\b/g,'nieuwbouw bedrijfspand');
 }
 const esc = v => cleanTextForReport(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const hasVal = v => v!==null && v!==undefined && String(v).trim()!=='' && !['null','undefined','NaN','[object Object]'].includes(String(v).trim());
+/* "N.v.t.", "n.v.t", "nvt" en "niet van toepassing" zijn geen inhoudelijke
+   waarde maar een placeholder voor "onbekend" — deze mogen nooit in een
+   inhoudelijk tekstblok (bijv. management-achtergrond) verschijnen en worden
+   daarom net als 'null'/'undefined' als leeg behandeld. */
+const NA_PLACEHOLDERS = ['null','undefined','nan','[object object]','n.v.t.','n.v.t','nvt','niet van toepassing'];
+const hasVal = v => v!==null && v!==undefined && String(v).trim()!=='' && !NA_PLACEHOLDERS.includes(String(v).trim().toLowerCase());
 const NB = 'Niet vastgesteld op basis van de aangeleverde documentatie.';
 const safeText = (v,fb=NB) => esc(hasVal(v)?v:fb);
 
