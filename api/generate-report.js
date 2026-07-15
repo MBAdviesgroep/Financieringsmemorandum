@@ -1385,6 +1385,24 @@ function checkTotaalBedrijfskostenSom(r, warnings) {
   }
 }
 
+/* De resultatenrekening moet een echte winst-en-verliesrekening zijn (Omzet →
+   kostenuitsplitsing → Bedrijfsresultaat → Resultaat na belasting), geen kale
+   sprong van omzet naar resultaat. Staat er wel een bedrijfsresultaat/resultaat
+   na belasting maar ONTBREEKT elke granulaire kostenpost, dan is de tabel
+   inhoudelijk onvolledig — dit wordt gesignaleerd zodat de adviseur de bron
+   (of een hergeneratie) op de ontbrekende kostenuitsplitsing controleert. */
+function enforceResultatenVolledigheid(r, warnings) {
+  const rows = A(r.financiele_analyse?.resultaten);
+  if (!rows.length) return;
+  const heeftLabel = (re) => rows.some((row) => row && hasTxt(row.label) && re.test(String(row.label).trim()));
+  const heeftEindresultaat = heeftLabel(/^bedrijfsresultaat$|^ebitda?$/i) || heeftLabel(/resultaat[^]*na[^]*belasting/i);
+  if (!heeftEindresultaat) return;
+  const KOSTEN_ONDERDEEL_RE = /kosten\s+van\s+grond-?\s*(en)?\s*hulpstoffen|personeelsbeloningen|personeelskosten|^afschrijvingen\b|overige\s+bedrijfskosten|^(bedrijfs)?kosten$|^bedrijfslasten$/i;
+  if (!heeftLabel(KOSTEN_ONDERDEEL_RE)) {
+    warnings.push('Eindcontrole: de resultatenrekening toont een bedrijfsresultaat/resultaat na belasting maar geen enkele onderliggende kostenpost (kosten van grond-/hulpstoffen, personeelsbeloningen, afschrijvingen, overige bedrijfskosten); vul de kostenuitsplitsing aan vanuit de bron zodat het KOSTEN-blok niet leeg blijft.');
+  }
+}
+
 /* "Bedrijfsopbrengsten" die voor elk jaar exact hetzelfde bedrag toont als
    "Omzet" voegt niets toe (vrijwel altijd is dit dezelfde post twee keer
    gelabeld) — verwijder dan de Bedrijfsopbrengsten-regel en behoud Omzet. */
@@ -1980,6 +1998,7 @@ function enforceQuality(r, vandaag, opts = {}) {
   dedupeOmzetBedrijfsopbrengsten(r, internal);
   ensureTotaalPassiva(r, internal);
   checkTotaalBedrijfskostenSom(r, warnings);
+  enforceResultatenVolledigheid(r, warnings);
 
   /* 4b.i.a2 — objecthoofdstuk: LTV als percentage, geen risicomatrix-tekst. */
   enforceObjectChapterQuality(r, internal);
