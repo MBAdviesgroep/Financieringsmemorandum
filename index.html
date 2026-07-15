@@ -307,6 +307,12 @@ table.t .sub{font-size:7.8pt;color:var(--muted);margin-top:.6mm;line-height:1.35
    afbreken. Bedragen blijven rechts uitgelijnd via de bestaande .num-regels. */
 table.t.fin th{font-size:6.6pt;padding:0 2.2mm 1.4mm}
 table.t.fin td{font-size:8.4pt;padding:1.5mm 2.2mm;line-height:1.3}
+/* Subtiele, niet-drukke labeling van prognose-/structurele jaarkolommen in de
+   financiële tabellen: hetzelfde jaartal, alleen het "(prognose)"/
+   "(structureel)"-achtervoegsel iets lichter en kleiner, zodat historische en
+   toekomstige jaren in één oogopslag te onderscheiden zijn zonder dat de
+   koptekst rommelig oogt. */
+table.t.fin th .periodtag{display:block;font-weight:600;color:var(--muted);letter-spacing:.3px;text-transform:none;font-size:5.6pt;margin-top:.3mm}
 
 /* Bullets & twee kolommen */
 .blist{display:flex;flex-direction:column;gap:1.9mm;margin-bottom:4.5mm}
@@ -1118,9 +1124,17 @@ function panel(title,text,tint=true){
   const ps=String(text).split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`<p class="para">${esc(x)}</p>`).join('');
   return `<div class="panel${tint?' tint':''}"><div class="panel-h">${esc(title)}</div>${ps}</div>`;
 }
-function tableBlocks(headers,rowHtmls,{total='',chunk=14,protect=false,cls=''}={}){
+/* Jaartal + optioneel "(prognose)"/"(structureel)"-achtervoegsel apart
+   opmaken (zie table.t.fin th .periodtag) — alleen gebruikt voor de
+   financiële-analysetabellen (periodTag:true), niet voor gewone tabelkoppen. */
+function periodHeaderLabel(label){
+  const m=String(label).match(/^(.*?)\s*(\((?:prognose|structureel)\))$/i);
+  if(!m) return esc(label);
+  return `${esc(m[1])}<span class="periodtag">${esc(m[2])}</span>`;
+}
+function tableBlocks(headers,rowHtmls,{total='',chunk=14,protect=false,cls='',periodTag=false}={}){
   if(!rowHtmls.length) return [];
-  const ths=headers.map(h=>`<th class="${h.num?'num':''}">${esc(h.label)}</th>`).join('');
+  const ths=headers.map(h=>`<th class="${h.num?'num':''}">${h.num&&periodTag?periodHeaderLabel(h.label):esc(h.label)}</th>`).join('');
   const out=[];
   for(let i=0;i<rowHtmls.length;i+=chunk){
     const last=i+chunk>=rowHtmls.length;
@@ -1234,6 +1248,9 @@ function pivotBlocks(rows,firstCol){
    activa") komt daardoor terecht als eigen, apart getoonde regel in plaats van
    stilzwijgend te worden samengevoegd met of overschreven door de hoofdpost. */
 const BALANS_ORDER=[
+  {key:'materieelvasteactiva',label:'Materiële vaste activa',re:/^materi[e\u00eb]le\s+vaste\s+activa$/i},
+  {key:'immaterieelvasteactiva',label:'Immateriële vaste activa',re:/^immateri[e\u00eb]le\s+vaste\s+activa$/i},
+  {key:'financieelvasteactiva',label:'Financiële vaste activa',re:/^financi[e\u00eb]le\s+vaste\s+activa$/i},
   {key:'vasteactiva',label:'Vaste activa',re:/^vaste\s+activa$/i},
   {key:'vlottendeactiva',label:'Vlottende activa',re:/^vlottende\s+activa$/i},
   {key:'liquide',label:'Liquide middelen',re:/^liquide\s+middelen$/i},
@@ -1251,6 +1268,7 @@ const RESULTAAT_ORDER=[
   {key:'personeelsbeloningen',label:'Personeelsbeloningen',re:/personeelsbeloningen|personeelskosten/i},
   {key:'afschrijvingen_resultaat',label:'Afschrijvingen',re:/^afschrijvingen(\s+op\s+(im)?materi\u00eble\s+en\s+materi\u00eble\s+vaste\s+activa)?$/i},
   {key:'overigebedrijfskosten',label:'Overige bedrijfskosten',re:/^overige\s+bedrijfskosten$/i},
+  {key:'totaalbedrijfskosten',label:'Totaal bedrijfskosten',re:/^totaa?l\s+(bedrijfs)?kosten$|^totale\s+kosten$/i,total:true},
   {key:'bedrijfsresultaat',label:'Bedrijfsresultaat',re:/^bedrijfsresultaat$|^ebitda?$/i,total:true},
   {key:'finbatenlasten',label:'Financi\u00eble baten en lasten',re:/^financi[e\u00eb]le\s+baten(\s+en\s+lasten)?$/i},
   {key:'resultaatvoorbelasting',label:'Resultaat voor belasting',re:/^resultaat[^]*voor[^]*belasting$/i},
@@ -1309,7 +1327,29 @@ function finStatementTable(rows,order){
     map[key]=map[key]||{};
     if(!(p in map[key])) map[key][p]=row.bedrag;
   }
-  const used=[...order,...seenExtra].filter(m=>periods.some(p=>map[m.key]&&isNum(map[m.key][p])));
+  /* Extra's (niet in de vaste volgorde, bijv. een brondetailregel als
+     "Materiële vaste activa" naast de generieke "Vaste activa") niet
+     simpelweg achteraan plakken — dat zou zo'n detailregel helemaal
+     onderaan tonen, zelfs na Totaal passiva. In plaats daarvan wordt elke
+     extra-regel op basis van het eigen label bij de bijbehorende sectie
+     ingevoegd: vlak vóór de eerstvolgende totaalregel waar hij inhoudelijk
+     bij hoort (activa-achtig → vóór "Totaal activa", passiva-achtig →
+     vóór "Totaal passiva", anders → vóór "Bedrijfsresultaat" als die
+     bestaat). Is geen van die ankers aanwezig (bijv. een resultatentabel
+     zonder Bedrijfsresultaat-regel), dan komt de regel aan het eind, zoals
+     voorheen. */
+  const ACTIVA_HINT=/activa|liquide|vlottende/i;
+  const PASSIVA_HINT=/passiva|eigen\s*vermogen|schuld/i;
+  const merged=[...order];
+  for(const extra of seenExtra){
+    let ankerKey=null;
+    if(ACTIVA_HINT.test(extra.label)) ankerKey='totaalactiva';
+    else if(PASSIVA_HINT.test(extra.label)) ankerKey='totaalpassiva';
+    else ankerKey='bedrijfsresultaat';
+    const idx=ankerKey?merged.findIndex(o=>o.key===ankerKey):-1;
+    merged.splice(idx===-1?merged.length:idx,0,extra);
+  }
+  const used=merged.filter(m=>periods.some(p=>map[m.key]&&isNum(map[m.key][p])));
   if(!used.length) return [];
   const trs=used.map(m=>{
     const cells=periods.map(p=>{
@@ -1318,7 +1358,7 @@ function finStatementTable(rows,order){
     }).join('');
     return `<tr${m.total?' class="total"':''}><td>${esc(m.label)}</td>${cells}</tr>`;
   });
-  return tableBlocks([{label:'Post'},...periods.map(p=>({label:p,num:true}))],trs,{protect:true,cls:'fin'});
+  return tableBlocks([{label:'Post'},...periods.map(p=>({label:p,num:true}))],trs,{protect:true,cls:'fin',periodTag:true});
 }
 
 /* Grafieken */
@@ -2350,7 +2390,15 @@ function layoutPages(sections,opts={}){
 
   for(const sec of sections){
     let blocks=sec.blocks;
-    if(!fitsPage(blocks)){
+    /* Financiële analyse mag bewust over twee (of meer) nette pagina's lopen
+       in plaats van op één pagina te worden samengeperst — een volledige
+       spread (balans + resultatenrekening + observaties + eventueel privé-
+       inkomen/vermogen) weegt zwaarder dan alles op één pagina proppen. Deze
+       compressiecascade (tekst inkorten, bullets/rijen inperken) wordt voor
+       dit hoofdstuk daarom overgeslagen; de gewone groep-gebaseerde paginering
+       verderop verdeelt de inhoud vanzelf netjes over meerdere pagina's. */
+    const isFinancieleAnalyse=sec.label==='Financiële analyse';
+    if(!isFinancieleAnalyse&&!fitsPage(blocks)){
       const tryFns=[
         s=>shortenParagraphs([s],4)[0],
         s=>shortenParagraphs([s],3)[0],
