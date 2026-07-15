@@ -294,13 +294,23 @@ body.show-json #downloadJson{display:inline-block}
 /* Tabellen */
 table.t{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:4.5mm}
 table.t th{text-align:left;font-size:7pt;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:0 3mm 1.8mm;border-bottom:1.5px solid #B9C8DC}
-table.t td{padding:2.1mm 3mm;border-bottom:1px solid #EDF2F8;vertical-align:top;line-height:1.45;overflow-wrap:anywhere}
+table.t td{padding:2.1mm 3mm;border-bottom:1px solid #EDF2F8;vertical-align:top;line-height:1.45;overflow-wrap:break-word;word-break:normal;hyphens:none;break-inside:avoid}
 table.t th.num,table.t td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 table.t td.neg{color:var(--red)}
+table.t tr{break-inside:avoid;page-break-inside:avoid}
 table.t tr.total td{font-weight:700;color:var(--ink);border-top:1.5px solid var(--ink);border-bottom:none}
 table.t td:first-child,table.t th:first-child{padding-left:0}
 table.t td:last-child,table.t th:last-child{padding-right:0}
 table.t .sub{font-size:7.8pt;color:var(--muted);margin-top:.6mm;line-height:1.35}
+/* Partijentabel (Betrokken partijen): vaste, leesbare kolomverdeling — Partij
+   breedst, Rol/Rechtsvorm ruim genoeg voor normale woorden zonder afbreking,
+   KvK smal. table-layout:fixed voorkomt dat de browser deze kolommen alsnog
+   zelf herverdeelt op basis van de langste celinhoud. */
+table.t.partij{table-layout:fixed}
+table.t.partij th:nth-child(1),table.t.partij td:nth-child(1){width:36%}
+table.t.partij th:nth-child(2),table.t.partij td:nth-child(2){width:26%}
+table.t.partij th:nth-child(3),table.t.partij td:nth-child(3){width:24%}
+table.t.partij th:nth-child(4),table.t.partij td:nth-child(4){width:14%}
 /* Financiële tabellen (Balansontwikkeling/Resultatenontwikkeling): kleinere maar
    leesbare tekst en krappere celopvulling, zodat meerjarenoverzichten met veel
    kolommen — óók in landscape — netjes uitgelijnd blijven zonder dat kolommen
@@ -315,6 +325,13 @@ table.t.fin td{font-size:8.4pt;padding:1.5mm 2.2mm;line-height:1.3}
 table.t.fin th .periodtag{display:block;font-weight:600;color:var(--muted);letter-spacing:.3px;text-transform:none;font-size:5.6pt;margin-top:.3mm}
 table.t.fin tr.fin-sec td{font-size:6.6pt;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--blue-deep);background:#EEF3FB;padding:1.7mm 2.2mm 1.3mm;border-top:1.5px solid var(--blue-deep);border-bottom:1px solid #B9C8DC}
 table.t.fin tr.fin-sec:first-child td{border-top:none}
+/* De afsluitende eindregel van een financiële tabel (Totaal passiva in de
+   balans, Resultaat na belasting in de resultatenrekening) is altijd de
+   laatste "total"-rij in de tabel en krijgt daarom extra nadruk (dubbele
+   lijn) bovenop de gewone vet+lijn-opmaak van tussentijdse totalen (Totaal
+   activa, Totaal bedrijfskosten, Bedrijfsresultaat) — zo is in één oogopslag
+   duidelijk dat dit de definitieve afsluiting van de staat is. */
+table.t.fin tr.total:last-of-type td{border-bottom:1.5px solid var(--ink)}
 
 /* Bullets & twee kolommen */
 .blist{display:flex;flex-direction:column;gap:1.9mm;margin-bottom:4.5mm}
@@ -1605,7 +1622,7 @@ function buildCompactIntakeSections(r,ctx){
       blocks.push(tableBlocks(
         [{label:'Partij'},{label:'Rol'},{label:'Rechtsvorm'},{label:'KvK'}],
         partijen.map(x=>`<tr><td>${esc(x.naam)}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${kvkCell(x.kvk)}</td></tr>`),
-        {protect:true}
+        {protect:true,cls:'partij'}
       ));
     }
     const structImg=structImageBlock();
@@ -1831,7 +1848,7 @@ function buildSections(r,ctx){
       blocks.push(tableBlocks(
         [{label:'Partij'},{label:'Rol'},{label:'Rechtsvorm'},{label:'KvK'}],
         partijen.map(x=>`<tr><td>${esc(x.naam)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td>${cell(x.rol)}</td><td>${cell(x.rechtsvorm)}</td><td style="white-space:nowrap">${kvkCell(x.kvk)}</td></tr>`),
-        {protect:true}
+        {protect:true,cls:'partij'}
       ));
     }
     /* Compacter (minder witruimte in hoofdstuk 2): "Bestuur en
@@ -2428,17 +2445,16 @@ function layoutPages(sections,opts={}){
       /* Hoofdstuk 1 (Managementsamenvatting) volgt bewust een eigen, vaste
          compressievolgorde (in plaats van de generieke lijst hieronder):
          eerst introductietekst/doel/financieringsduiding inkorten (tekst),
-         dan losse bullets (sterktes/aandachtspunten) per stuk inkorten tot
-         ~2 regels, dan het aantal bullets per kolom verder beperken, en pas
-         als laatste stap minder padding/witruimte — zodat hoofdstuk 1 zo
-         lang mogelijk als één compacte pitchpagina blijft staan en pas
-         daarna, als uiterste noodgreep, over een vervolgpagina uitloopt. */
+         dan het aantal bullets per kolom beperken, en pas als laatste stap
+         minder padding/witruimte — zodat hoofdstuk 1 zo lang mogelijk als
+         één compacte pitchpagina blijft staan en pas daarna, als uiterste
+         noodgreep, over een vervolgpagina uitloopt. Bullets worden NOOIT
+         halverwege met "…" afgekapt (dat laat een onafgemaakte zin achter) —
+         inkorten gebeurt uitsluitend door hele bullets te laten vervallen
+         (trimBulletBlocks), nooit door een bullettekst zelf in te korten. */
       const tryFns=isMgmtSamenvatting?[
         s=>shortenParagraphs([s],3)[0],
         s=>shortenParagraphs([s],2)[0],
-        s=>capBulletChars([s],150)[0],
-        s=>capBulletChars([s],110)[0],
-        s=>capBulletChars([s],80)[0],
         s=>trimBulletBlocks([s],4)[0],
         s=>trimBulletBlocks([s],3)[0],
         s=>compactSpacing([s])[0],
@@ -2590,26 +2606,6 @@ function trimBulletBlocks(sections,maxItems){
     if(!m) return b;
     const items=m[2].match(/<div>[\s\S]*?<\/div>/g)||[];
     return items.length<=maxItems?b:m[1]+items.slice(0,maxItems).join('')+m[3];
-  })}));
-}
-
-/* Compressiestap (hoofdstuk 1, "Belangrijkste sterktes"/"aandachtspunten"):
-   individuele bullets tot ~maxChars inkorten (grofweg 2 regels op de breedte
-   van de tweekoloms-lay-out), zodat een enkele lange bullet niet in zijn
-   eentje de pagina laat overlopen. Alleen platte bullet-items (zonder eigen
-   opmaak/klasse) binnen een .blist worden aangepast — de kolomkop (.colh)
-   heeft altijd een class-attribuut en blijft dus buiten bereik. */
-function capBulletChars(sections,maxChars){
-  const trim=t=>{
-    if(t.length<=maxChars) return t;
-    let cut=t.slice(0,maxChars);
-    const sp=cut.lastIndexOf(' ');
-    if(sp>maxChars*0.6) cut=cut.slice(0,sp);
-    return cut.trim().replace(/[,.;:]+$/,'')+'…';
-  };
-  return sections.map(s=>({...s,blocks:s.blocks.map(b=>{
-    if(!/class="blist/.test(b)) return b;
-    return b.replace(/<div>([^<]*)<\/div>/g,(full,txt)=>`<div>${trim(txt)}</div>`);
   })}));
 }
 
