@@ -335,6 +335,7 @@ Neem de tabel letterlijk uit de bron over. Bronnen = waar het geld vandaan komt 
 
 DATUMREGELS
 metadata.documentdatum: de datum van het brondocument zelf (voorblad, "opgesteld op", documentmetadata) in Nederlandse notatie; leeg als die niet vaststaat. metadata.rapportdatum: de datum van dít rapport — gebruik de actuele datum. Gebruik NOOIT een geboortedatum, oprichtingsdatum of taxatiedatum als document- of rapportdatum. Bij twijfel: documentdatum leeg laten en toelichten in datum_toelichting.
+Een entiteit die nog niet bestaat (organogram-type "in_oprichting", of een naam/toelichting met "op te richten", "nog op te richten" of "i.o.") heeft per definitie nog GEEN vaststaande oprichtingsdatum. Verzin hiervoor nooit een concrete datum (bijv. "per 1 januari 2026", "opgericht op ...") — dat is een aanname, geen bronfeit. Vermeld een oprichtings- of ingangsdatum voor zo'n entiteit uitsluitend als de bron die datum expliciet noemt; noem dan ook waar dit vandaan komt. Ontbreekt die bronvermelding, schrijf dan een datumloze omschrijving (bijv. "Nog op te richten vastgoedvennootschap, wordt eigenaar en verhuurder van het bedrijfspand.") zonder gefingeerde datum.
 
 AFBEELDINGEN UIT DE BRON
 Je kunt beeldmateriaal uit een PDF niet als afbeelding opnieuw aanleveren. Registreer daarom elk relevant beeld (rendering, objectfoto, plattegrond, bouwplanning, grafiek, schema) in bronrapport.gevonden_afbeeldingen met een korte, concrete omschrijving. Organogrammen reconstrueer je als data (zie boven). Feitelijke informatie die alleen in beelden staat (adres op een rendering, oppervlaktes op een plattegrond) verwerk je in de betreffende sectie als tekst of kenmerk.
@@ -1083,6 +1084,36 @@ function fixEuroSigns(v) {
     .replace(/\bEUR\s?(?=\d)/gi, '€ ')
     .replace(/(\d[\d.,]*)\s?euro\b/gi, '€ $1');
   return out;
+}
+
+/* Klantcorrectie: een entiteit die (nog) niet bestaat — organogram-type
+   "in_oprichting", of tekst met "op te richten"/"nog op te richten"/"in
+   oprichting"/"i.o." — heeft per definitie nog geen vaststaande, concrete
+   oprichtingsdatum. Een AI-tekst die daar toch "per 1 januari 2026" of
+   "opgericht op ..." bij verzint is een aanname, geen bronfeit. Dit wordt
+   hier automatisch verwijderd, ongeacht in welk veld dit optreedt
+   (organogram-toelichting, structuurtekst, activiteiten, overige secties). */
+const NL_MAAND = 'januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december';
+const INVENTED_OPRICHTINGSDATUM_RE = new RegExp(
+  `(op\\s+te\\s+richten|in\\s+oprichting|\\bi\\.?o\\.?\\b)((?:(?!\\.).){0,120}?)\\s+(?:per|op|vanaf)\\s+\\d{1,2}\\s+(?:${NL_MAAND})\\s+\\d{4}\\b`,
+  'gi'
+);
+function stripInventedOprichtingsdatum(node, warnings) {
+  if (typeof node === 'string') {
+    const before = node;
+    const after = node.replace(INVENTED_OPRICHTINGSDATUM_RE, (_m, lead, mid) => `${lead}${mid}`);
+    if (after !== before) {
+      const w = 'Een verzonnen concrete oprichtingsdatum bij een nog op te richten entiteit (bijv. "per 1 januari 2026") is verwijderd; deze datum was geen vaststaand bronfeit. Vul een oprichtingsdatum alleen aan als de bron dit expliciet vermeldt.';
+      if (!warnings.includes(w)) warnings.push(w);
+    }
+    return after;
+  }
+  if (Array.isArray(node)) return node.map((x) => stripInventedOprichtingsdatum(x, warnings));
+  if (node && typeof node === 'object') {
+    for (const k of Object.keys(node)) node[k] = stripInventedOprichtingsdatum(node[k], warnings);
+    return node;
+  }
+  return node;
 }
 
 /* Afgekapte tekst en render-vervuiling opruimen */
@@ -1987,6 +2018,12 @@ function enforceQuality(r, vandaag, opts = {}) {
   /* 0 — afgekapte tekst / render-vervuiling (tool-correcties → intern) */
   deepCleanStrings(r, internal);
   scanDemoMarkers(r, internal);
+
+  /* 0b — verzonnen oprichtingsdatum bij een nog op te richten entiteit
+     (bijv. "op te richten vastgoedvennootschap per 1 januari 2026") is een
+     inhoudelijke aanname, geen technische opmaakfout — daarom als
+     advisorWarning (extern zichtbaar), niet als interne tool-correctie. */
+  stripInventedOprichtingsdatum(r, warnings);
 
   /* 1 — bedragen: 0-fallbacks naar null (tool-correctie → intern) */
   const fo = (r.financieringsopzet = r.financieringsopzet || {});
