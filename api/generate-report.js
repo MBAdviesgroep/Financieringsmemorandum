@@ -318,7 +318,7 @@ Sectieteksten (tekst-velden): volledige, afgeronde alinea's, zo lang als de bron
 SECTIES (vul alleen wat de bron ondersteunt)
 - managementsamenvatting: bij rapporttype B mag dit hoofdstuk een volle pagina beslaan (zie de uitgebreide eisen hierboven bij RAPPORTTYPE B — STRUCTUUR: 180-250 woorden, kpi_cards met minimaal 8 kerncijfers, belangrijkste_sterktes, aandachtspunten en financieringsduiding); bij rapporttype A blijft de kernboodschap maximaal 150 woorden (korte omschrijving onderneming, doel financiering, financieringsbehoefte). Het veld voorlopig_oordeel wordt in het rapport getoond als "Financieringssamenvatting" (als afsluiting onderaan het laatste hoofdstuk — Voorwaarden & documentatie — nooit als apart hoofdstuk of losse laatste pagina): schrijf het als financieringsgerichte samenvatting, NIET als kredietoordeel — bijv. "De aanvraag biedt voldoende aanknopingspunten voor verdere beoordeling door financiers. De combinatie van eigen inbreng, beschikbare zekerheden, positieve historische resultaten en onderbouwde prognose vormt de basis voor het opvragen van passende financieringsvoorstellen. De belangrijkste aandachtspunten zijn …" — financieringsduiding is een kortere, andersluidende afsluiting van hoofdstuk 01 zelf en mag hier nooit een kopie van zijn.
 - aanvraag_en_transactie: aanleiding, financieringsdoel, investering, timing en gewenste structuur. Vul het veld besluitvormingsvraag met het "Doel van de aanvraag": één financieringsgerichte zin in de vorm "Het opvragen van financieringsvoorstellen voor …" — nooit een interne besluitvormings- of kredietvraag.
-- juridische_structuur: alle betrokken rechtspersonen en privépersonen (rol, rechtsvorm, KvK) — neem ELKE partij op die in de bron een rol heeft (kredietnemer, vastgoedhouder, holding, werkmaatschappij/huurder, privépersoon/UBO, mede-kredietnemer, borg), nooit alleen de formele kredietnemer terwijl bijvoorbeeld de operationele werkmaatschappij (huurder) wordt weggelaten. Vul het veld kvk UITSLUITEND met een daadwerkelijk KvK-nummer uit de bron; is dat er niet, laat kvk dan leeg — zet er NOOIT een oprichtingsdatum, geboortedatum of andere datum in die kolom. De partijentabel moet ALTIJD volledig zijn: neem, voor zover in de bron aanwezig, minimaal op — de kredietnemer/vastgoedhouder, de holding/aandeelhouder, de werkmaatschappij/huurder én de UBO/bestuurder — elk met de juiste, specifieke rol (nooit een generieke of dubbelzinnige rolomschrijving). Is voor een entiteit (bijv. een B.V. i.o.) nog geen KvK-nummer bekend, laat het veld kvk dan gewoon leeg (het rapport toont dit vanzelf als "nog niet bekend") — dit is normaal bij een nog op te richten entiteit en geen fout. bestuur en tekenbevoegdheid, aandeelhouders/UBO's. Vul structuur_tekstueel ALTIJD met een compact tekstueel structuurschema: korte, feitelijke bulletzinnen, één relatie per regel, met de daadwerkelijke namen uit de bron (bijv. "[Naam bestuurder] is uiteindelijk belanghebbende.", "[Holding B.V.] houdt 100% van de aandelen in [Werkmaatschappij B.V.].", "[Vastgoed B.V.] i.o. koopt en verhuurt het bedrijfspand zakelijk aan [Werkmaatschappij B.V.].") — dit format is illustratief, gebruik nooit deze placeholder-namen zelf. Dit is de weergave in het rapport wanneer geen net organogram mogelijk is.
+- juridische_structuur: alle betrokken rechtspersonen en privépersonen (rol, rechtsvorm, KvK) — neem ELKE partij op die in de bron een rol heeft (kredietnemer, vastgoedhouder, holding, werkmaatschappij/huurder, privépersoon/UBO, mede-kredietnemer, borg), nooit alleen de formele kredietnemer terwijl bijvoorbeeld de operationele werkmaatschappij (huurder) wordt weggelaten. Vul het veld kvk UITSLUITEND met een daadwerkelijk KvK-nummer uit de bron; is dat er niet, laat kvk dan leeg — zet er NOOIT een oprichtingsdatum, geboortedatum of andere datum in die kolom. De partijentabel moet ALTIJD volledig zijn: neem, voor zover in de bron aanwezig, minimaal op — de kredietnemer/vastgoedhouder, de holding/aandeelhouder, de werkmaatschappij/huurder én de UBO/bestuurder — elk met de juiste, specifieke rol (nooit een generieke of dubbelzinnige rolomschrijving). Is voor een entiteit (bijv. een B.V. i.o.) nog geen KvK-nummer bekend, of gaat het om een privépersoon zonder KvK, laat het veld kvk dan gewoon leeg (het rapport toont dit vanzelf als "-") — dit is normaal en geen fout. Vul kvk NOOIT met een verzonnen tekst als "onbekend", "n.v.t.", "niet van toepassing" of "nog niet bekend": laat het veld in die gevallen altijd leeg. bestuur en tekenbevoegdheid, aandeelhouders/UBO's. Vul structuur_tekstueel ALTIJD met een compact tekstueel structuurschema: korte, feitelijke bulletzinnen, één relatie per regel, met de daadwerkelijke namen uit de bron (bijv. "[Naam bestuurder] is uiteindelijk belanghebbende.", "[Holding B.V.] houdt 100% van de aandelen in [Werkmaatschappij B.V.].", "[Vastgoed B.V.] i.o. koopt en verhuurt het bedrijfspand zakelijk aan [Werkmaatschappij B.V.].") — dit format is illustratief, gebruik nooit deze placeholder-namen zelf. Dit is de weergave in het rapport wanneer geen net organogram mogelijk is.
 - ORGANOGRAMMEN: als de bron een organogram, structuurplaatje of groepsstructuur bevat (bestaand en/of nieuw), reconstrueer die VOLLEDIG in organogram_bestaand / organogram_nieuw: aanwezig=true; titel; entiteiten met uniek kort id (bijv. "e1"), naam, type (privepersoon | holding | werkmaatschappij | vastgoed_bv | stak | in_oprichting | overig) en rol (bijv. "Kredietnemer", "Vastgoedhouder", "Zekerheidssteller" — gebruik "Mede-kredietnemer", "Hoofdelijk schuldenaar" of "Borgsteller" uitsluitend als dat exact zo uit de bron blijkt, nooit als aanname); relaties van eigenaar ("van") naar deelneming ("naar") met label voor het percentage of de relatie (bijv. "100%", "60%", "certificaten"). Een structuurplaatje uit de bron mag NOOIT verdwijnen. Bevat de bron een organogram of een eenduidig beschreven aandelenstructuur, dan is een gereconstrueerd organogram (aanwezig=true) of een volledig gevuld structuur_tekstueel VERPLICHT — het rapport mag nooit zonder structuurweergave verschijnen. Een structuur die alleen in tekst beschreven staat mag je ook zo reconstrueren. Reconstrueer alleen wat eenduidig uit de bron volgt: geen dubbele of tegenstrijdige percentages, geen onduidelijke blokken. Regels voor een net organogram: toon iedere persoon of entiteit maximaal één keer, toon percentages slechts één keer per relatie, geen dubbele 100%-labels of dubbele blokken. Is de structuur te onduidelijk voor een net organogram, laat aanwezig dan op false — het rapport toont dan het tekstuele structuurschema (structuur_tekstueel). Een helder tekstueel structuurschema is beter dan een rommelig organogram. Bevat de bron zowel een bestaande als een nieuwe structuur (bijv. vóór en ná toevoeging van een vastgoed-B.V.), reconstrueer dan waar mogelijk BEIDE afzonderlijk in organogram_bestaand en organogram_nieuw — deze twee schema's worden in het rapport automatisch naast elkaar getoond, mits beide schema's elk voor zich net en eenduidig zijn. Geef elk schema de vaste, herkenbare titel "Structuur huidig" en "Structuur na wijziging" (gebruik geen andere of variabele titels, ook niet als de wijziging een specifieke toevoeging betreft) en een toelichting van maximaal één zin die als onderschrift dient (bijv. "Bestaande structuur met [Holding] als houdstermaatschappij van [Werkmaatschappij]." / "Nieuwe structuur waarbij [Vastgoed-B.V.] als vastgoedvennootschap wordt toegevoegd en optreedt als beoogd kredietnemer."). Is slechts één van beide structuren betrouwbaar en net te reconstrueren (de andere zou dubbele/tegenstrijdige percentages, dubbele entiteiten of onduidelijke blokken opleveren), reconstrueer dan ALLEEN die ene (aanwezig=true) en zet de andere op aanwezig=false — het rapport toont dan automatisch nog maar één schema, gecentreerd. Is geen van beide betrouwbaar genoeg, zet dan beide op aanwezig=false en gebruik uitsluitend structuur_tekstueel. Bij een eenvoudige leaseaanvraag (rapporttype A) heeft een tekstueel schema altijd de voorkeur boven een visueel organogram.
 - activiteiten_onderneming: historie, bedrijfsactiviteiten, verdienmodel, strategie, omzetstromen, operationele aandachtspunten.
 - markt_en_omgeving: marktpositie, concurrentie, trends, afnemers, leveranciers, afhankelijkheden, seizoenspatroon, debiteuren-/crediteurenrisico.
@@ -386,7 +386,7 @@ AANVULLENDE KWALITEITSREGELS (verplicht, server-side ook gecontroleerd)
 - Voorwaarden & documentatie: elk onderwerp (hypotheekrecht, huurovereenkomst, eigen inbreng, oprichting entiteit, liquiditeitsmonitoring, oplevering/ingebruikname, bouwdepot/fasering, prognose) komt in het hele rapport precies één keer voor, met de vaste status en concrete toelichting uit de tabel hierboven — nooit hetzelfde onderwerp nogmaals als apart actiepunt, ontbrekend stuk of vervolgvraag.
 - Geen privégegevens of datadump als losse slotinformatie: neem aan het einde van het rapport nooit een aparte opsomming op van geboortedatum, privéadres, nationaliteit, volledige persoonsgegevens, technische KvK-dumps, oprichtingsdata die al elders staan, of detailtabellen die al in de partijentabel (hoofdstuk Juridische structuur) staan — die partijentabel is voldoende en wordt niet elders herhaald.
 - Cover: bevat de casus meerdere relevante entiteiten (werkmaatschappij, vastgoed-B.V., holding), toon dan op de cover altijd de logische combinatie — bijvoorbeeld "[Werkmaatschappij] / [Vastgoed-B.V.]" of "[Werkmaatschappij] / [Holding] / [Vastgoed-B.V.]" — of de groepsnaam als de bron die vermeldt; noem nooit alleen de werkmaatschappij als er ook een vastgoed-B.V. of holding feitelijk bij de financiering betrokken is.
-- De financieringssamenvatting (afsluiting van het laatste hoofdstuk) is 5 tot 7 regels (nooit korter, nooit één algemene zin) en benoemt kort: onderbouwing van de aanvraag, eigen inbreng, historische resultaten, (vastgoed)structuur, zekerheden, betaalcapaciteit, belangrijkste aandachtspunten en het vervolg richting de financier.
+- De financieringssamenvatting (afsluiting van het laatste hoofdstuk) is 5 tot 7 regels (nooit korter, nooit één algemene zin) en benoemt kort: het doel van de aanvraag, eigen inbreng, historische resultaten, de (vastgoed)structuur, de primaire zekerheid, betaalcapaciteit, belangrijkste aandachtspunten en het vervolg richting de financier.
 
 - Structuurschema: percentages in het organogram liggen altijd tussen 0 en 100 (nooit een fout als "1100%") en komen nooit dubbel voor dezelfde relatie voor. Geef beide schema's, indien aanwezig, de vaste titels "Structuur huidig" en "Structuur na wijziging". Is een schema niet foutloos te reconstrueren, teken het dan niet opnieuw met fouten — gebruik in dat geval het tekstuele structuurschema.
 
@@ -903,7 +903,7 @@ function enforceFinalChecklist(r, warnings) {
        enkele algemene afsluitzin. */
     const afsluitZinnen = String(afsluitTekst).split(/(?<=[.!?])\s+/).filter((z) => z.trim().length > 0);
     if (afsluitZinnen.length < 4) {
-      warnings.push('Eindcontrole: de financieringssamenvatting telt minder dan de gevraagde 5 tot 7 regels/zinnen en lijkt op één algemene afsluitzin; vul aan met onderbouwing van de aanvraag, eigen inbreng, historische resultaten, structuur, zekerheden, betaalcapaciteit, belangrijkste aandachtspunten en het vervolg richting financiers.');
+      warnings.push('Eindcontrole: de financieringssamenvatting telt minder dan de gevraagde 5 tot 7 regels/zinnen en lijkt op één algemene afsluitzin; vul aan met het doel van de aanvraag, eigen inbreng, historische resultaten, de (vastgoed)structuur, de primaire zekerheid, betaalcapaciteit, belangrijkste aandachtspunten en het vervolg richting financiers.');
     }
   }
   /* Generieke bijlage-/contactkoppen zijn nooit toegestaan als zelfstandige
@@ -1062,7 +1062,7 @@ function deepCleanStrings(node, warnings, path = '') {
     }
     if (/^(undefined|null|NaN|\[object Object\])$/i.test(v.trim())) return '';
     if (v.trim().length >= 20) {
-      const BROKEN_LEAD_RE = /^(,|\()|^[o0]{2,4}\s+in\s+\d{4}\b/i;
+      const BROKEN_LEAD_RE = /^(,|\()|^[o0]{2,4}(\s+in\s+\d{4}\b|\s*[,.]|\s)/i;
       let fragmentVerwijderd = false;
       /* 1 — alineaniveau: de renderer (paraBlocks) splitst zelf al op een
          dubbele regelafbreking, ONGEACHT of daarvóór een punt staat — een
@@ -1630,7 +1630,16 @@ const VOORWAARDE_ONDERWERPEN = [
   { key: 'prognose', re: /prognose|omzetontwikkeling/i },
 ];
 function dedupeVoorwaardenOnderwerpen(r, internal) {
-  const seen = new Set();
+  /* seen: onderwerp.key -> { veldnaam, idx (positie in de out-array van dat veld) }.
+     Bij een tweede vermelding van hetzelfde onderwerp BINNEN hetzelfde veld
+     worden de twee formuleringen samengevoegd tot één regel (bijv. "Hypotheekakte
+     eerste rang" + "Te vestigen eerste hypotheekrecht" -> "Te vestigen eerste
+     hypotheekrecht / hypotheekakte eerste rang") in plaats van de tweede simpelweg
+     te laten vervallen — zo gaat geen van beide formuleringen verloren. Duikt
+     hetzelfde onderwerp op in een ANDER veld (bijv. al genoemd bij voorwaarden,
+     en nogmaals als vervolgvraag), dan is samenvoegen niet zinvol (andere kolom/
+     context) en vervalt de latere vermelding zoals voorheen. */
+  const seen = new Map();
   const dedupe = (arr, veldnaam) => {
     const out = [];
     for (const item of A(arr)) {
@@ -1638,11 +1647,27 @@ function dedupeVoorwaardenOnderwerpen(r, internal) {
       if (!hasTxt(txt)) { out.push(item); continue; }
       const onderwerp = VOORWAARDE_ONDERWERPEN.find((o) => o.re.test(txt));
       if (onderwerp) {
-        if (seen.has(onderwerp.key)) {
-          internal.push(`Dubbele vermelding van onderwerp "${onderwerp.key}" verwijderd uit ${veldnaam}: "${txt}".`);
+        const eerder = seen.get(onderwerp.key);
+        if (eerder) {
+          if (eerder.veldnaam === veldnaam) {
+            const prevItem = out[eerder.idx];
+            const prevTxt = typeof prevItem === 'string' ? prevItem : prevItem?.item;
+            const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '');
+            const prevNorm = norm(prevTxt);
+            const txtNorm = norm(txt);
+            if (prevNorm.includes(txtNorm) || txtNorm.includes(prevNorm)) {
+              internal.push(`Dubbele vermelding van onderwerp "${onderwerp.key}" verwijderd uit ${veldnaam}: "${txt}".`);
+            } else {
+              const mergedTxt = `${prevTxt.replace(/[.\s]+$/, '')} / ${txt.charAt(0).toLowerCase()}${txt.slice(1).replace(/[.\s]+$/, '')}`;
+              out[eerder.idx] = typeof prevItem === 'string' ? mergedTxt : { ...prevItem, item: mergedTxt };
+              internal.push(`Twee vermeldingen van hetzelfde onderwerp "${onderwerp.key}" samengevoegd tot één regel in ${veldnaam}: "${mergedTxt}".`);
+            }
+          } else {
+            internal.push(`Dubbele vermelding van onderwerp "${onderwerp.key}" verwijderd uit ${veldnaam} (stond al in ${eerder.veldnaam}): "${txt}".`);
+          }
           continue;
         }
-        seen.add(onderwerp.key);
+        seen.set(onderwerp.key, { veldnaam, idx: out.length });
       }
       out.push(item);
     }
@@ -1734,14 +1759,25 @@ function enforceQuality(r, vandaag, opts = {}) {
 
   /* 1b — kvk-kolom mag nooit een datum bevatten (oprichtings-/geboortedatum
      die per ongeluk in het kvk-veld terechtkomt in plaats van een echt
-     KvK-nummer); tool-correctie, dus alleen intern gelogd. */
+     KvK-nummer), en ook nooit een verzonnen vultekst ("nog niet bekend",
+     "onbekend", "n.v.t.", "niet van toepassing", "ongeveer nog niet gekend"
+     e.d.) — die worden hier leeggemaakt zodat de client altijd netjes "-"
+     toont; tool-correctie, dus alleen intern gelogd. */
   {
     const ju0 = (r.juridische_structuur = r.juridische_structuur || {});
     const DATUM_ACHTIG = /^\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}$/;
+    const KVK_VULTEKST = /^(ongeveer\s+)?(nog\s+niet\s+(bekend|gekend)|onbekend|n\.?v\.?t\.?|niet\s+van\s+toepassing|geen|n\/a)$/i;
     ju0.partijen = A(ju0.partijen).map((p) => {
-      if (p && typeof p.kvk === 'string' && DATUM_ACHTIG.test(p.kvk.trim())) {
-        internal.push(`partijen.kvk bevatte een datum ("${p.kvk}") in plaats van een KvK-nummer en is leeggemaakt.`);
-        return { ...p, kvk: '' };
+      if (p && typeof p.kvk === 'string') {
+        const kvkTrim = p.kvk.trim();
+        if (DATUM_ACHTIG.test(kvkTrim)) {
+          internal.push(`partijen.kvk bevatte een datum ("${p.kvk}") in plaats van een KvK-nummer en is leeggemaakt.`);
+          return { ...p, kvk: '' };
+        }
+        if (kvkTrim && KVK_VULTEKST.test(kvkTrim)) {
+          internal.push(`partijen.kvk bevatte vultekst ("${p.kvk}") in plaats van een echt KvK-nummer of leeg veld en is leeggemaakt.`);
+          return { ...p, kvk: '' };
+        }
       }
       return p;
     });
