@@ -975,6 +975,10 @@ const EN_FIXES = [
    van voorraden/vorderingen) — daarom NOOIT een kale \b-woordvervanging op "verpand",
    alleen deze specifieke, foutgevoelige woordcombinaties vervangen. */
 const PHRASE_FIXES = [
+  [/\btijdelijke\s+krapperde\b/gi, 'tijdelijk krapper'],
+  [/\bsimultane\s+lasten\b/gi, 'samenloop van lasten'],
+  [/\bdistributie\s+van\s+bouwdepottermijnen\b/gi, 'gefaseerde opname uit bouwdepot'],
+  [/\bIs\s+er\s+sprake\s+van\s+erfpacht\??\s*:?/gi, 'Erfpacht:'],
   [/\bverpand(?:en|t)?\s+(?:worden|word(?:t)?|zijn)\s+voor\s+verzending\b/gi, 'afgeroepen worden voor verzending'],
   [/\bverpakking\s+verpanding\b/gi, 'Vestiging van verpanding'],
   [/\beffecte\b/gi, 'effecten'],
@@ -1314,6 +1318,73 @@ function dedupeFinancieleAnalyseRegels(r, internal) {
   fa.resultaten = dedupe(fa.resultaten, 'resultaten');
 }
 
+/* Een balans zonder "Totaal passiva" oogt onaf en maakt de balans niet
+   controleerbaar (Totaal activa moet immers altijd gelijk zijn aan Totaal
+   passiva — de grondbeginsel van een balans). Ontbreekt deze regel voor een
+   periode terwijl "Totaal activa" wel bekend is, dan wordt Totaal passiva
+   voor die periode gelijkgesteld aan Totaal activa: dit is geen verzonnen
+   cijfer maar een boekhoudkundige identiteit (activa = passiva per
+   definitie), dus veilig om automatisch aan te vullen. */
+function ensureTotaalPassiva(r, internal) {
+  const fa = r.financiele_analyse;
+  const rows = A(fa?.balans);
+  if (!rows.length) return;
+  const isLabel = (row, re) => row && hasTxt(row.label) && re.test(String(row.label).trim());
+  const totaalActivaRe = /^totaal\s+activa$/i;
+  const totaalPassivaRe = /^totaal\s+passiva$/i;
+  const periodesActiva = new Map();
+  for (const row of rows) {
+    if (isLabel(row, totaalActivaRe) && hasTxt(row.periode) && num(row.bedrag) !== null) {
+      periodesActiva.set(String(row.periode).trim(), num(row.bedrag));
+    }
+  }
+  if (!periodesActiva.size) return;
+  const periodesPassiva = new Set(
+    rows.filter((row) => isLabel(row, totaalPassivaRe) && hasTxt(row.periode) && num(row.bedrag) !== null).map((row) => String(row.periode).trim())
+  );
+  const toegevoegd = [];
+  for (const [periode, bedrag] of periodesActiva) {
+    if (!periodesPassiva.has(periode)) {
+      rows.push({ label: 'Totaal passiva', periode, bedrag });
+      toegevoegd.push(periode);
+    }
+  }
+  if (toegevoegd.length) {
+    fa.balans = rows;
+    internal.push(`Financiële analyse (balans): "Totaal passiva" ontbrak voor periode(s) ${toegevoegd.join(', ')} en is aangevuld gelijk aan "Totaal activa" (boekhoudkundige identiteit activa = passiva).`);
+  }
+}
+
+/* Kostensom-controle: als de bron zowel de individuele kostenposten als een
+   expliciete "Totaal bedrijfskosten"-regel geeft, wordt gecontroleerd of de
+   som van de onderliggende posten aansluit op dat totaal. Bij een afwijking
+   wordt dit alleen gesignaleerd (waarschuwing) — het bronbedrag van "Totaal
+   bedrijfskosten" wordt NOOIT overschreven door een eigen berekening. */
+function checkTotaalBedrijfskostenSom(r, warnings) {
+  const rows = A(r.financiele_analyse?.resultaten);
+  if (rows.length < 2) return;
+  const KOSTEN_ONDERDEEL_RE = /kosten\s+van\s+grond-?\s*(en)?\s*hulpstoffen|personeelsbeloningen|personeelskosten|^afschrijvingen\b|overige\s+bedrijfskosten/i;
+  const TOTAAL_RE = /^totaa?l\s+(bedrijfs)?kosten$|^totale\s+kosten$/i;
+  const perPeriode = new Map();
+  for (const row of rows) {
+    if (!row || !hasTxt(row.label) || !hasTxt(row.periode)) continue;
+    const p = String(row.periode).trim();
+    const bedrag = num(row.bedrag);
+    if (bedrag === null) continue;
+    if (!perPeriode.has(p)) perPeriode.set(p, { onderdelen: 0, totaal: null });
+    const entry = perPeriode.get(p);
+    if (KOSTEN_ONDERDEEL_RE.test(row.label)) entry.onderdelen += bedrag;
+    else if (TOTAAL_RE.test(row.label)) entry.totaal = bedrag;
+  }
+  for (const [periode, entry] of perPeriode) {
+    if (entry.totaal === null || entry.onderdelen === 0) continue;
+    const verschil = Math.abs(entry.totaal - entry.onderdelen);
+    if (verschil > Math.max(1, Math.abs(entry.totaal) * 0.01)) {
+      warnings.push(`Eindcontrole: de som van de onderliggende kostenposten in periode ${periode} (€ ${Math.round(entry.onderdelen).toLocaleString('nl-NL')}) wijkt af van "Totaal bedrijfskosten" uit de bron (€ ${Math.round(entry.totaal).toLocaleString('nl-NL')}); neem het brontotaal exact over en verifieer de onderliggende posten, in plaats van een eigen berekening toe te voegen.`);
+    }
+  }
+}
+
 /* "Bedrijfsopbrengsten" die voor elk jaar exact hetzelfde bedrag toont als
    "Omzet" voegt niets toe (vrijwel altijd is dit dezelfde post twee keer
    gelabeld) — verwijder dan de Bedrijfsopbrengsten-regel en behoud Omzet. */
@@ -1531,6 +1602,47 @@ function enforceObjectChapterQuality(r, internal) {
       internal.push('Risicomatrix-/mitigant-taal verwijderd uit zekerheden_en_risico.dekkingspositie; dat hoort uitsluitend in het hoofdstuk Risico\'s, mitiganten & aandachtspunten.');
     }
   }
+
+  /* Objectgegevens consistent maken (klantcorrectie):
+     - "Huurwaarde" als kale "0" (of numerieke string) tonen oogt als een fout;
+       normaliseer naar een echt eurobedrag ("€ 0") zodat het duidelijk een
+       bewuste, bronechte waarde is en geen afgekapt of vergeten veld.
+     - Het label "Is er sprake van erfpacht" wordt ingekort tot het gebruikelijke
+       kenmerken-label "Erfpacht" (de waarde, bijv. "Ja"/"Nee", blijft gelijk).
+     - LTV moet overal in het rapport dezelfde waarde tonen; het meest precieze
+       (bijv. met decimaal) exemplaar wordt als canonieke waarde aangehouden en
+       elders overgenomen, in plaats van dat afgeronde/afwijkende varianten naast
+       elkaar blijven staan. */
+  if (Array.isArray(ov.kenmerken) && ov.kenmerken.length) {
+    const euro = (n) => `€ ${Math.round(n).toLocaleString('nl-NL')}`;
+    ov.kenmerken = ov.kenmerken.map((k) => {
+      if (!k || !hasTxt(k.label)) return k;
+      if (/huurwaarde/i.test(String(k.label)) && (typeof k.waarde === 'number' || (typeof k.waarde === 'string' && /^-?\d+([.,]\d+)?$/.test(k.waarde.trim())))) {
+        const n = typeof k.waarde === 'number' ? k.waarde : parseFloat(String(k.waarde).replace(',', '.'));
+        if (isFinite(n)) {
+          const na = euro(n);
+          if (String(k.waarde) !== na) internal.push(`object_en_vastgoed.kenmerken "${k.label}"-waarde "${k.waarde}" genormaliseerd naar "${na}".`);
+          return { ...k, waarde: na };
+        }
+      }
+      if (/^is\s+er\s+sprake\s+van\s+erfpacht\??$/i.test(String(k.label).trim())) {
+        internal.push(`object_en_vastgoed.kenmerken label "${k.label}" ingekort naar "Erfpacht".`);
+        return { ...k, label: 'Erfpacht' };
+      }
+      return k;
+    });
+    const ltvRows = ov.kenmerken.filter((k) => k && hasTxt(k.label) && /\bltv\b/i.test(String(k.label)) && hasTxt(k.waarde));
+    const ltvCandidates = [...ltvRows.map((k) => k.waarde), ...(kc && hasTxt(kc.ltv) ? [kc.ltv] : [])];
+    if (ltvCandidates.length > 1) {
+      const precisie = (s) => (String(s).match(/[.,]\d+/) || [''])[0].length;
+      const canoniek = [...ltvCandidates].sort((a, b) => precisie(b) - precisie(a))[0];
+      if (ltvCandidates.some((v) => v !== canoniek)) {
+        ov.kenmerken = ov.kenmerken.map((k) => (k && /\bltv\b/i.test(String(k.label || '')) && k.waarde !== canoniek ? { ...k, waarde: canoniek } : k));
+        if (kc && kc.ltv !== canoniek) kc.ltv = canoniek;
+        internal.push(`LTV kwam met verschillende waarden voor in het rapport (${[...new Set(ltvCandidates)].join(', ')}); overal genormaliseerd naar de meest precieze bronwaarde "${canoniek}".`);
+      }
+    }
+  }
 }
 
 function enforceStructOverride(r, structuurOverride, internal) {
@@ -1629,6 +1741,31 @@ const VOORWAARDE_ONDERWERPEN = [
   { key: 'bouwdepot', re: /bouwdepot|opnameplanning|opnametermijn/i },
   { key: 'prognose', re: /prognose|omzetontwikkeling/i },
 ];
+
+/* Wordt een hypotheekrecht (eerste hypotheek e.d.) als zekerheid genoemd in de
+   zekerhedentabel, dan moet dit altijd ook als voorwaarde in hoofdstuk 8
+   (Voorwaarden & documentatie) terugkomen — een zekerheid die niet ook als
+   te vestigen/te formaliseren voorwaarde is opgenomen, is niet compleet.
+   Ontbreekt dit, dan wordt automatisch een voorwaarde-regel toegevoegd. */
+function ensureHypotheekrechtVoorwaarde(r, internal) {
+  const zr = r.zekerheden_en_risico || {};
+  const zekerheden = A(zr.zekerheden);
+  if (!zekerheden.length) return;
+  const HYPOTHEEK_RE = /hypotheek/i;
+  const heeftHypotheekZekerheid = zekerheden.some((z) => z && hasTxt(z.zekerheid) && HYPOTHEEK_RE.test(z.zekerheid));
+  if (!heeftHypotheekZekerheid) return;
+  const VOORWAARDE_HYPOTHEEK_RE = VOORWAARDE_ONDERWERPEN.find((o) => o.key === 'hypotheekrecht').re;
+  const cc = (r.conclusie = r.conclusie || {});
+  cc.voorwaarden = A(cc.voorwaarden);
+  cc.actiepunten = A(cc.actiepunten);
+  const alTxt = (arr) => arr.map((x) => (typeof x === 'string' ? x : x?.item) || '').join(' | ');
+  const alAanwezig = VOORWAARDE_HYPOTHEEK_RE.test(alTxt(cc.voorwaarden)) || VOORWAARDE_HYPOTHEEK_RE.test(alTxt(cc.actiepunten));
+  if (!alAanwezig) {
+    cc.voorwaarden.push('Te vestigen eerste hypotheekrecht ten behoeve van de financier.');
+    internal.push('Hoofdstuk 8 (Voorwaarden & documentatie): de zekerhedentabel bevat een hypotheekrecht, maar dit ontbrak als voorwaarde — automatisch aangevuld met "Te vestigen eerste hypotheekrecht ten behoeve van de financier."');
+  }
+}
+
 function dedupeVoorwaardenOnderwerpen(r, internal) {
   /* seen: onderwerp.key -> { veldnaam, idx (positie in de out-array van dat veld) }.
      Bij een tweede vermelding van hetzelfde onderwerp BINNEN hetzelfde veld
@@ -1841,6 +1978,8 @@ function enforceQuality(r, vandaag, opts = {}) {
   enforceFinancialStatementSeparation(r, internal);
   dedupeFinancieleAnalyseRegels(r, internal);
   dedupeOmzetBedrijfsopbrengsten(r, internal);
+  ensureTotaalPassiva(r, internal);
+  checkTotaalBedrijfskostenSom(r, warnings);
 
   /* 4b.i.a2 — objecthoofdstuk: LTV als percentage, geen risicomatrix-tekst. */
   enforceObjectChapterQuality(r, internal);
@@ -1974,7 +2113,9 @@ function enforceQuality(r, vandaag, opts = {}) {
   /* 9 — coverage */
   enforceCoverage(r, warnings, internal);
 
-  /* 8b — voorwaarden/documentatie ontdubbelen op onderwerp (server-side afdwingen). */
+  /* 8b — voorwaarden/documentatie: eerst zorgen dat een genoemd hypotheekrecht
+     ook als voorwaarde aanwezig is, dan pas ontdubbelen op onderwerp (server-side afdwingen). */
+  ensureHypotheekrechtVoorwaarde(r, internal);
   dedupeVoorwaardenOnderwerpen(r, internal);
 
   /* 8c — cover moet juiste entiteiten tonen; zekerheden tekst/tabel consistent;
