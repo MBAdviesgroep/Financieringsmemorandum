@@ -493,6 +493,59 @@ body.edit-mode .blist>div,body.edit-mode .draggable-row{position:relative;cursor
 body.edit-mode .blist>div::after,body.edit-mode .draggable-row::after{content:'⠿';position:absolute;right:0.5mm;top:50%;transform:translateY(-50%);opacity:.32;font-size:9pt;line-height:1}
 body.edit-mode .blist>div.dragging,body.edit-mode .draggable-row.dragging{opacity:.35}
 .edit-drop-line{height:0;border-top:2px solid var(--blue);margin:-1px 0}
+.row-del{position:absolute;top:0;right:0;transform:translate(40%,-40%);width:4.2mm;height:4.2mm;border-radius:50%;border:1px solid rgba(220,38,38,.5);background:#fff;color:#dc2626;font-size:8pt;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;padding:0}
+.row-del:hover{background:#dc2626;color:#fff}
+.add-item-btn,.add-row-btn,.add-kpi-btn{display:block;margin:1.5mm 0 3mm;padding:1.3mm 3mm;border:1px dashed rgba(12,100,252,.5);border-radius:3px;background:rgba(12,100,252,.05);color:var(--blue);font-size:8pt;cursor:pointer;font-family:inherit}
+.add-item-btn:hover,.add-row-btn:hover,.add-kpi-btn:hover{background:rgba(12,100,252,.12)}
+@media print{.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn{display:none!important}}
+
+/* ═══ Tekentoolbar + annotatielaag ═══════════════════════════════════ */
+.edit-toolbar{display:none;align-items:center;gap:2mm;flex-wrap:wrap;padding:2mm 6mm;background:#F4F7FC;border-bottom:1px solid #DCE4F0;font-size:8.5pt}
+body.edit-mode .edit-toolbar{display:flex}
+.et-label{color:var(--muted,#64748b);font-size:7.8pt;margin-right:.5mm}
+.et-sep{width:1px;height:5mm;background:#DCE4F0;margin:0 1mm}
+.et-tool{padding:1.2mm 3mm;border:1px solid #DCE4F0;border-radius:4px;background:#fff;color:var(--ink,#0f172a);cursor:pointer;font-family:inherit;font-size:8.5pt}
+.et-tool:hover{background:#EEF3FB}
+.et-tool.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.et-color{width:5mm;height:5mm;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
+.et-color[data-color="blue"]{background:#0C64FC}
+.et-color[data-color="orange"]{background:#FF8A00}
+.et-color[data-color="green"]{background:#1a9c5c}
+.et-color[data-color="red"]{background:#dc2626}
+.et-color.active{border-color:#0f172a}
+
+.annot-layer{position:absolute;inset:0;pointer-events:none;z-index:20}
+body.edit-mode.annot-tool-active .annot-layer{pointer-events:auto}
+.annot-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.annot{pointer-events:auto}
+.annot-highlight{position:absolute;border-radius:1px;cursor:pointer}
+.annot-highlight.annot-blue{background:rgba(12,100,252,.18);outline:1.5px solid rgba(12,100,252,.55)}
+.annot-highlight.annot-orange{background:rgba(255,138,0,.20);outline:1.5px solid rgba(255,138,0,.6)}
+.annot-highlight.annot-green{background:rgba(26,156,92,.18);outline:1.5px solid rgba(26,156,92,.55)}
+.annot-highlight.annot-red{background:rgba(220,38,38,.16);outline:1.5px solid rgba(220,38,38,.55)}
+.annot-arrow{stroke-width:2.2;fill:none;cursor:pointer}
+.annot-arrow.annot-blue{stroke:#0C64FC}
+.annot-arrow.annot-orange{stroke:#FF8A00}
+.annot-arrow.annot-green{stroke:#1a9c5c}
+.annot-arrow.annot-red{stroke:#dc2626}
+.annot-arrowhead.annot-blue{fill:#0C64FC}
+.annot-arrowhead.annot-orange{fill:#FF8A00}
+.annot-arrowhead.annot-green{fill:#1a9c5c}
+.annot-arrowhead.annot-red{fill:#dc2626}
+.annot-note{position:absolute;max-width:38mm;cursor:move;z-index:21}
+.annot-note-text{min-width:18mm;min-height:6mm;padding:1.5mm 2mm;border-radius:2px 8px 8px 8px;font-size:7.6pt;line-height:1.35;box-shadow:0 1px 4px rgba(15,23,42,.18);color:#1a1a1a}
+.annot-note.annot-blue .annot-note-text{background:#DCEAFF;border:1px solid rgba(12,100,252,.4)}
+.annot-note.annot-orange .annot-note-text{background:#FFE9CC;border:1px solid rgba(255,138,0,.45)}
+.annot-note.annot-green .annot-note-text{background:#D7F3E3;border:1px solid rgba(26,156,92,.4)}
+.annot-note.annot-red .annot-note-text{background:#FBDADA;border:1px solid rgba(220,38,38,.4)}
+.annot-image{position:absolute;cursor:move}
+.annot-image img{display:block;width:100%;height:auto;pointer-events:none;border:1px solid rgba(15,23,42,.15)}
+.annot-resize-se{position:absolute;right:-1.5mm;bottom:-1.5mm;width:3.5mm;height:3.5mm;border-radius:50%;background:var(--blue);border:1.5px solid #fff;cursor:nwse-resize}
+body.edit-mode.annot-tool-erase .annot{outline:1.5px dashed #dc2626}
+@media print{
+  .edit-toolbar,.annot-resize-se{display:none!important}
+  .annot-layer{pointer-events:none!important}
+}
 </style>
 </head>
 <body>
@@ -605,6 +658,22 @@ body.edit-mode .blist>div.dragging,body.edit-mode .draggable-row.dragging{opacit
       <button class="btn-ghost" type="button" id="toggleEdit" title="Tekst en cijfers bewerken, rijen slepen">Bewerken</button>
       <button class="btn-orange" type="button" id="printReport">Print / PDF</button>
     </div>
+  </div>
+  <div class="edit-toolbar no-print" id="editToolbar">
+    <span class="et-label">Tekenen:</span>
+    <button class="et-tool active" type="button" data-tool="none">Tekst</button>
+    <button class="et-tool" type="button" data-tool="highlight">Markeren</button>
+    <button class="et-tool" type="button" data-tool="arrow">Pijl</button>
+    <button class="et-tool" type="button" data-tool="note">Notitie</button>
+    <button class="et-tool" type="button" id="etImageBtn">Afbeelding</button>
+    <button class="et-tool" type="button" data-tool="erase">Wissen</button>
+    <span class="et-sep"></span>
+    <span class="et-label">Kleur:</span>
+    <button class="et-color active" type="button" data-color="blue" title="Blauw"></button>
+    <button class="et-color" type="button" data-color="orange" title="Oranje"></button>
+    <button class="et-color" type="button" data-color="green" title="Groen"></button>
+    <button class="et-color" type="button" data-color="red" title="Rood"></button>
+    <input type="file" id="etImageInput" accept="image/*" style="display:none">
   </div>
   <div class="stage" id="reportStage"></div>
 </section>
@@ -3186,6 +3255,123 @@ function enableBlistDragDrop(root){
   [...root.querySelectorAll('.blist>div')].forEach(item=>{ item.setAttribute('draggable','true'); });
 }
 
+/* ── Content toevoegen/verwijderen ────────────────────────────────────
+   Kleine, niet-bewerkbare bedienelementen (× om te verwijderen, + om toe
+   te voegen) die als losse DOM-nodes worden ingevoegd — nooit binnen een
+   contenteditable tekstknoop, zodat ze nooit per ongeluk worden overtypt
+   of meegekopieerd. Verschijnen alleen in de bewerkmodus, nooit in print. */
+function makeDeletable(elm, onDelete){
+  if(elm.querySelector(':scope>.row-del')) return;
+  const btn=document.createElement('button');
+  btn.type='button'; btn.className='row-del'; btn.setAttribute('contenteditable','false');
+  btn.textContent='×'; btn.title='Verwijderen';
+  btn.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); (onDelete||(()=>elm.remove()))(); });
+  elm.appendChild(btn);
+}
+function addDeleteButtons(root){
+  root.querySelectorAll('.blist>div').forEach(elm=>makeDeletable(elm));
+  root.querySelectorAll('table.bna-table tr[data-bna-role="detail"], table.t.addable-rows tbody tr').forEach(tr=>{
+    tr.style.position='relative';
+    makeDeletable(tr, ()=>{ const t=tr.closest('table.bna-table'); tr.remove(); if(t) recalcBnaTable(t); });
+  });
+  root.querySelectorAll('.kpis>.kpi').forEach(kpi=>{ kpi.style.position='relative'; makeDeletable(kpi); });
+}
+function removeAddDeleteControls(root){
+  root.querySelectorAll('.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn').forEach(elm=>elm.remove());
+}
+
+function addBlistPlusButtons(root){
+  root.querySelectorAll('.blist').forEach(list=>{
+    if(list.nextElementSibling&&list.nextElementSibling.classList&&list.nextElementSibling.classList.contains('add-item-btn')) return;
+    const cls=[...list.classList].find(c=>c!=='blist');
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='add-item-btn'; btn.textContent='+ Punt toevoegen';
+    btn.addEventListener('click',()=>{
+      const div=document.createElement('div');
+      div.setAttribute('contenteditable','true'); div.setAttribute('draggable','true');
+      div.textContent='Nieuw punt';
+      list.appendChild(div);
+      makeDeletable(div);
+      div.focus();
+      const range=document.createRange(); range.selectNodeContents(div);
+      const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    });
+    list.insertAdjacentElement('afterend', btn);
+  });
+}
+
+function addBnaPlusButtons(root){
+  root.querySelectorAll('table.bna-table').forEach(table=>{
+    if(table.nextElementSibling&&table.nextElementSibling.classList&&table.nextElementSibling.classList.contains('add-row-btn')) return;
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='add-row-btn'; btn.textContent='+ Regel toevoegen';
+    btn.addEventListener('click',()=>{
+      const tbody=table.querySelector('tbody');
+      const totalRow=tbody.querySelector('tr[data-bna-role="total"]');
+      const tr=document.createElement('tr'); tr.setAttribute('data-bna-role','detail'); tr.style.position='relative';
+      const tdLabel=document.createElement('td'); tdLabel.setAttribute('contenteditable','true'); tdLabel.textContent='Nieuwe post';
+      const tdVal=document.createElement('td'); tdVal.className='num'; tdVal.setAttribute('data-bna-value','0');
+      const input=document.createElement('input'); input.type='text'; input.inputMode='decimal'; input.className='fin-input'; input.value='0';
+      input.addEventListener('input',()=>{ const n=parseEditableNumber(input.value); tdVal.dataset.bnaValue=n===null?'':n; recalcBnaTable(table); });
+      tdVal.appendChild(input);
+      tr.appendChild(tdLabel); tr.appendChild(tdVal);
+      if(totalRow) tbody.insertBefore(tr, totalRow); else tbody.appendChild(tr);
+      makeDeletable(tr, ()=>{ tr.remove(); recalcBnaTable(table); });
+      recalcBnaTable(table);
+      tdLabel.focus();
+    });
+    table.insertAdjacentElement('afterend', btn);
+  });
+}
+
+function addGenericTablePlusButtons(root){
+  root.querySelectorAll('table.t').forEach(table=>{
+    if(table.classList.contains('fin')||table.classList.contains('bna-table')) return;
+    const tbody=table.querySelector('tbody'); if(!tbody||!tbody.children.length) return;
+    table.classList.add('addable-rows');
+    if(table.nextElementSibling&&table.nextElementSibling.classList&&table.nextElementSibling.classList.contains('add-row-btn')) return;
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='add-row-btn'; btn.textContent='+ Rij toevoegen';
+    btn.addEventListener('click',()=>{
+      const templateRow=tbody.querySelector('tr:not(.total)')||tbody.lastElementChild;
+      const tr=document.createElement('tr'); tr.style.position='relative';
+      const colCount=templateRow?templateRow.querySelectorAll(':scope>td').length:1;
+      for(let i=0;i<colCount;i++){
+        const td=document.createElement('td'); td.setAttribute('contenteditable','true'); td.textContent='';
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+      makeDeletable(tr);
+      tr.querySelector('td').focus();
+    });
+    table.insertAdjacentElement('afterend', btn);
+  });
+}
+
+function addKpiPlusButton(root){
+  root.querySelectorAll('.kpis').forEach(grid=>{
+    grid.querySelectorAll(':scope>.kpi').forEach(kpi=>{ kpi.style.position='relative'; });
+    if(grid.nextElementSibling&&grid.nextElementSibling.classList&&grid.nextElementSibling.classList.contains('add-kpi-btn')) return;
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='add-kpi-btn'; btn.textContent='+ Kerncijfer toevoegen';
+    btn.addEventListener('click',()=>{
+      const kpi=document.createElement('div'); kpi.className='kpi'; kpi.style.position='relative';
+      kpi.innerHTML='<div class="kpi-l" contenteditable="true">Label</div><div class="kpi-v" contenteditable="true">Waarde</div>';
+      grid.appendChild(kpi);
+      makeDeletable(kpi);
+      kpi.querySelector('.kpi-l').focus();
+    });
+    grid.insertAdjacentElement('afterend', btn);
+  });
+}
+
+function addAllPlusButtons(root){
+  addBlistPlusButtons(root);
+  addBnaPlusButtons(root);
+  addGenericTablePlusButtons(root);
+  addKpiPlusButton(root);
+}
+
 const EDITABLE_TEXT_SELECTOR = [
   '.para','.panel-h','.secbar>span','.secbar>small','.colh','.verdict p','.kpi-v','.kpi-l','.kpi-s',
   '.kv .k','.kv .v','.cover-name','.cover-goal','.sub',
@@ -3207,10 +3393,13 @@ function setEditMode(on, root){
     root.querySelectorAll('.blist>div').forEach(elm=>elm.setAttribute('contenteditable','true'));
     makeFinCellsEditable(root);
     enableBlistDragDrop(root);
+    addAllPlusButtons(root);
+    addDeleteButtons(root);
   } else {
     root.querySelectorAll('[contenteditable="true"]').forEach(elm=>elm.removeAttribute('contenteditable'));
     root.querySelectorAll('[draggable="true"]').forEach(elm=>elm.removeAttribute('draggable'));
     collapseFinInputs(root);
+    removeAddDeleteControls(root);
   }
 }
 
@@ -3218,12 +3407,199 @@ function initEditMode(root){
   if(editModeOn) setEditMode(true, root);
 }
 
+/* ══ Markeren/tekenen — lichte annotatielaag per pagina ═══════════════
+   Geen vrij canvas over de hele content (dat zou de vaste rapportstructuur
+   ondermijnen), maar een dunne overlay per A4-pagina waarop je kunt markeren
+   (kader), een pijl trekken, een notitie plakken of een afbeelding invoegen.
+   Coördinaten worden als percentage van de paginabreedte/-hoogte opgeslagen,
+   zodat ze correct blijven staan ongeacht schermschaal en bij het printen. */
+let annotTool='none';
+let annotColor='blue';
+
+function pagePercentCoords(page,clientX,clientY){
+  const r=page.getBoundingClientRect();
+  return {x:(clientX-r.left)/r.width*100,y:(clientY-r.top)/r.height*100};
+}
+function ensureAnnotLayer(page){
+  let layer=page.querySelector(':scope>.annot-layer');
+  if(!layer){ layer=document.createElement('div'); layer.className='annot-layer'; page.appendChild(layer); }
+  return layer;
+}
+const ANNOT_ARROW_DEFS='<defs>'+['blue','orange','green','red'].map(c=>
+  `<marker id="annotArrow-${c}" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L6,3 L0,6 Z" class="annot-arrowhead annot-${c}"/></marker>`
+).join('')+'</defs>';
+function ensureAnnotSvg(layer){
+  let svg=layer.querySelector(':scope>svg.annot-svg');
+  if(!svg){
+    svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('class','annot-svg');
+    svg.setAttribute('viewBox','0 0 100 100');
+    svg.setAttribute('preserveAspectRatio','none');
+    svg.innerHTML=ANNOT_ARROW_DEFS;
+    layer.appendChild(svg);
+  }
+  return svg;
+}
+
+function startAnnotDraw(page,startEvt,tool){
+  const layer=ensureAnnotLayer(page);
+  const start=pagePercentCoords(page,startEvt.clientX,startEvt.clientY);
+  let elm;
+  if(tool==='highlight'){
+    elm=document.createElement('div');
+    elm.className='annot annot-highlight annot-'+annotColor;
+    Object.assign(elm.style,{left:start.x+'%',top:start.y+'%',width:'0%',height:'0%'});
+    layer.appendChild(elm);
+  } else {
+    const svg=ensureAnnotSvg(layer);
+    elm=document.createElementNS(svg.namespaceURI,'line');
+    elm.setAttribute('class','annot annot-arrow annot-'+annotColor);
+    elm.setAttribute('x1',start.x); elm.setAttribute('y1',start.y);
+    elm.setAttribute('x2',start.x); elm.setAttribute('y2',start.y);
+    elm.setAttribute('marker-end',`url(#annotArrow-${annotColor})`);
+    elm.setAttribute('vector-effect','non-scaling-stroke');
+    svg.appendChild(elm);
+  }
+  const move=e=>{
+    const cur=pagePercentCoords(page,e.clientX,e.clientY);
+    if(tool==='highlight'){
+      const x=Math.min(start.x,cur.x),y=Math.min(start.y,cur.y),w=Math.abs(cur.x-start.x),h=Math.abs(cur.y-start.y);
+      Object.assign(elm.style,{left:x+'%',top:y+'%',width:w+'%',height:h+'%'});
+    } else {
+      elm.setAttribute('x2',cur.x); elm.setAttribute('y2',cur.y);
+    }
+  };
+  const up=()=>{
+    document.removeEventListener('mousemove',move);
+    document.removeEventListener('mouseup',up);
+    if(tool==='highlight'){
+      if(parseFloat(elm.style.width)<1||parseFloat(elm.style.height)<1) elm.remove();
+    } else {
+      const len=Math.hypot((+elm.getAttribute('x2'))-(+elm.getAttribute('x1')),(+elm.getAttribute('y2'))-(+elm.getAttribute('y1')));
+      if(len<1) elm.remove();
+    }
+  };
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',up);
+}
+
+function placeAnnotNote(page,evt){
+  const layer=ensureAnnotLayer(page);
+  const pos=pagePercentCoords(page,evt.clientX,evt.clientY);
+  const note=document.createElement('div');
+  note.className='annot annot-note annot-'+annotColor;
+  note.style.left=pos.x+'%'; note.style.top=pos.y+'%';
+  const bubble=document.createElement('div');
+  bubble.className='annot-note-text';
+  bubble.setAttribute('contenteditable','true');
+  note.appendChild(bubble);
+  layer.appendChild(note);
+  enableAnnotDrag(note,page);
+  bubble.focus();
+}
+
+function enableAnnotDrag(elm,page){
+  elm.addEventListener('mousedown',e=>{
+    if(annotTool==='erase') return; // laat de wis-click gewoon doorlopen
+    if(e.target.closest('.annot-resize-se')) return;
+    if(e.target.isContentEditable && document.activeElement===e.target) return; // tekst selecteren mag
+    e.preventDefault();
+    const startMouse=pagePercentCoords(page,e.clientX,e.clientY);
+    const startLeft=parseFloat(elm.style.left)||0, startTop=parseFloat(elm.style.top)||0;
+    const move=ev=>{
+      const cur=pagePercentCoords(page,ev.clientX,ev.clientY);
+      elm.style.left=(startLeft+(cur.x-startMouse.x))+'%';
+      elm.style.top=(startTop+(cur.y-startMouse.y))+'%';
+    };
+    const up=()=>{ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); };
+    document.addEventListener('mousemove',move);
+    document.addEventListener('mouseup',up);
+  });
+}
+
+function insertAnnotImage(page,dataUrl){
+  const layer=ensureAnnotLayer(page);
+  const wrap=document.createElement('div');
+  wrap.className='annot annot-image';
+  Object.assign(wrap.style,{left:'30%',top:'30%',width:'35%'});
+  const img=document.createElement('img');
+  img.src=dataUrl;
+  wrap.appendChild(img);
+  const handle=document.createElement('span');
+  handle.className='annot-resize-se'; handle.setAttribute('contenteditable','false');
+  wrap.appendChild(handle);
+  layer.appendChild(wrap);
+  enableAnnotDrag(wrap,page);
+  handle.addEventListener('mousedown',e=>{
+    e.preventDefault(); e.stopPropagation();
+    const startMouse=pagePercentCoords(page,e.clientX,e.clientY);
+    const startW=parseFloat(wrap.style.width)||30;
+    const move=ev=>{
+      const cur=pagePercentCoords(page,ev.clientX,ev.clientY);
+      wrap.style.width=Math.max(6,startW+(cur.x-startMouse.x))+'%';
+    };
+    const up=()=>{ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); };
+    document.addEventListener('mousemove',move);
+    document.addEventListener('mouseup',up);
+  });
+}
+
+function setAnnotTool(tool){
+  annotTool=tool;
+  document.body.classList.toggle('annot-tool-active', tool!=='none');
+  document.body.classList.toggle('annot-tool-erase', tool==='erase');
+  document.querySelectorAll('.et-tool[data-tool]').forEach(b=>b.classList.toggle('active', b.dataset.tool===tool));
+}
+function setAnnotColor(color){
+  annotColor=color;
+  document.querySelectorAll('.et-color').forEach(b=>b.classList.toggle('active', b.dataset.color===color));
+}
+
+let lastActivePage=null;
+document.addEventListener('mousedown',e=>{
+  const pageHit=e.target.closest('.report-page');
+  if(pageHit) lastActivePage=pageHit;
+  if(!editModeOn||annotTool==='none') return;
+  if(e.target.closest('.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn,.edit-toolbar,input.fin-input')) return;
+  const page=pageHit;
+  if(!page) return;
+  if(annotTool==='erase'){
+    const annot=e.target.closest('.annot');
+    if(annot){ e.preventDefault(); annot.remove(); }
+    return;
+  }
+  if(annotTool==='note'){ e.preventDefault(); placeAnnotNote(page,e); return; }
+  if(annotTool==='highlight'||annotTool==='arrow'){
+    if(e.target.closest('.annot')) return; // sleep i.p.v. nieuwe annotatie starten
+    e.preventDefault();
+    startAnnotDraw(page,e,annotTool);
+  }
+});
+
 /* ══ Toolbar ════════════════════════════════════════════════════════ */
 /* Verborgen: dubbelklik op de Credion-titel in de toolbar toont de JSON-download */
 document.querySelector('.tb-brand').addEventListener('dblclick',()=>document.body.classList.toggle('show-json'));
 $('#toggleEdit').addEventListener('click',()=>{
   if(!el.stage.querySelector('.report-page')) return; // nog geen rapport geladen
   setEditMode(!editModeOn, el.stage);
+  setAnnotTool('none');
+});
+document.querySelectorAll('.et-tool[data-tool]').forEach(btn=>{
+  btn.addEventListener('click',()=>setAnnotTool(btn.dataset.tool));
+});
+document.querySelectorAll('.et-color').forEach(btn=>{
+  btn.addEventListener('click',()=>setAnnotColor(btn.dataset.color));
+});
+$('#etImageBtn').addEventListener('click',()=>$('#etImageInput').click());
+$('#etImageInput').addEventListener('change',e=>{
+  const file=e.target.files&&e.target.files[0];
+  if(!file) return;
+  const targetPage=lastActivePage||el.stage.querySelector('.report-page');
+  if(!targetPage){ e.target.value=''; return; }
+  const reader=new FileReader();
+  reader.onload=()=>{ insertAnnotImage(targetPage, reader.result); };
+  reader.readAsDataURL(file);
+  e.target.value='';
 });
 $('#printReport').addEventListener('click',()=>window.print());
 /* Ook bij Ctrl+P of het browser-printmenu (niet alleen de knop): invoervelden
@@ -3245,6 +3621,7 @@ $('#newReport').addEventListener('click',()=>{
   el.stage.innerHTML=''; window.scrollTo({top:0});
   editModeOn=false; document.body.classList.remove('edit-mode');
   const editBtn=document.getElementById('toggleEdit'); if(editBtn){ editBtn.classList.remove('active'); editBtn.textContent='Bewerken'; }
+  setAnnotTool('none'); lastActivePage=null;
 });
 
 /* Debug/test-hook: render een rapport-JSON zonder API-call (console) */
