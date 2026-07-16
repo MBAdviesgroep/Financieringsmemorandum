@@ -508,8 +508,10 @@ body.edit-mode .blist>div.dragging,body.edit-mode .draggable-row.dragging{opacit
 .row-del{position:absolute;top:0;right:0;transform:translate(40%,-40%);width:4.2mm;height:4.2mm;border-radius:50%;border:1px solid rgba(220,38,38,.5);background:#fff;color:#dc2626;font-size:8pt;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;padding:0}
 .row-del:hover{background:#dc2626;color:#fff}
 .add-item-btn,.add-row-btn,.add-kpi-btn{display:block;margin:1.5mm 0 3mm;padding:1.3mm 3mm;border:1px dashed rgba(12,100,252,.5);border-radius:3px;background:rgba(12,100,252,.05);color:var(--blue);font-size:8pt;cursor:pointer;font-family:inherit}
+.add-kpi-btn.on-dark{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08)}
+.add-kpi-btn.on-dark:hover{background:rgba(255,255,255,.16)}
 .add-item-btn:hover,.add-row-btn:hover,.add-kpi-btn:hover{background:rgba(12,100,252,.12)}
-@media print{.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn{display:none!important}}
+@media print{.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn,tr.fin-addrow{display:none!important}}
 
 /* ═══ Tekentoolbar + annotatielaag ═══════════════════════════════════ */
 .edit-toolbar{display:none;align-items:center;gap:2mm;flex-wrap:wrap;padding:2mm 6mm;background:#F4F7FC;border-bottom:1px solid #DCE4F0;font-size:8.5pt}
@@ -3367,9 +3369,13 @@ function addDeleteButtons(root){
     makeDeletable(tr);
   });
   root.querySelectorAll('.kpis>.kpi').forEach(kpi=>{ kpi.style.position='relative'; makeDeletable(kpi); });
+  /* Kerncijfers en metadata op voor-/achterblad: net zo goed corrigeerbaar
+     als de KPI-strip in de rest van het rapport. */
+  root.querySelectorAll('.cover-kpis>.cover-kpi, .cover-meta>div, .back-meta>div').forEach(elm=>{ elm.style.position='relative'; makeDeletable(elm); });
 }
 function removeAddDeleteControls(root){
   root.querySelectorAll('.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn').forEach(elm=>elm.remove());
+  root.querySelectorAll('tr.fin-addrow').forEach(tr=>tr.remove());
 }
 
 function addBlistPlusButtons(root){
@@ -3421,6 +3427,54 @@ function addBnaPlusButtons(root){
   });
 }
 
+const FIN_GROUP_ADD_LABELS={Activa:'Activapost',Passiva:'Passivapost',Opbrengsten:'Opbrengstenpost',Kosten:'Kostenpost'};
+function addFinTablePlusButtons(root){
+  root.querySelectorAll('table.t.fin').forEach(table=>{
+    const tbody=table.querySelector('tbody'); if(!tbody) return;
+    const firstDataRow=tbody.querySelector('tr[data-fin-key]'); if(!firstDataRow) return;
+    const periods=[...firstDataRow.querySelectorAll('td[data-fin-period]')].map(td=>td.dataset.finPeriod);
+    if(!periods.length) return;
+    const colspan=1+periods.length;
+    Object.keys(FIN_GROUP_ADD_LABELS).forEach(group=>{
+      const groupRows=[...tbody.querySelectorAll(`tr[data-fin-key][data-fin-group="${group}"]`)];
+      if(!groupRows.length) return; // deze tabel heeft geen posten in deze sectie (bijv. geen Opbrengsten-regels)
+      const lastGroupRow=groupRows[groupRows.length-1];
+      if(lastGroupRow.nextElementSibling&&lastGroupRow.nextElementSibling.classList&&lastGroupRow.nextElementSibling.classList.contains('fin-addrow')) return; // knop staat er al (herrender)
+      const totalRow=groupRows.find(r=>r.dataset.finTotal==='1');
+      const referenceNode=totalRow||lastGroupRow.nextElementSibling;
+      const markerTr=document.createElement('tr');
+      markerTr.className='fin-addrow';
+      const markerTd=document.createElement('td'); markerTd.colSpan=colspan;
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='add-row-btn'; btn.textContent=`+ ${FIN_GROUP_ADD_LABELS[group]} toevoegen`;
+      btn.addEventListener('click',()=>{
+        const tr=document.createElement('tr'); tr.style.position='relative';
+        tr.setAttribute('data-fin-key','x:'+newEditorId('post'));
+        tr.setAttribute('data-fin-group',group);
+        tr.setAttribute('data-fin-total','0');
+        const tdLabel=document.createElement('td'); tdLabel.setAttribute('contenteditable','true'); tdLabel.textContent='Nieuwe post';
+        tr.appendChild(tdLabel);
+        periods.forEach(p=>{
+          const td=document.createElement('td'); td.className='num'; td.setAttribute('data-fin-period',p); td.setAttribute('data-fin-value','0');
+          const input=document.createElement('input'); input.type='text'; input.inputMode='decimal'; input.className='fin-input'; input.value='0';
+          input.addEventListener('input',()=>{ const n=parseEditableNumber(input.value); td.dataset.finValue=n===null?'':n; recalcFinTable(table); });
+          wireFinInputHistory(input);
+          td.appendChild(input);
+          tr.appendChild(td);
+        });
+        tbody.insertBefore(tr, markerTr);
+        makeDeletable(tr);
+        ensureEditorId(tr,'row');
+        recalcFinTable(table);
+        trackInsertion(tr, table);
+        tdLabel.focus();
+      });
+      markerTd.appendChild(btn); markerTr.appendChild(markerTd);
+      tbody.insertBefore(markerTr, referenceNode);
+    });
+  });
+}
+
 function addGenericTablePlusButtons(root){
   root.querySelectorAll('table.t').forEach(table=>{
     if(table.classList.contains('fin')||table.classList.contains('bna-table')) return;
@@ -3464,11 +3518,31 @@ function addKpiPlusButton(root){
     });
     grid.insertAdjacentElement('afterend', btn);
   });
+  /* Kerncijfers-strip op het voorblad heeft een donkere achtergrond, dus de
+     "+"-knop krijgt hier een lichte variant (.on-dark) zodat hij leesbaar blijft. */
+  root.querySelectorAll('.cover-kpis').forEach(grid=>{
+    grid.querySelectorAll(':scope>.cover-kpi').forEach(kpi=>{ kpi.style.position='relative'; });
+    if(grid.nextElementSibling&&grid.nextElementSibling.classList&&grid.nextElementSibling.classList.contains('add-kpi-btn')) return;
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='add-kpi-btn on-dark'; btn.textContent='+ Kerncijfer toevoegen';
+    btn.addEventListener('click',()=>{
+      const kpi=document.createElement('div'); kpi.className='cover-kpi'; kpi.style.position='relative';
+      kpi.innerHTML='<div class="ck-v" contenteditable="true">Waarde</div><div class="ck-l" contenteditable="true">Label</div>';
+      grid.appendChild(kpi);
+      makeDeletable(kpi);
+      ensureEditorId(kpi,'kpi');
+      kpi.classList.add('ed-movable');
+      trackInsertion(kpi, null);
+      kpi.querySelector('.ck-v').focus();
+    });
+    grid.insertAdjacentElement('afterend', btn);
+  });
 }
 
 function addAllPlusButtons(root){
   addBlistPlusButtons(root);
   addBnaPlusButtons(root);
+  addFinTablePlusButtons(root);
   addGenericTablePlusButtons(root);
   addKpiPlusButton(root);
 }
@@ -3476,6 +3550,7 @@ function addAllPlusButtons(root){
 const EDITABLE_TEXT_SELECTOR = [
   '.para','.panel-h','.secbar>span','.secbar>small','.colh','.verdict p','.kpi-v','.kpi-l','.kpi-s',
   '.kv .k','.kv .v','.cover-name','.cover-goal','.sub',
+  '.ck-v','.ck-l','.cm-l','.cm-v','.bm-l','.bm-v','.back-name',
   'td:not(.num)','th:not(.num)'
 ].join(',');
 
@@ -3752,7 +3827,126 @@ function redo(){
 }
 function onHistoryChanged(){
   updateHistoryButtons();
-  if(!Ed.restoring){ Ed.dirty=true; scheduleAutosave(); }
+  if(!Ed.restoring){
+    Ed.dirty=true;
+    resolveAllPageOverflows();
+    scheduleAutosave();
+  }
+}
+
+/* ══ Automatische pagina-overloop ═══════════════════════════════════════
+   De pagina's hebben een vaste A4-hoogte; op scherm staat overflow:visible
+   (je ZIET content dus voorbij de rand lopen), maar bij printen wordt elke
+   pagina hard op 297mm afgekapt (overflow:hidden). Zonder ingrijpen
+   verdwijnt toegevoegde inhoud dus stilletjes uit de PDF. Deze functies
+   verplaatsen daarom automatisch de laatste blok(ken) van een overvolle
+   pagina naar een nieuwe vervolgpagina — als geheel blok (alinea, paneel,
+   tabel, bulletlijst, KPI-strip, ...), nooit een lijst middenin splitsen,
+   consistent met de bestaande break-inside:avoid-opmaak van het rapport.
+   Dit is bewust GEEN aparte undo-stap: het is een automatische, deter-
+   ministische aanpassing die na elke wijziging opnieuw wordt afgeleid —
+   zelfde soort mechanisme als het opnieuw tekenen van organogramlijnen. */
+function pageOverflowPx(page){
+  const body=page.querySelector(':scope>.rp-body');
+  const foot=page.querySelector(':scope>.rp-foot');
+  if(!body || !foot || !body.lastElementChild) return 0;
+  const limit=foot.getBoundingClientRect().top;
+  const contentBottom=body.lastElementChild.getBoundingClientRect().bottom;
+  return Math.max(0, contentBottom-limit);
+}
+function sourceHeaderTitle(page){
+  const right=page.querySelector(':scope>.rp-head .rp-head-right');
+  return right ? right.textContent.replace(/\s*—\s*vervolg\s*$/,'') : '';
+}
+function findOrCreateContinuationPage(sourcePage){
+  ensureEditorId(sourcePage,'page');
+  const next=sourcePage.nextElementSibling;
+  if(next && next.classList.contains('report-page') && next.dataset.continuationSource===sourcePage.dataset.editorId){
+    return next;
+  }
+  const clone=sourcePage.cloneNode(false); // lege kopie: geen inhoud, wel dezelfde klassen (o.a. landscape)
+  clone.removeAttribute('data-editor-id');
+  clone.removeAttribute('data-screen-label');
+  ensureEditorId(clone,'page');
+  clone.dataset.autoContinuation='1';
+  clone.dataset.continuationSource=sourcePage.dataset.editorId;
+  const head=sourcePage.querySelector(':scope>.rp-head');
+  const foot=sourcePage.querySelector(':scope>.rp-foot');
+  const body=document.createElement('div');
+  body.className='rp-body';
+  if(head){
+    const headClone=head.cloneNode(true);
+    const right=headClone.querySelector('.rp-head-right');
+    if(right) right.textContent = sourceHeaderTitle(sourcePage)+' — vervolg';
+    clone.appendChild(headClone);
+  }
+  clone.appendChild(body);
+  if(foot) clone.appendChild(foot.cloneNode(true));
+  sourcePage.insertAdjacentElement('afterend', clone);
+  return clone;
+}
+function resolvePageOverflow(page){
+  let changed=false, guard=0;
+  while(pageOverflowPx(page)>2 && guard<200){
+    guard++;
+    const body=page.querySelector(':scope>.rp-body');
+    if(!body || body.children.length<=1) break; // één blok alleen: kan niet verder opgesplitst worden
+    const moving=body.lastElementChild;
+    const cont=findOrCreateContinuationPage(page);
+    const contBody=cont.querySelector(':scope>.rp-body');
+    contBody.insertBefore(moving, contBody.firstElementChild||null);
+    changed=true;
+  }
+  return changed;
+}
+function removeEmptyAutoContinuationPages(){
+  let changed=false;
+  el.stage.querySelectorAll('.report-page[data-auto-continuation="1"]').forEach(p=>{
+    const body=p.querySelector(':scope>.rp-body');
+    if(body && !body.children.length){ p.remove(); changed=true; }
+  });
+  return changed;
+}
+function renumberPages(){
+  const pages=[...el.stage.querySelectorAll('.report-page')];
+  const total=pages.length;
+  pages.forEach((p,idx)=>{
+    const chip=p.querySelector(':scope>.rp-foot .pg-chip');
+    if(chip) chip.textContent=`Pagina ${idx+1} van ${total}`;
+  });
+  updateTocPageNumbers(pages);
+}
+/* Wijst elke inhoudsopgave-rij toe aan de eerste pagina waarvan de kop-
+   titel de hoofdstuknaam bevat, en werkt het getoonde paginanummer bij.
+   Een beste-poging-koppeling op tekst — bij een ongebruikelijke samen-
+   loop van gecombineerde paginatitels kan dit in zeldzame gevallen
+   afwijken; de adviseur kan de inhoudsopgavetekst altijd handmatig
+   corrigeren zoals elk ander tekstonderdeel. */
+function updateTocPageNumbers(pages){
+  const rows=el.stage.querySelectorAll('.toc-row');
+  if(!rows.length) return;
+  const labelled=pages.map((p,idx)=>({idx, title:sourceHeaderTitle(p)||''}));
+  rows.forEach(row=>{
+    const nameEl=row.querySelector('.toc-name'), pageEl=row.querySelector('.toc-page');
+    if(!nameEl||!pageEl) return;
+    const name=nameEl.textContent.trim();
+    if(!name) return;
+    const hit=labelled.find(x=>x.title.includes(name));
+    if(hit) pageEl.textContent=String(hit.idx+1);
+  });
+}
+function resolveAllPageOverflows(){
+  let guard=0, anyChange=false;
+  while(guard<50){
+    guard++;
+    const pages=[...el.stage.querySelectorAll('.report-page')];
+    let changedThisPass=false;
+    for(const p of pages){ if(resolvePageOverflow(p)) changedThisPass=true; }
+    if(removeEmptyAutoContinuationPages()) changedThisPass=true;
+    if(!changedThisPass) break;
+    anyChange=true;
+  }
+  if(anyChange) renumberPages();
 }
 function updateHistoryButtons(){
   const undoBtn=$('#historyUndo'), redoBtn=$('#historyRedo');
@@ -3782,7 +3976,7 @@ function showToast(msg, kind){
 /* ── Object-registratie ────────────────────────────────────────────── */
 const MOVE_SELECTORS = {
   text:['.para','.pt-title','.cover-name','.cover-goal','.verdict p'],
-  kpi:['.kpis>.kpi'],
+  kpi:['.kpis>.kpi','.cover-kpis>.cover-kpi','.cover-meta>div','.back-meta>div'],
   panel:['.panel'],
   table:['table.t'],
   image:['.struct-org-image'],
@@ -3810,7 +4004,7 @@ function registerEditableObjects(root){
   // Containers krijgen ook een ID zodat verwijderde items op de juiste plek
   // terug kunnen (referenties blijven overigens gewoon de echte DOM-node;
   // dit dient vooral leesbaarheid/robuustheid van het lagenpaneel-idee).
-  root.querySelectorAll('.blist,.kpis,table.bna-table>tbody,table.t.addable-rows>tbody,.annot-layer').forEach(elm=>ensureEditorId(elm,'container'));
+  root.querySelectorAll('.blist,.kpis,.cover-kpis,.cover-meta,.back-meta,table.bna-table>tbody,table.t.addable-rows>tbody,.annot-layer').forEach(elm=>ensureEditorId(elm,'container'));
 }
 
 const ADAPTERS = {
