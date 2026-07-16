@@ -546,6 +546,44 @@ body.edit-mode.annot-tool-erase .annot{outline:1.5px dashed #dc2626}
   .edit-toolbar,.annot-resize-se{display:none!important}
   .annot-layer{pointer-events:none!important}
 }
+
+/* ═══ Geavanceerde bewerkeditor — geschiedenis, selectie, verplaatsen ═══ */
+.et-history{display:flex;align-items:center;gap:1.6mm;flex-wrap:wrap}
+.et-status{font-size:7.6pt;color:var(--muted,#68748A);margin:0 1mm;white-space:nowrap}
+.et-status.dirty{color:var(--amber,#9A6500);font-weight:700}
+.et-status.saved{color:var(--green,#1E7A4F);font-weight:700}
+.et-tool[disabled]{opacity:.35;cursor:not-allowed}
+.et-danger{color:var(--red,#B4432F);border-color:rgba(180,67,47,.35)}
+.et-danger:hover{background:rgba(180,67,47,.08)}
+
+body.edit-mode [data-editor-id]{cursor:default}
+body.edit-mode [data-editor-id].ed-movable:hover{outline:1px solid rgba(12,100,252,.28);outline-offset:1px}
+body.edit-mode [data-editor-id].editor-selected{outline:1.5px solid var(--blue,#0C64FC)!important;outline-offset:1px}
+
+.editor-selection-frame{position:fixed;z-index:9000;border:1.5px solid var(--blue,#0C64FC);background:rgba(12,100,252,.04);pointer-events:none;display:none}
+.ef-drag{position:absolute;top:-8px;left:-8px;width:16px;height:16px;border-radius:50%;background:var(--blue,#0C64FC);color:#fff;font-size:9px;line-height:16px;text-align:center;cursor:move;pointer-events:auto;box-shadow:0 1px 4px rgba(16,32,51,.35)}
+.ef-handle{position:absolute;width:9px;height:9px;background:#fff;border:1.5px solid var(--blue,#0C64FC);border-radius:2px;pointer-events:auto}
+.ef-handle.se{right:-5px;bottom:-5px;cursor:nwse-resize}
+.ef-toolbar{position:fixed;z-index:9001;display:none;gap:1px;background:#10233F;border-radius:7px;padding:3px;box-shadow:0 6px 20px rgba(8,18,36,.35)}
+.ef-toolbar button{background:transparent;border:none;color:#fff;font-size:11.5px;padding:5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.ef-toolbar button:hover{background:rgba(255,255,255,.14)}
+.ef-toolbar button.et-danger{color:#FF9E8A}
+
+.editor-toast-wrap{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9500;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.editor-toast{background:#10233F;color:#fff;font-size:12px;padding:9px 16px;border-radius:8px;box-shadow:0 8px 24px rgba(8,18,36,.35);max-width:420px;text-align:center}
+.editor-toast.warn{background:#7A4B00}
+
+.editor-banner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9600;background:#fff;border:1px solid var(--line,#E3EAF3);border-radius:12px;box-shadow:0 16px 44px rgba(16,32,51,.18);padding:14px 18px;max-width:460px;display:none;font-size:13px;color:var(--ink,#102033)}
+.editor-banner strong{display:block;margin-bottom:8px;font-size:13.5px}
+.editor-banner .eb-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.editor-banner button{border-radius:8px;border:1px solid var(--line,#E3EAF3);background:#fff;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--blue-deep,#003B8F)}
+.editor-banner button.primary{background:var(--blue,#0C64FC);border-color:var(--blue,#0C64FC);color:#fff}
+.editor-banner button.danger{color:var(--red,#B4432F);border-color:rgba(180,67,47,.3)}
+
+@media print{
+  .editor-selection-frame,.ef-toolbar,.editor-toast-wrap,.editor-banner,.et-history{display:none!important}
+  [data-editor-id]{outline:none!important}
+}
 </style>
 </head>
 <body>
@@ -660,6 +698,14 @@ body.edit-mode.annot-tool-erase .annot{outline:1.5px dashed #dc2626}
     </div>
   </div>
   <div class="edit-toolbar no-print" id="editToolbar">
+    <span class="et-history">
+      <button class="et-tool" type="button" id="historyUndo" title="Ongedaan maken (Ctrl+Z)">&#8630; Ongedaan maken</button>
+      <button class="et-tool" type="button" id="historyRedo" title="Opnieuw uitvoeren (Ctrl+Y)">&#8631; Opnieuw</button>
+      <button class="et-tool" type="button" id="historySave" title="Bewerksessie opslaan (Ctrl+S)">Opslaan</button>
+      <span class="et-status saved" id="historyStatus">Opgeslagen</span>
+      <button class="et-tool et-danger" type="button" id="historyReset" title="Terug naar de oorspronkelijke, gegenereerde versie">Origineel herstellen</button>
+    </span>
+    <span class="et-sep"></span>
     <span class="et-label">Tekenen:</span>
     <button class="et-tool active" type="button" data-tool="none">Tekst</button>
     <button class="et-tool" type="button" data-tool="highlight">Markeren</button>
@@ -2889,7 +2935,7 @@ function fitCompactToPageBudget(sections,maxOutputPages,opts={}){
 }
 
 /* ── Hoofd-renderer ────────────────────────────────────────────────── */
-function renderReport(r){
+function renderReport(r, editorOpts){
   const md=r.metadata||{};
   const rtype=getReportType(r);
   const isIntake = rtype==='compact_intake';
@@ -3074,6 +3120,7 @@ function renderReport(r){
   fitCoverText(el.stage.querySelector('.cover-name'),2,13,{long:32,longer:55});
   fitCoverText(el.stage.querySelector('.cover-goal'),3,8,{long:95,longer:150});
   initEditMode(el.stage);
+  onReportRendered(r, editorOpts);
 }
 
 /* ══ Bewerkmodus ═══════════════════════════════════════════════════════
@@ -3193,6 +3240,7 @@ function makeFinCellsEditable(root){
         td.dataset.finValue=n===null?'':n;
         recalcFinTable(td.closest('table'));
       });
+      wireFinInputHistory(input);
     });
   });
   root.querySelectorAll('table.bna-table tr[data-bna-role="detail"] td[data-bna-value]').forEach(td=>{
@@ -3207,6 +3255,7 @@ function makeFinCellsEditable(root){
       td.dataset.bnaValue=n===null?'':n;
       recalcBnaTable(td.closest('table'));
     });
+    wireFinInputHistory(input);
   });
 }
 
@@ -3230,15 +3279,25 @@ function enableBlistDragDrop(root){
   root.querySelectorAll('.blist').forEach(list=>{
     if(list.dataset.dndReady) return;
     list.dataset.dndReady='1';
+    let dragFromIndex=-1;
     list.addEventListener('dragstart',e=>{
       const item=e.target.closest('.blist>div')||(e.target.parentElement===list?e.target:null);
       if(!item||item.parentElement!==list) return;
       item.classList.add('dragging');
+      dragFromIndex=[...list.children].indexOf(item);
       e.dataTransfer.effectAllowed='move';
     });
     list.addEventListener('dragend',e=>{
       const item=e.target.closest('.blist>div');
-      if(item) item.classList.remove('dragging');
+      if(item){
+        item.classList.remove('dragging');
+        const toIndex=[...list.children].indexOf(item);
+        if(dragFromIndex>=0 && toIndex>=0 && toIndex!==dragFromIndex){
+          const parent=list, elm=item, from=dragFromIndex, to=toIndex;
+          commit({ apply(){ moveToIndex(parent,elm,to); }, revert(){ moveToIndex(parent,elm,from); } }, true);
+        }
+      }
+      dragFromIndex=-1;
     });
     list.addEventListener('dragover',e=>{
       const dragging=list.querySelector(':scope>div.dragging');
@@ -3260,19 +3319,21 @@ function enableBlistDragDrop(root){
    te voegen) die als losse DOM-nodes worden ingevoegd — nooit binnen een
    contenteditable tekstknoop, zodat ze nooit per ongeluk worden overtypt
    of meegekopieerd. Verschijnen alleen in de bewerkmodus, nooit in print. */
-function makeDeletable(elm, onDelete){
+function makeDeletable(elm){
   if(elm.querySelector(':scope>.row-del')) return;
   const btn=document.createElement('button');
   btn.type='button'; btn.className='row-del'; btn.setAttribute('contenteditable','false');
   btn.textContent='×'; btn.title='Verwijderen';
-  btn.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); (onDelete||(()=>elm.remove()))(); });
+  /* Klikken wordt centraal afgehandeld (event delegation, zie editor 2.0
+     verderop) zodat een via undo teruggezet element altijd blijft werken,
+     ook zonder dat er opnieuw een listener aan de knop is gekoppeld. */
   elm.appendChild(btn);
 }
 function addDeleteButtons(root){
   root.querySelectorAll('.blist>div').forEach(elm=>makeDeletable(elm));
   root.querySelectorAll('table.bna-table tr[data-bna-role="detail"], table.t.addable-rows tbody tr').forEach(tr=>{
     tr.style.position='relative';
-    makeDeletable(tr, ()=>{ const t=tr.closest('table.bna-table'); tr.remove(); if(t) recalcBnaTable(t); });
+    makeDeletable(tr);
   });
   root.querySelectorAll('.kpis>.kpi').forEach(kpi=>{ kpi.style.position='relative'; makeDeletable(kpi); });
 }
@@ -3292,6 +3353,8 @@ function addBlistPlusButtons(root){
       div.textContent='Nieuw punt';
       list.appendChild(div);
       makeDeletable(div);
+      ensureEditorId(div,'bullet');
+      trackInsertion(div, null);
       div.focus();
       const range=document.createRange(); range.selectNodeContents(div);
       const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
@@ -3313,11 +3376,14 @@ function addBnaPlusButtons(root){
       const tdVal=document.createElement('td'); tdVal.className='num'; tdVal.setAttribute('data-bna-value','0');
       const input=document.createElement('input'); input.type='text'; input.inputMode='decimal'; input.className='fin-input'; input.value='0';
       input.addEventListener('input',()=>{ const n=parseEditableNumber(input.value); tdVal.dataset.bnaValue=n===null?'':n; recalcBnaTable(table); });
+      wireFinInputHistory(input);
       tdVal.appendChild(input);
       tr.appendChild(tdLabel); tr.appendChild(tdVal);
       if(totalRow) tbody.insertBefore(tr, totalRow); else tbody.appendChild(tr);
-      makeDeletable(tr, ()=>{ tr.remove(); recalcBnaTable(table); });
+      makeDeletable(tr);
+      ensureEditorId(tr,'row');
       recalcBnaTable(table);
+      trackInsertion(tr, table);
       tdLabel.focus();
     });
     table.insertAdjacentElement('afterend', btn);
@@ -3342,6 +3408,8 @@ function addGenericTablePlusButtons(root){
       }
       tbody.appendChild(tr);
       makeDeletable(tr);
+      ensureEditorId(tr,'row');
+      trackInsertion(tr, null);
       tr.querySelector('td').focus();
     });
     table.insertAdjacentElement('afterend', btn);
@@ -3359,6 +3427,8 @@ function addKpiPlusButton(root){
       kpi.innerHTML='<div class="kpi-l" contenteditable="true">Label</div><div class="kpi-v" contenteditable="true">Waarde</div>';
       grid.appendChild(kpi);
       makeDeletable(kpi);
+      ensureEditorId(kpi,'kpi');
+      trackInsertion(kpi, null);
       kpi.querySelector('.kpi-l').focus();
     });
     grid.insertAdjacentElement('afterend', btn);
@@ -3395,12 +3465,16 @@ function setEditMode(on, root){
     enableBlistDragDrop(root);
     addAllPlusButtons(root);
     addDeleteButtons(root);
+    registerEditableObjects(root);
+    enableRowDragDrop(root);
+    wireAllFinInputs(root);
   } else {
     root.querySelectorAll('[contenteditable="true"]').forEach(elm=>elm.removeAttribute('contenteditable'));
     root.querySelectorAll('[draggable="true"]').forEach(elm=>elm.removeAttribute('draggable'));
     collapseFinInputs(root);
     removeAddDeleteControls(root);
   }
+  updateEditToolbarVisibility(on);
 }
 
 function initEditMode(root){
@@ -3474,9 +3548,11 @@ function startAnnotDraw(page,startEvt,tool){
     document.removeEventListener('mouseup',up);
     if(tool==='highlight'){
       if(parseFloat(elm.style.width)<1||parseFloat(elm.style.height)<1) elm.remove();
+      else finalizeAnnotCreation(elm);
     } else {
       const len=Math.hypot((+elm.getAttribute('x2'))-(+elm.getAttribute('x1')),(+elm.getAttribute('y2'))-(+elm.getAttribute('y1')));
       if(len<1) elm.remove();
+      else finalizeAnnotCreation(elm);
     }
   };
   document.addEventListener('mousemove',move);
@@ -3494,7 +3570,7 @@ function placeAnnotNote(page,evt){
   bubble.setAttribute('contenteditable','true');
   note.appendChild(bubble);
   layer.appendChild(note);
-  enableAnnotDrag(note,page);
+  finalizeAnnotCreation(note);
   bubble.focus();
 }
 
@@ -3525,23 +3601,11 @@ function insertAnnotImage(page,dataUrl){
   const img=document.createElement('img');
   img.src=dataUrl;
   wrap.appendChild(img);
-  const handle=document.createElement('span');
-  handle.className='annot-resize-se'; handle.setAttribute('contenteditable','false');
-  wrap.appendChild(handle);
   layer.appendChild(wrap);
-  enableAnnotDrag(wrap,page);
-  handle.addEventListener('mousedown',e=>{
-    e.preventDefault(); e.stopPropagation();
-    const startMouse=pagePercentCoords(page,e.clientX,e.clientY);
-    const startW=parseFloat(wrap.style.width)||30;
-    const move=ev=>{
-      const cur=pagePercentCoords(page,ev.clientX,ev.clientY);
-      wrap.style.width=Math.max(6,startW+(cur.x-startMouse.x))+'%';
-    };
-    const up=()=>{ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); };
-    document.addEventListener('mousemove',move);
-    document.addEventListener('mouseup',up);
-  });
+  /* Slepen en schalen lopen voortaan via het centrale selectiekader
+     (zie editor 2.0 verderop), zodat ook deze wijzigingen ongedaan
+     gemaakt kunnen worden. */
+  finalizeAnnotCreation(wrap);
 }
 
 function setAnnotTool(tool){
@@ -3565,7 +3629,7 @@ document.addEventListener('mousedown',e=>{
   if(!page) return;
   if(annotTool==='erase'){
     const annot=e.target.closest('.annot');
-    if(annot){ e.preventDefault(); annot.remove(); }
+    if(annot){ e.preventDefault(); removeElement(annot); }
     return;
   }
   if(annotTool==='note'){ e.preventDefault(); placeAnnotNote(page,e); return; }
@@ -3574,6 +3638,852 @@ document.addEventListener('mousedown',e=>{
     e.preventDefault();
     startAnnotDraw(page,e,annotTool);
   }
+});
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   GEAVANCEERDE BEWERKEDITOR — centrale geschiedenis (undo/redo), stabiele
+   editor-ID's, selectie met verplaats-/resizekader, veilig verwijderen/
+   dupliceren, lagen (z-volgorde), autosave + herstel (IndexedDB).
+   Werkt bovenop de bestaande bewerkmodus hierboven (contenteditable,
+   financiële invoervelden, blist-drag, annotatielaag) — vervangt geen
+   inhoudelijke rapportlogica, wijzigt nooit bedragen zelf en tast de
+   bestaande herberekening niet aan. Alles hier leeft uitsluitend in de
+   DOM/lokale opslag van de browser. ══════════════════════════════════ */
+
+const Ed = {
+  active:false,
+  history:[],
+  index:-1,
+  selected:null,          // huidig geselecteerd element (of null)
+  frameLocked:false,
+  zCounter:10,
+  docId:null,
+  originalReport:null,    // diepe kopie van het net gerenderde rapport (voor "Origineel herstellen")
+  dirty:false,
+  saveTimer:null,
+  suspendHistory:false,
+  restoring:false,
+};
+
+/* ── Stabiele editor-ID's ─────────────────────────────────────────── */
+let __edSeq=1;
+function newEditorId(prefix){ return `${prefix}-${Date.now().toString(36)}-${(__edSeq++).toString(36)}`; }
+function ensureEditorId(elm, type){
+  if(!elm) return null;
+  if(!elm.dataset.editorId) elm.dataset.editorId = newEditorId(type||'el');
+  if(type && !elm.dataset.editorType) elm.dataset.editorType = type;
+  return elm.dataset.editorId;
+}
+function findByEditorId(id){
+  if(!id) return null;
+  return el.stage.querySelector(`[data-editor-id="${CSS.escape(id)}"]`);
+}
+
+/* ── Geschiedenis-engine ──────────────────────────────────────────────
+   commit(cmd, alreadyApplied): registreert een omkeerbare actie.
+   Als alreadyApplied waar is, is de DOM-wijziging al doorgevoerd (bv. door
+   native drag-and-drop of doordat de gebruiker al typte) en wordt cmd.apply()
+   NIET nogmaals uitgevoerd bij het registreren zelf — wel bij eventuele redo. */
+function commit(cmd, alreadyApplied){
+  if(Ed.suspendHistory) return;
+  if(!alreadyApplied) cmd.apply();
+  Ed.history = Ed.history.slice(0, Ed.index+1);
+  Ed.history.push(cmd);
+  Ed.index++;
+  onHistoryChanged();
+}
+function flushPendingEdits(){
+  const active=document.activeElement;
+  if(!active) return;
+  if(active.isContentEditable){ clearTimeout(textTimers.get(active)); commitTextChange(active); }
+  else if(active.tagName==='INPUT' && active.classList && active.classList.contains('fin-input')){ clearTimeout(finTimers.get(active)); commitFinChange(active); }
+}
+function undo(){
+  flushPendingEdits();
+  if(Ed.index<0) return;
+  const cmd=Ed.history[Ed.index];
+  Ed.suspendHistory=true;
+  try{ cmd.revert(); } finally { Ed.suspendHistory=false; }
+  Ed.index--;
+  onHistoryChanged();
+  repositionFrame();
+}
+function redo(){
+  flushPendingEdits();
+  if(Ed.index>=Ed.history.length-1) return;
+  const cmd=Ed.history[Ed.index+1];
+  Ed.suspendHistory=true;
+  try{ cmd.apply(); } finally { Ed.suspendHistory=false; }
+  Ed.index++;
+  onHistoryChanged();
+  repositionFrame();
+}
+function onHistoryChanged(){
+  updateHistoryButtons();
+  if(!Ed.restoring){ Ed.dirty=true; scheduleAutosave(); }
+}
+function updateHistoryButtons(){
+  const undoBtn=$('#historyUndo'), redoBtn=$('#historyRedo');
+  if(undoBtn) undoBtn.disabled = Ed.index<0;
+  if(redoBtn) redoBtn.disabled = Ed.index>=Ed.history.length-1;
+  updateStatusLabel();
+}
+function updateStatusLabel(){
+  const st=$('#historyStatus'); if(!st) return;
+  if(Ed.dirty){ st.textContent='Wijzigingen niet opgeslagen'; st.className='et-status dirty'; }
+  else { st.textContent = Ed.lastSavedAt ? `Automatisch opgeslagen om ${Ed.lastSavedAt}` : 'Opgeslagen'; st.className='et-status saved'; }
+}
+function resetHistory(){
+  Ed.history=[]; Ed.index=-1; Ed.dirty=false; updateHistoryButtons();
+}
+
+/* ── Kleine meldingen (toast) ─────────────────────────────────────── */
+let toastTimer=null;
+function showToast(msg, kind){
+  let wrap=document.querySelector('.editor-toast-wrap');
+  if(!wrap){ wrap=document.createElement('div'); wrap.className='editor-toast-wrap no-print'; document.body.appendChild(wrap); }
+  wrap.innerHTML=`<div class="editor-toast ${kind==='warn'?'warn':''}">${esc(msg)}</div>`;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ wrap.innerHTML=''; }, 3200);
+}
+
+/* ── Object-registratie ────────────────────────────────────────────── */
+const MOVE_SELECTORS = {
+  text:['.para','.pt-title','.cover-name','.cover-goal','.verdict p'],
+  kpi:['.kpis>.kpi'],
+  panel:['.panel'],
+  table:['table.t'],
+  image:['.struct-org-image'],
+  orgcard:['.orgcard'],
+  decoration:['.cover-deco','.cover-deco2','.toc-deco','.back-deco','.back-deco2'],
+};
+const NOMOVE_SELECTORS = {
+  bullet:['.blist>div'],
+  row:['table.bna-table tr[data-bna-role="detail"]','table.t.addable-rows tbody tr'],
+};
+function registerEditableObjects(root){
+  Object.entries(MOVE_SELECTORS).forEach(([type,sels])=>{
+    sels.forEach(sel=>root.querySelectorAll(sel).forEach(elm=>{
+      ensureEditorId(elm,type);
+      elm.classList.add('ed-movable');
+    }));
+  });
+  Object.entries(NOMOVE_SELECTORS).forEach(([type,sels])=>{
+    sels.forEach(sel=>root.querySelectorAll(sel).forEach(elm=>ensureEditorId(elm,type)));
+  });
+  root.querySelectorAll('.annot').forEach(elm=>{
+    ensureEditorId(elm,'annotation');
+    elm.classList.add('ed-movable');
+  });
+  // Containers krijgen ook een ID zodat verwijderde items op de juiste plek
+  // terug kunnen (referenties blijven overigens gewoon de echte DOM-node;
+  // dit dient vooral leesbaarheid/robuustheid van het lagenpaneel-idee).
+  root.querySelectorAll('.blist,.kpis,table.bna-table>tbody,table.t.addable-rows>tbody,.annot-layer').forEach(elm=>ensureEditorId(elm,'container'));
+}
+
+const ADAPTERS = {
+  text:{move:true,resize:'free',front:true,dup:true,del:true},
+  kpi:{move:true,resize:'w',front:true,dup:true,del:true},
+  panel:{move:true,resize:'free',front:true,dup:true,del:true},
+  table:{move:true,resize:'w',front:true,dup:false,del:true},
+  image:{move:true,resize:'aspect',front:true,dup:true,del:true},
+  orgcard:{move:true,resize:false,front:true,dup:false,del:true},
+  decoration:{move:true,resize:'aspect',front:true,dup:true,del:true},
+  bullet:{move:false,resize:false,front:false,dup:true,del:true},
+  row:{move:false,resize:false,front:false,dup:true,del:true},
+  annotation:{move:true,resize:'annot',front:true,dup:false,del:true},
+};
+function adapterFor(elm){ return ADAPTERS[elm?.dataset?.editorType]||null; }
+
+/* ── Coördinaten: schermonafhankelijke lokale pagina-pixels ──────────
+   .report-page kan op kleine schermen visueel verkleind zijn via CSS
+   transform:scale(); offsetWidth/offsetHeight blijven daarbij de echte
+   layoutmaat, dus alle posities/afmetingen worden bewaard in die "lokale"
+   pixels — een schermzoom heeft er dan ook geen invloed op. */
+function pageOf(elm){ return elm.closest('.report-page'); }
+function pageScale(page){
+  if(!page) return 1;
+  const r=page.getBoundingClientRect();
+  return (r.width && page.offsetWidth) ? (r.width/page.offsetWidth) : 1;
+}
+function ensurePositioned(elm){
+  const cs=getComputedStyle(elm);
+  if(cs.position==='static') elm.style.position='relative';
+  if(!elm.style.zIndex && !elm.dataset.editorZ){ elm.dataset.editorZ='1'; elm.style.zIndex='1'; }
+}
+function setTransform(elm, tx, ty){
+  ensurePositioned(elm);
+  elm.dataset.editorTx=String(tx); elm.dataset.editorTy=String(ty);
+  elm.style.transform = (tx||ty) ? `translate(${tx}px, ${ty}px)` : '';
+}
+function getTransform(elm){
+  return { tx:parseFloat(elm.dataset.editorTx||'0')||0, ty:parseFloat(elm.dataset.editorTy||'0')||0 };
+}
+function isAnnotType(elm){ return elm.dataset.editorType==='annotation'; }
+
+/* Huidige positie/omvang van een object t.o.v. zijn pagina, ongeacht of
+   het via transform (rapportobjecten) of via left/top% (annotaties) wordt
+   gepositioneerd — gebruikt om het selectiekader te tekenen. */
+function objectScreenRect(elm){
+  return elm.getBoundingClientRect();
+}
+
+/* ── Verplaatsen ──────────────────────────────────────────────────── */
+function beginMove(elm, startEvt){
+  const page=pageOf(elm); if(!page) return;
+  const scale=pageScale(page);
+  const annot=isAnnotType(elm);
+  const start = annot
+    ? { left:parseFloat(elm.style.left)||0, top:parseFloat(elm.style.top)||0 }
+    : getTransform(elm);
+  const startMouse={x:startEvt.clientX,y:startEvt.clientY};
+  const pageRect=page.getBoundingClientRect();
+  let last=start;
+  function toLocalDelta(dxScreen,dyScreen){ return {dx:dxScreen/scale, dy:dyScreen/scale}; }
+  function move(e){
+    const {dx,dy}=toLocalDelta(e.clientX-startMouse.x, e.clientY-startMouse.y);
+    if(annot){
+      const pctX = dx/page.offsetWidth*100, pctY = dy/page.offsetHeight*100;
+      last = { left: start.left+pctX, top: start.top+pctY };
+      elm.style.left=last.left+'%'; elm.style.top=last.top+'%';
+    } else {
+      last = { tx: start.tx+dx, ty: start.ty+dy };
+      setTransform(elm, last.tx, last.ty);
+    }
+    warnIfOutside(elm, page);
+  }
+  function up(e){
+    document.removeEventListener('pointermove',move);
+    document.removeEventListener('pointerup',up);
+    const changed = annot ? (last.left!==start.left||last.top!==start.top) : (last.tx!==start.tx||last.ty!==start.ty);
+    if(changed){
+      const cmd={
+        apply(){ if(annot){ elm.style.left=last.left+'%'; elm.style.top=last.top+'%'; } else setTransform(elm,last.tx,last.ty); },
+        revert(){ if(annot){ elm.style.left=start.left+'%'; elm.style.top=start.top+'%'; } else setTransform(elm,start.tx,start.ty); },
+      };
+      commit(cmd, true);
+    }
+    repositionFrame();
+  }
+  document.addEventListener('pointermove',move);
+  document.addEventListener('pointerup',up);
+}
+
+/* ── Formaat aanpassen (rechteronderhoek) ────────────────────────────
+   Tekst/panelen: vrij (breedte+hoogte apart). KPI/tabel: alleen breedte.
+   Afbeeldingen/decoraties: verhouding behouden. Annotaties: eigen regels
+   (markering vrij, afbeelding verhouding, notitie/pijl niet resizebaar). */
+function beginResize(elm, startEvt){
+  const page=pageOf(elm); if(!page) return;
+  const scale=pageScale(page);
+  const type=elm.dataset.editorType;
+  const adapter=adapterFor(elm); if(!adapter||!adapter.resize) return;
+  const annot=isAnnotType(elm);
+  const startMouse={x:startEvt.clientX,y:startEvt.clientY};
+  let startW,startH,startLeftPct,startTopPct;
+  if(annot){
+    startW=parseFloat(elm.style.width)||30;
+    startH=parseFloat(elm.style.height)||0;
+  } else {
+    startW=elm.offsetWidth; startH=elm.offsetHeight;
+  }
+  const aspect = startH>0 ? startW/startH : 1;
+  const mode = annot ? (elm.classList.contains('annot-image')?'aspect':elm.classList.contains('annot-highlight')?'free':'none') : adapter.resize;
+  if(mode==='none'||mode===false) return;
+  let lastW=startW,lastH=startH;
+  function move(e){
+    const dxScreen=e.clientX-startMouse.x, dyScreen=e.clientY-startMouse.y;
+    const dx=dxScreen/scale, dy=dyScreen/scale;
+    if(annot){
+      lastW=Math.max(6,startW+(dx/page.offsetWidth*100));
+      if(mode==='aspect'){ /* hoogte volgt automatisch via img-verhouding (auto height) */ }
+      else if(mode==='free'){ lastH=Math.max(2,startH+(dy/page.offsetHeight*100)); }
+      elm.style.width=lastW+'%';
+      if(mode==='free') elm.style.height=lastH+'%';
+    } else {
+      lastW=Math.max(40,startW+dx);
+      if(mode==='aspect') lastH=lastW/aspect;
+      else if(mode==='free') lastH=Math.max(24,startH+dy);
+      elm.style.width=lastW+'px';
+      if(mode==='free'||mode==='aspect') elm.style.height=lastH+'px';
+    }
+    repositionFrame();
+    warnIfOutside(elm,page);
+  }
+  function up(){
+    document.removeEventListener('pointermove',move);
+    document.removeEventListener('pointerup',up);
+    const changed = annot ? (lastW!==startW||lastH!==startH) : (lastW!==startW||lastH!==startH);
+    if(changed){
+      const afterW=lastW, afterH=lastH;
+      const cmd={
+        apply(){
+          if(annot){ elm.style.width=afterW+'%'; if(mode==='free') elm.style.height=afterH+'%'; }
+          else { elm.style.width=afterW+'px'; if(mode==='free'||mode==='aspect') elm.style.height=afterH+'px'; }
+        },
+        revert(){
+          if(annot){ elm.style.width=startW+'%'; if(mode==='free') elm.style.height=startH+'%'; }
+          else { elm.style.width=startW+'px'; if(mode==='free'||mode==='aspect') elm.style.height=startH+'px'; }
+        },
+      };
+      commit(cmd, true);
+    }
+    repositionFrame();
+  }
+  document.addEventListener('pointermove',move);
+  document.addEventListener('pointerup',up);
+}
+
+/* ── Waarschuwing bij (bijna) buiten de pagina plaatsen ──────────────
+   Corrigeert niets automatisch — toont alleen een niet-opdringerige melding,
+   conform de eis dat de gebruiker zelf de regie houdt. */
+let overflowWarnedAt=0;
+function warnIfOutside(elm, page){
+  const er=elm.getBoundingClientRect(), pr=page.getBoundingClientRect();
+  const outside = er.right<pr.left+8 || er.left>pr.right-8 || er.bottom<pr.top+8 || er.top>pr.bottom-8;
+  if(outside && Date.now()-overflowWarnedAt>1200){
+    overflowWarnedAt=Date.now();
+    showToast('Let op: dit onderdeel valt (bijna) buiten de pagina.', 'warn');
+  }
+}
+
+/* ── Selectiekader + mini-contextmenu ─────────────────────────────── */
+let frameEl=null, dragHandleEl=null, resizeHandleEl=null, ctxMenuEl=null;
+function ensureFrameDom(){
+  if(frameEl) return;
+  frameEl=document.createElement('div');
+  frameEl.className='editor-selection-frame no-print';
+  dragHandleEl=document.createElement('div');
+  dragHandleEl.className='ef-drag'; dragHandleEl.title='Slepen om te verplaatsen'; dragHandleEl.textContent='⠿';
+  resizeHandleEl=document.createElement('div');
+  resizeHandleEl.className='ef-handle se'; resizeHandleEl.title='Slepen om te schalen';
+  frameEl.appendChild(dragHandleEl); frameEl.appendChild(resizeHandleEl);
+  document.body.appendChild(frameEl);
+  ctxMenuEl=document.createElement('div');
+  ctxMenuEl.className='ef-toolbar no-print';
+  document.body.appendChild(ctxMenuEl);
+  dragHandleEl.addEventListener('pointerdown',e=>{
+    e.preventDefault(); e.stopPropagation();
+    const elm=findByEditorId(Ed.selected); if(!elm) return;
+    beginMove(elm,e);
+  });
+  resizeHandleEl.addEventListener('pointerdown',e=>{
+    e.preventDefault(); e.stopPropagation();
+    const elm=findByEditorId(Ed.selected); if(!elm) return;
+    beginResize(elm,e);
+  });
+}
+function repositionFrame(){
+  if(!Ed.selected){ if(frameEl) frameEl.style.display='none'; if(ctxMenuEl) ctxMenuEl.style.display='none'; return; }
+  const elm=findByEditorId(Ed.selected);
+  if(!elm){ deselectAll(); return; }
+  ensureFrameDom();
+  const r=elm.getBoundingClientRect();
+  frameEl.style.display='block';
+  frameEl.style.left=(r.left-2)+'px'; frameEl.style.top=(r.top-2)+'px';
+  frameEl.style.width=(r.width+4)+'px'; frameEl.style.height=(r.height+4)+'px';
+  const adapter=adapterFor(elm)||{};
+  dragHandleEl.style.display = adapter.move ? 'flex' : 'none';
+  dragHandleEl.style.alignItems='center'; dragHandleEl.style.justifyContent='center';
+  const noResizeAnnot = isAnnotType(elm) && (elm.classList.contains('annot-note')||elm.classList.contains('annot-arrow'));
+  resizeHandleEl.style.display = (adapter.resize && !noResizeAnnot) ? 'block' : 'none';
+  positionContextMenu(r, adapter, elm);
+}
+function positionContextMenu(rect, adapter, elm){
+  const items=[];
+  if(adapter.dup) items.push(['Dupliceren',()=>duplicateSelected()]);
+  if(adapter.del) items.push(['Verwijderen',()=>deleteSelected(),'et-danger']);
+  if(adapter.front){
+    items.push(['Naar voren',()=>bringForward(elm)]);
+    items.push(['Naar achteren',()=>sendBackward(elm)]);
+  }
+  if(!items.length){ ctxMenuEl.style.display='none'; return; }
+  ctxMenuEl.innerHTML=items.map(([label,,cls])=>`<button type="button" class="${cls||''}" data-act="${label}">${esc(label)}</button>`).join('');
+  [...ctxMenuEl.children].forEach((btn,i)=>btn.addEventListener('click',e=>{ e.stopPropagation(); items[i][1](); }));
+  ctxMenuEl.style.display='flex';
+  const top=Math.max(6, rect.top-34);
+  ctxMenuEl.style.left=rect.left+'px'; ctxMenuEl.style.top=top+'px';
+}
+window.addEventListener('scroll',()=>{ if(Ed.selected) repositionFrame(); }, {passive:true});
+window.addEventListener('resize',()=>{ if(Ed.selected) repositionFrame(); });
+
+function selectObject(elm){
+  if(!elm || !elm.dataset.editorId) return;
+  Ed.selected = elm.dataset.editorId;
+  el.stage.querySelectorAll('.editor-selected').forEach(x=>x.classList.remove('editor-selected'));
+  elm.classList.add('editor-selected');
+  repositionFrame();
+}
+function deselectAll(){
+  Ed.selected=null;
+  el.stage.querySelectorAll('.editor-selected').forEach(x=>x.classList.remove('editor-selected'));
+  if(frameEl) frameEl.style.display='none';
+  if(ctxMenuEl) ctxMenuEl.style.display='none';
+}
+
+/* Klik-om-te-selecteren via event delegation (geen listener per object) */
+el.stage.addEventListener('pointerdown', e=>{
+  if(!Ed.active) return;
+  if(e.target.closest('.editor-selection-frame,.ef-toolbar,.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn,.et-color,.annot-resize-se')) return;
+  if(annotTool && annotTool!=='none') return; // tekentool actief: laat annotatielaag de klik afhandelen
+  const hit=e.target.closest('[data-editor-id].ed-movable, [data-editor-id][data-editor-type="bullet"], [data-editor-id][data-editor-type="row"]');
+  if(hit){ selectObject(hit); }
+  else { deselectAll(); }
+});
+document.addEventListener('pointerdown', e=>{
+  if(!Ed.active) return;
+  if(e.target.closest('.report-page,.editor-selection-frame,.ef-toolbar,.edit-toolbar,.toolbar')) return;
+  deselectAll();
+});
+
+/* ── Verwijderen / invoegen / dupliceren (generiek, undoable) ────────
+   Werkt met echte DOM-referenties (niet met opnieuw opgebouwde HTML), dus
+   alle bestaande listeners (contenteditable, fin-input, drag) blijven
+   intact bij undo/redo binnen dezelfde sessie. */
+function removeElement(elm){
+  if(!elm) return;
+  const type=elm.dataset.editorType;
+  if(type){ const a=ADAPTERS[type]; if(a && a.del===false) return; }
+  const parent=elm.parentElement; if(!parent) return;
+  const nextSibling=elm.nextElementSibling;
+  const table = elm.closest && (elm.closest('table.bna-table')||elm.closest('table.t.fin')||elm.closest('table.t.addable-rows'));
+  const wasSelected = Ed.selected===elm.dataset.editorId;
+  const cmd={
+    apply(){ elm.remove(); recalcAfterMutation(table); if(wasSelected) deselectAll(); },
+    revert(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); selectObject(elm); },
+  };
+  commit(cmd, false);
+}
+function deleteSelected(){
+  if(!Ed.active||!Ed.selected) return;
+  const elm=findByEditorId(Ed.selected); if(!elm) return;
+  removeElement(elm);
+}
+function recalcAfterMutation(table){
+  if(!table || !table.isConnected) return;
+  if(table.classList.contains('bna-table')) recalcBnaTable(table);
+  else if(table.classList.contains('fin')) recalcFinTable(table);
+}
+/* Nieuw geplaatst element (uit een "+"-knop of getekende annotatie) als
+   invoegactie registreren zodat undo het weer verwijdert. */
+function trackInsertion(elm, table){
+  ensureEditorId(elm, elm.dataset.editorType);
+  const parent=elm.parentElement;
+  const nextSibling=elm.nextElementSibling;
+  const cmd={
+    apply(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); },
+    revert(){ elm.remove(); recalcAfterMutation(table); deselectAll(); },
+  };
+  commit(cmd, true);
+}
+function duplicateSelected(){
+  if(!Ed.active||!Ed.selected) return;
+  const elm=findByEditorId(Ed.selected); if(!elm) return;
+  const adapter=adapterFor(elm); if(!adapter||!adapter.dup) return;
+  const clone=elm.cloneNode(true);
+  clone.removeAttribute('data-editor-id');
+  clone.classList.remove('editor-selected');
+  ensureEditorId(clone, elm.dataset.editorType);
+  // her-ID alle geneste bewerkbare kinderen (bv. rijen binnen een gedupliceerde tabel)
+  clone.querySelectorAll('[data-editor-id]').forEach(child=>{ child.removeAttribute('data-editor-id'); ensureEditorId(child, child.dataset.editorType); });
+  if(adapter.move && !isAnnotType(clone)){
+    const t=getTransform(elm);
+    setTransform(clone, t.tx+18, t.ty+18);
+  } else if(isAnnotType(clone)){
+    clone.style.left=(parseFloat(elm.style.left)||0)+3+'%';
+    clone.style.top=(parseFloat(elm.style.top)||0)+3+'%';
+  }
+  elm.insertAdjacentElement('afterend', clone);
+  if(clone.matches('.blist>div')) makeDeletable(clone);
+  if(clone.matches('table.bna-table tr[data-bna-role="detail"]')||clone.matches('table.t.addable-rows tbody tr')) makeDeletable(clone);
+  if(clone.matches('.kpis>.kpi')) makeDeletable(clone);
+  const table = clone.closest && (clone.closest('table.bna-table')||clone.closest('table.t.fin'));
+  trackInsertion(clone, table);
+  selectObject(clone);
+}
+
+/* ── Lagen / z-volgorde ──────────────────────────────────────────── */
+function bringForward(elm){
+  ensurePositioned(elm);
+  const before=parseInt(elm.dataset.editorZ||'1',10);
+  const after=++Ed.zCounter;
+  const cmd={ apply(){ elm.dataset.editorZ=String(after); elm.style.zIndex=String(after); }, revert(){ elm.dataset.editorZ=String(before); elm.style.zIndex=String(before); } };
+  commit(cmd, false);
+}
+function sendBackward(elm){
+  ensurePositioned(elm);
+  const before=parseInt(elm.dataset.editorZ||'1',10);
+  const after=Math.max(0, before-1) || 0;
+  const cmd={ apply(){ elm.dataset.editorZ=String(after); elm.style.zIndex=String(after); }, revert(){ elm.dataset.editorZ=String(before); elm.style.zIndex=String(before); } };
+  commit(cmd, false);
+}
+
+/* ── Toetsenbord ──────────────────────────────────────────────────── */
+document.addEventListener('keydown', e=>{
+  if(!Ed.active) return;
+  const inTextEdit = document.activeElement && (document.activeElement.isContentEditable || document.activeElement.tagName==='INPUT' || document.activeElement.tagName==='TEXTAREA');
+  const mod = e.ctrlKey||e.metaKey;
+  if(mod && e.key.toLowerCase()==='z' && !e.shiftKey){ e.preventDefault(); undo(); return; }
+  if((mod && e.key.toLowerCase()==='y') || (mod && e.shiftKey && e.key.toLowerCase()==='z')){ e.preventDefault(); redo(); return; }
+  if(mod && e.key.toLowerCase()==='s'){ e.preventDefault(); manualSave(); return; }
+  if(mod && e.key.toLowerCase()==='d' && Ed.selected && !inTextEdit){ e.preventDefault(); duplicateSelected(); return; }
+  if(!inTextEdit && (e.key==='Delete'||e.key==='Backspace') && Ed.selected){ e.preventDefault(); deleteSelected(); return; }
+  if(e.key==='Escape'){ deselectAll(); setAnnotTool('none'); return; }
+  if(!inTextEdit && Ed.selected && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+    const elm=findByEditorId(Ed.selected); if(!elm) return;
+    const adapter=adapterFor(elm); if(!adapter||!adapter.move) return;
+    e.preventDefault();
+    const step = e.shiftKey?10:1;
+    const dx = e.key==='ArrowLeft'?-step:e.key==='ArrowRight'?step:0;
+    const dy = e.key==='ArrowUp'?-step:e.key==='ArrowDown'?step:0;
+    nudgeSelected(elm, dx, dy);
+  }
+});
+function nudgeSelected(elm, dx, dy){
+  const annot=isAnnotType(elm);
+  const page=pageOf(elm);
+  if(annot){
+    const before={left:parseFloat(elm.style.left)||0, top:parseFloat(elm.style.top)||0};
+    const pctX=dx/(page?page.offsetWidth:800)*100, pctY=dy/(page?page.offsetHeight:1100)*100;
+    const after={left:before.left+pctX, top:before.top+pctY};
+    const cmd={apply(){elm.style.left=after.left+'%';elm.style.top=after.top+'%';},revert(){elm.style.left=before.left+'%';elm.style.top=before.top+'%';}};
+    commit(cmd,false);
+  } else {
+    const before=getTransform(elm);
+    const after={tx:before.tx+dx, ty:before.ty+dy};
+    const cmd={apply(){setTransform(elm,after.tx,after.ty);},revert(){setTransform(elm,before.tx,before.ty);}};
+    commit(cmd,false);
+  }
+  repositionFrame();
+}
+
+/* ── Tekstwijzigingen groeperen tot één undo-stap per typactie ────────
+   Event delegation op de stage: bij focus wordt de beginwaarde vastgelegd,
+   bij input wordt een timer (debounce) gestart/verlengd, bij focus-verlies
+   of na de pauze wordt de wijziging als één commando vastgelegd. */
+const textSnapshots=new WeakMap();
+const textTimers=new WeakMap();
+const TEXT_DEBOUNCE_MS=550;
+function isEditableTextNode(elm){ return !!(elm && elm.nodeType===1 && elm.getAttribute && elm.getAttribute('contenteditable')==='true'); }
+el.stage.addEventListener('focusin', e=>{
+  const elm=e.target.closest('[contenteditable="true"]');
+  if(!elm||!isEditableTextNode(elm)) return;
+  if(!textSnapshots.has(elm)) textSnapshots.set(elm, elm.textContent);
+});
+el.stage.addEventListener('input', e=>{
+  const elm=e.target.closest('[contenteditable="true"]');
+  if(!elm||!isEditableTextNode(elm)) return;
+  clearTimeout(textTimers.get(elm));
+  textTimers.set(elm, setTimeout(()=>commitTextChange(elm), TEXT_DEBOUNCE_MS));
+});
+el.stage.addEventListener('focusout', e=>{
+  const elm=e.target.closest('[contenteditable="true"]');
+  if(!elm||!isEditableTextNode(elm)) return;
+  clearTimeout(textTimers.get(elm));
+  commitTextChange(elm);
+});
+function commitTextChange(elm){
+  const before=textSnapshots.get(elm);
+  const after=elm.textContent;
+  if(before===undefined || before===after) return;
+  /* De snapshot wordt ook bij undo/redo zelf bijgewerkt (niet alleen hier),
+     zodat een latere, ongewijzigde focus-verlies nooit een fantoomwijziging
+     registreert op basis van een verouderde snapshot. */
+  const cmd={
+    apply(){ elm.textContent=after; textSnapshots.set(elm, after); },
+    revert(){ elm.textContent=before; textSnapshots.set(elm, before); },
+  };
+  commit(cmd, true);
+  textSnapshots.set(elm, after);
+}
+
+/* ── Financiële / bronnen-en-aanwendingen invoervelden ────────────────
+   De bestaande live-herberekening (per toetsaanslag) blijft ongewijzigd;
+   hier komt alléén de undo-registratie bovenop, met dezelfde debounce-
+   logica als tekst. Undo zet de oude waarde terug én herberekent daarna
+   opnieuw via de bestaande recalc-functies. */
+const finSnapshots=new WeakMap();
+const finTimers=new WeakMap();
+function wireFinInputHistory(input){
+  if(input.dataset.histWired) return;
+  input.dataset.histWired='1';
+  input.addEventListener('focus',()=>{ if(!finSnapshots.has(input)) finSnapshots.set(input, input.value); });
+  input.addEventListener('input',()=>{
+    clearTimeout(finTimers.get(input));
+    finTimers.set(input, setTimeout(()=>commitFinChange(input), TEXT_DEBOUNCE_MS));
+  });
+  input.addEventListener('blur',()=>{ clearTimeout(finTimers.get(input)); commitFinChange(input); });
+}
+function commitFinChange(input){
+  if(!input.isConnected) return;
+  const before=finSnapshots.get(input);
+  const after=input.value;
+  if(before===undefined || before===after) return;
+  const td=input.closest('td'); const table=input.closest('table');
+  const isBna = table && table.classList.contains('bna-table');
+  const cmd={
+    apply(){
+      input.value=after;
+      finSnapshots.set(input, after);
+      const n=parseEditableNumber(after);
+      if(isBna){ td.dataset.bnaValue=n===null?'':n; recalcBnaTable(table); } else { td.dataset.finValue=n===null?'':n; recalcFinTable(table); }
+    },
+    revert(){
+      input.value=before;
+      finSnapshots.set(input, before);
+      const n=parseEditableNumber(before);
+      if(isBna){ td.dataset.bnaValue=n===null?'':n; recalcBnaTable(table); } else { td.dataset.finValue=n===null?'':n; recalcFinTable(table); }
+    },
+  };
+  commit(cmd, true);
+  finSnapshots.set(input, after);
+}
+
+/* ── Herschikken (bullets én tabelrijen) als één undo-stap ───────────
+   Hergebruikt de bestaande HTML5-drag-and-drop; hier wordt alleen bij
+   dragend gecontroleerd of de volgorde is gewijzigd, en zo ja, als één
+   commando vastgelegd (apply/revert verplaatsen de échte DOM-node, dus
+   alle listeners blijven intact). */
+function indexWithin(parent, elm){ return [...parent.children].indexOf(elm); }
+function moveToIndex(parent, elm, index){
+  const siblings=[...parent.children].filter(c=>c!==elm);
+  const ref=siblings[index]||null;
+  parent.insertBefore(elm, ref);
+}
+function enableRowDragDrop(root){
+  root.querySelectorAll('table.bna-table>tbody, table.t.addable-rows>tbody').forEach(tbody=>{
+    if(tbody.dataset.rowDndReady) return;
+    tbody.dataset.rowDndReady='1';
+    let fromIndex=-1, dragElm=null;
+    tbody.addEventListener('dragstart', e=>{
+      const tr=e.target.closest('tr'); if(!tr||tr.parentElement!==tbody) return;
+      if(tr.dataset.bnaRole==='total'||tr.dataset.finTotal==='1') { e.preventDefault(); return; }
+      dragElm=tr; fromIndex=indexWithin(tbody,tr); tr.classList.add('dragging'); e.dataTransfer.effectAllowed='move';
+    });
+    tbody.addEventListener('dragend', ()=>{
+      if(dragElm){
+        dragElm.classList.remove('dragging');
+        const toIndex=indexWithin(tbody,dragElm);
+        if(toIndex!==fromIndex && toIndex>=0){
+          const parent=tbody, elm=dragElm, from=fromIndex, to=toIndex;
+          const table=tbody.closest('table');
+          commit({ apply(){ moveToIndex(parent,elm,to); recalcAfterMutation(table); }, revert(){ moveToIndex(parent,elm,from); recalcAfterMutation(table); } }, true);
+        }
+      }
+      dragElm=null; fromIndex=-1;
+    });
+    tbody.addEventListener('dragover', e=>{
+      if(!dragElm) return;
+      e.preventDefault();
+      const totalRow=tbody.querySelector('tr[data-bna-role="total"]');
+      const siblings=[...tbody.children].filter(c=>c!==dragElm && c!==totalRow);
+      const after=siblings.find(c=>{ const r=c.getBoundingClientRect(); return e.clientY < r.top+r.height/2; });
+      if(after) tbody.insertBefore(dragElm, after); else tbody.insertBefore(dragElm, totalRow||null);
+    });
+  });
+  [...root.querySelectorAll('table.bna-table tr[data-bna-role="detail"], table.t.addable-rows tbody tr')].forEach(tr=>tr.setAttribute('draggable','true'));
+}
+
+/* ── IndexedDB — autosave en herstel na verversen ────────────────────
+   Eén vaste sleutel per browser/tab-oorsprong ("credion-report-editor",
+   record "current"): dit is bewust een enkele bewerksessie, niet een
+   documentenbibliotheek — precies wat de eisen vragen ("de opgeslagen
+   bewerkversie"). Sla nooit tijdens pointermove op; alleen gedebouncet
+   ná een afgeronde commando. */
+const IDB_NAME='credion-report-editor', IDB_STORE='sessions', IDB_KEY='current';
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(IDB_NAME,1);
+    req.onupgradeneeded=()=>{ req.result.createObjectStore(IDB_STORE); };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function idbPut(value){
+  try{
+    const db=await idbOpen();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(IDB_STORE,'readwrite');
+      tx.objectStore(IDB_STORE).put(value, IDB_KEY);
+      tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+    });
+  }catch(err){ console.error('Automatisch opslaan mislukt:', err); }
+}
+async function idbGet(){
+  try{
+    const db=await idbOpen();
+    return await new Promise((resolve,reject)=>{
+      const tx=db.transaction(IDB_STORE,'readonly');
+      const req=tx.objectStore(IDB_STORE).get(IDB_KEY);
+      req.onsuccess=()=>resolve(req.result||null);
+      req.onerror=()=>reject(req.error);
+    });
+  }catch(err){ console.error('Opgeslagen bewerkversie kon niet worden gelezen:', err); return null; }
+}
+async function idbDelete(){
+  try{
+    const db=await idbOpen();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(IDB_STORE,'readwrite');
+      tx.objectStore(IDB_STORE).delete(IDB_KEY);
+      tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
+    });
+  }catch(err){ console.error('Opgeslagen bewerkversie kon niet worden verwijderd:', err); }
+}
+
+/* Bevriest de huidige weergave tot schone HTML (invoervelden ingeklapt,
+   bewerkknoppen verwijderd) en herstelt daarna meteen de levende
+   bewerkstatus — zo bevat de opslag nooit "dode" knoppen zonder listener. */
+function captureCleanStageHTML(){
+  const wasEdit=editModeOn;
+  collapseFinInputs(el.stage);
+  removeAddDeleteControls(el.stage);
+  const html=el.stage.innerHTML;
+  if(wasEdit){ makeFinCellsEditable(el.stage); addAllPlusButtons(el.stage); addDeleteButtons(el.stage); wireAllFinInputs(el.stage); }
+  return html;
+}
+function wireAllFinInputs(root){ root.querySelectorAll('input.fin-input').forEach(wireFinInputHistory); }
+
+async function persistNow(){
+  if(!Ed.docId || !Ed.originalReport) return;
+  const record={
+    docId:Ed.docId,
+    savedAt:new Date().toISOString(),
+    originalReport:Ed.originalReport,
+    stageHTML:captureCleanStageHTML(),
+    wasEditMode:editModeOn,
+  };
+  await idbPut(record);
+  Ed.dirty=false;
+  Ed.lastSavedAt=new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  updateStatusLabel();
+}
+function scheduleAutosave(){
+  clearTimeout(Ed.saveTimer);
+  Ed.saveTimer=setTimeout(()=>{ persistNow(); }, 900);
+}
+function manualSave(){ flushPendingEdits(); persistNow().then(()=>showToast('Bewerkversie opgeslagen.')); }
+
+/* ── Banner: "opgeslagen bewerkversie gevonden" ──────────────────────
+   Verschijnt vóór het uploadscherm, alleen bij het opnieuw laden van de
+   pagina (niet ná "Nieuw rapport" binnen dezelfde sessie). */
+function ensureBannerDom(){
+  let b=document.querySelector('.editor-banner');
+  if(!b){ b=document.createElement('div'); b.className='editor-banner no-print'; document.body.appendChild(b); }
+  return b;
+}
+async function checkForSavedSession(){
+  const rec=await idbGet();
+  if(!rec || !rec.originalReport) return;
+  const banner=ensureBannerDom();
+  const when=rec.savedAt? new Date(rec.savedAt).toLocaleString('nl-NL',{dateStyle:'short',timeStyle:'short'}) : '';
+  banner.innerHTML=`<strong>Er is een opgeslagen bewerkversie van dit rapport gevonden.</strong>Laatst bewaard: ${esc(when)}
+    <div class="eb-actions">
+      <button type="button" class="primary" data-act="resume">Bewerking hervatten</button>
+      <button type="button" data-act="original">Origineel rapport openen</button>
+      <button type="button" class="danger" data-act="discard">Opgeslagen versie verwijderen</button>
+    </div>`;
+  banner.style.display='block';
+  banner.querySelector('[data-act="resume"]').addEventListener('click', async ()=>{
+    banner.style.display='none';
+    await resumeSavedSession(rec);
+  });
+  banner.querySelector('[data-act="original"]').addEventListener('click', async ()=>{
+    banner.style.display='none';
+    state.data=rec.originalReport;
+    await document.fonts.ready;
+    renderReport(rec.originalReport);
+  });
+  banner.querySelector('[data-act="discard"]').addEventListener('click', async ()=>{
+    await idbDelete();
+    banner.style.display='none';
+  });
+}
+async function resumeSavedSession(rec){
+  state.data=rec.originalReport;
+  await document.fonts.ready;
+  Ed.restoring=true;
+  renderReport(rec.originalReport, {skipAutosaveCheck:true});
+  el.stage.innerHTML = rec.stageHTML;
+  drawOrganograms(el.stage);
+  registerEditableObjects(el.stage);
+  setEditMode(!!rec.wasEditMode, el.stage);
+  wireAllFinInputs(el.stage);
+  Ed.docId = rec.docId;
+  resetHistory();
+  Ed.restoring=false;
+  Ed.dirty=false; updateStatusLabel();
+  showToast('Bewerkversie hervat.');
+}
+
+/* ── Origineel herstellen ─────────────────────────────────────────── */
+function restoreOriginal(){
+  if(!Ed.originalReport) return;
+  if(!confirm('Weet je zeker dat je het rapport wilt terugzetten naar de oorspronkelijke, gegenereerde versie? Alle visuele bewerkingen in deze sessie gaan dan verloren.')) return;
+  Ed.restoring=true;
+  const wasEdit=editModeOn;
+  renderReport(Ed.originalReport, {skipAutosaveCheck:true, keepDocId:true});
+  setEditMode(wasEdit, el.stage);
+  resetHistory();
+  Ed.restoring=false;
+  persistNow();
+  showToast('Rapport teruggezet naar de oorspronkelijke versie.');
+}
+
+/* ── Annotaties koppelen aan de centrale geschiedenis ─────────────────
+   Wordt aangeroepen ná het (klaar) tekenen van een markering/pijl/notitie/
+   afbeelding: kent een editor-ID toe, registreert de plaatsing als één
+   undo-stap en selecteert de nieuwe annotatie meteen. */
+function finalizeAnnotCreation(elm){
+  if(!elm || !elm.isConnected) return;
+  ensureEditorId(elm,'annotation');
+  elm.classList.add('ed-movable');
+  trackInsertion(elm, null);
+  selectObject(elm);
+}
+
+/* ── Koppelpunten met de rest van de applicatie ──────────────────────
+   onReportRendered: ná elke renderReport() — legt bij de EERSTE render
+   van een sessie het originele rapport vast (voor "Origineel herstellen"
+   en autosave) en registreert alle bewerkbare objecten. Bij een render
+   die zelf al uit een herstelactie komt (skipAutosaveCheck) wordt de
+   opgeslagen-bewerkversie-banner niet nogmaals gecontroleerd. */
+function deepClone(obj){ try{ return JSON.parse(JSON.stringify(obj)); }catch{ return obj; } }
+function onReportRendered(r, opts){
+  opts=opts||{};
+  registerEditableObjects(el.stage);
+  if(!opts.keepDocId || !Ed.docId) Ed.docId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : newEditorId('doc');
+  Ed.originalReport = deepClone(r);
+  resetHistory();
+  deselectAll();
+}
+
+function updateEditToolbarVisibility(on){
+  Ed.active=on;
+  if(!on) deselectAll();
+  updateHistoryButtons();
+}
+
+/* ── Toolbar-knoppen (geschiedenis) ──────────────────────────────────
+   Éénmalig gebonden — de knoppen zelf zijn statische DOM-nodes in de
+   pagina (niet opnieuw aangemaakt bij het genereren van een rapport),
+   dus dit voorkomt dubbele listeners bij "Nieuw rapport" + opnieuw
+   genereren. */
+$('#historyUndo')?.addEventListener('click', undo);
+$('#historyRedo')?.addEventListener('click', redo);
+$('#historySave')?.addEventListener('click', manualSave);
+$('#historyReset')?.addEventListener('click', restoreOriginal);
+
+/* Verwijderknoppen (×) via één centrale, gedelegeerde listener — zo blijft
+   een teruggezet (undo van een verwijdering) element altijd werken, ook al
+   is de knop zelf nooit opnieuw met een eigen listener aangemaakt. */
+document.addEventListener('click', e=>{
+  const btn=e.target.closest('.row-del');
+  if(!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  const target=btn.parentElement;
+  if(target) removeElement(target);
 });
 
 /* ══ Toolbar ════════════════════════════════════════════════════════ */
@@ -3606,8 +4516,8 @@ $('#printReport').addEventListener('click',()=>window.print());
    worden vlak vóór het printen tijdelijk plat getrokken tot leesbare tekst, en
    ná het printen weer teruggezet naar bewerkbare velden zolang de bewerkmodus
    nog aanstaat — zo blijft bewerken daarna gewoon mogelijk. */
-window.addEventListener('beforeprint',()=>{ if(editModeOn) collapseFinInputs(el.stage); });
-window.addEventListener('afterprint',()=>{ if(editModeOn) makeFinCellsEditable(el.stage); });
+window.addEventListener('beforeprint',()=>{ deselectAll(); if(editModeOn) collapseFinInputs(el.stage); });
+window.addEventListener('afterprint',()=>{ if(editModeOn){ makeFinCellsEditable(el.stage); wireAllFinInputs(el.stage); } });
 $('#downloadJson').addEventListener('click',()=>{
   if(!state.data) return;
   const a=document.createElement('a');
@@ -3615,6 +4525,10 @@ $('#downloadJson').addEventListener('click',()=>{
   a.download='credion-rapport.json'; a.click(); URL.revokeObjectURL(a.href);
 });
 $('#newReport').addEventListener('click',()=>{
+  if(editModeOn && Ed.dirty){
+    const ok=confirm('Er zijn nog niet-opgeslagen bewerkingen in dit rapport. Weet je zeker dat je een nieuw rapport wilt starten?\n\nDe huidige bewerkversie blijft bewaard en kan later via "Bewerking hervatten" worden geopend.');
+    if(!ok) return;
+  }
   document.body.classList.remove('report-mode');
   fileReadCache.clear();
   state.files=[]; state.data=null; el.notes.value=''; resetStructInput(); setError(''); renderFiles();
@@ -3622,6 +4536,8 @@ $('#newReport').addEventListener('click',()=>{
   editModeOn=false; document.body.classList.remove('edit-mode');
   const editBtn=document.getElementById('toggleEdit'); if(editBtn){ editBtn.classList.remove('active'); editBtn.textContent='Bewerken'; }
   setAnnotTool('none'); lastActivePage=null;
+  deselectAll(); resetHistory();
+  Ed.originalReport=null; Ed.docId=null; Ed.active=false;
 });
 
 /* Debug/test-hook: render een rapport-JSON zonder API-call (console) */
@@ -3632,6 +4548,13 @@ window.__credionRender = async (r)=>{
   p.length?renderValidationError(p):renderReport(r);
   window.scrollTo({top:0});
 };
+
+/* Bij het openen/verversen van de pagina: als er een opgeslagen bewerkversie
+   bestaat, bied dan aan deze te hervatten vóórdat de gebruiker een nieuw
+   document uploadt. */
+if(!document.body.classList.contains('report-mode')){
+  checkForSavedSession();
+}
 </script>
 </body>
 </html>
