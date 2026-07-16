@@ -4840,15 +4840,19 @@ async function renderSessionLibrary(){
         <button type="button" class="file-del" data-act="cancel-delete" title="Annuleren">×</button>`;
       actions.querySelector('[data-act="confirm-delete"]').addEventListener('click', async ()=>{
         try{
+          const before = await idbGetAll();
+          console.log('[sessions] verwijderen gestart — doel-docId:', docId, '— docIds in opslag vóór verwijderen:', before.map(r=>r&&r.docId));
           await idbDeleteOne(docId);
-          /* Controleer na het verwijderen expliciet of het record ook echt
-             weg is (in plaats van blind op "geen foutmelding" te vertrouwen):
-             de idb-helpers slikken fouten intern in en loggen ze alleen naar
-             de console, dus zonder deze check kan de melding "verwijderd"
-             ten onrechte verschijnen terwijl de opslag het record behield. */
-          const stillThere = await idbGetOne(docId);
+          /* Controleer na het verwijderen expliciet — met een verse idbGetAll(),
+             niet met een gecachete lijst — of het record ook echt weg is. De
+             idb-helpers slikken fouten intern in en loggen ze alleen naar de
+             console, dus zonder deze check kan "verwijderd" ten onrechte
+             verschijnen terwijl de opslag het record nog bevat. */
+          const after = await idbGetAll();
+          console.log('[sessions] docIds in opslag na verwijderen:', after.map(r=>r&&r.docId));
+          const stillThere = after.some(r=>r && r.docId===docId);
           if(stillThere){
-            console.error('Verwijderen leek te lukken, maar het record staat nog in de opslag (docId):', docId);
+            console.error('[sessions] record staat nog in de opslag na verwijderen — doel-docId:', docId);
             showToast('Verwijderen is niet gelukt. Herlaad de pagina en probeer het opnieuw.','warn');
             renderSessionLibrary();
             return;
@@ -4856,7 +4860,7 @@ async function renderSessionLibrary(){
           await renderSessionLibrary();
           showToast('Rapport verwijderd.');
         }catch(err){
-          console.error('Verwijderen van opgeslagen rapport mislukt:', err);
+          console.error('[sessions] Verwijderen van opgeslagen rapport mislukt:', err);
           showToast('Verwijderen is mislukt. Probeer het opnieuw.','warn');
           renderSessionLibrary();
         }
