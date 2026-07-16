@@ -415,6 +415,16 @@ svg.chart{width:100%;height:auto;display:block}
 .chart-card-editable .dl-name,.chart-card-editable .dl-v,.chart-card-editable .ch-h{cursor:text;border-radius:2px}
 .chart-card-editable .dl-name:hover,.chart-card-editable .dl-v:hover,.chart-card-editable .ch-h:hover{outline:1px dashed rgba(12,100,252,.35)}
 .add-chart-row-btn{margin:2mm 0 0}
+/* Zelf toegevoegde staafdiagram: dezelfde soort bewerkbare rijenlijst onder
+   de grafiek als bij de donut, nu met periode+waarde i.p.v. label+waarde. */
+.bar-legend{display:flex;flex-direction:column;gap:1.7mm;margin-top:2.5mm}
+.bl-row{display:flex;align-items:baseline;gap:2.2mm;font-size:8.2pt;color:var(--ink-2)}
+.bl-period{flex:1;min-width:0;line-height:1.35}
+.bl-value{margin-left:auto;font-weight:700;color:var(--blue-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chart-card-editable .bar-legend{gap:4.2mm}
+.chart-card-editable .bl-row{position:relative;padding:0.4mm 5.5mm 0.4mm 0}
+.chart-card-editable .bl-period,.chart-card-editable .bl-value{cursor:text;border-radius:2px}
+.chart-card-editable .bl-period:hover,.chart-card-editable .bl-value:hover{outline:1px dashed rgba(12,100,252,.35)}
 
 /* Organogram */
 .orgcard{border:1px solid var(--line);border-radius:2.6mm;padding:4mm 4.5mm;margin-bottom:4.5mm;background:#fff;break-inside:avoid}
@@ -534,21 +544,29 @@ body.edit-mode .blist>div.dragging,body.edit-mode .draggable-row.dragging{opacit
 .edit-drop-line{height:0;border-top:2px solid var(--blue);margin:-1px 0}
 .row-del{position:absolute;top:0;right:0;transform:translate(40%,-40%);width:4.2mm;height:4.2mm;border-radius:50%;border:1px solid rgba(220,38,38,.5);background:#fff;color:#dc2626;font-size:8pt;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;padding:0}
 .row-del:hover{background:#dc2626;color:#fff}
+.page-del-btn{display:none;margin-left:2.5mm;padding:.9mm 2.8mm;border:1px solid rgba(220,38,38,.4);border-radius:99px;background:#fff;color:#dc2626;font-size:6.6pt;font-weight:700;letter-spacing:.2px;cursor:pointer;font-family:inherit}
+body.edit-mode .page-del-btn{display:inline-block}
+.page-del-btn:hover{background:#dc2626;color:#fff}
 .add-item-btn,.add-row-btn,.add-kpi-btn{display:block;margin:1.5mm 0 3mm;padding:1.3mm 3mm;border:1px dashed rgba(12,100,252,.5);border-radius:3px;background:rgba(12,100,252,.05);color:var(--blue);font-size:8pt;cursor:pointer;font-family:inherit}
 .add-kpi-btn.on-dark{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08)}
 .add-kpi-btn.on-dark:hover{background:rgba(255,255,255,.16)}
 .add-item-btn:hover,.add-row-btn:hover,.add-kpi-btn:hover{background:rgba(12,100,252,.12)}
-@media print{.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn,tr.fin-addrow{display:none!important}}
+@media print{.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn,.page-del-btn,tr.fin-addrow{display:none!important}}
 
-/* ═══ Tekentoolbar + annotatielaag ═══════════════════════════════════ */
-.edit-toolbar{display:none;align-items:center;gap:2mm;flex-wrap:wrap;padding:2mm 6mm;background:#F4F7FC;border-bottom:1px solid #DCE4F0;font-size:8.5pt}
+/* ═══ Bewerkwerkbalk ═══════════════════════════════════════════════
+   Lichte, "luxe" toolbar in lijn met de rest van het Credion-ontwerp:
+   subtiele hoogte/schaduw i.p.v. platte grijze balk, gegroepeerde
+   knoppen (geschiedenis in een eigen pil), zachte hover/actief-states
+   en een kleurgecodeerde statusbadge (opgeslagen/niet-opgeslagen). */
+.edit-toolbar{display:none;align-items:center;gap:2.4mm;flex-wrap:wrap;padding:2.6mm 6mm;background:linear-gradient(180deg,#FFFFFF 0%,#F8FAFD 100%);border-bottom:1px solid var(--line,#E3EAF3);box-shadow:0 2px 10px rgba(16,32,51,.05);font-size:8.5pt;position:relative;z-index:2}
 body.edit-mode .edit-toolbar{display:flex}
-.et-label{color:var(--muted,#64748b);font-size:7.8pt;margin-right:.5mm}
-.et-sep{width:1px;height:5mm;background:#DCE4F0;margin:0 1mm}
-.et-tool{padding:1.2mm 3mm;border:1px solid #DCE4F0;border-radius:4px;background:#fff;color:var(--ink,#0f172a);cursor:pointer;font-family:inherit;font-size:8.5pt}
-.et-tool:hover{background:#EEF3FB}
-.et-tool.active{background:var(--blue);border-color:var(--blue);color:#fff}
-.et-color{width:5mm;height:5mm;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
+.et-label{color:var(--muted,#68748A);font-size:7.2pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-right:.6mm}
+.et-sep{width:1px;height:5.6mm;background:linear-gradient(180deg,rgba(220,228,240,0),rgba(190,202,222,.95) 50%,rgba(220,228,240,0));margin:0 1.4mm}
+.et-tool{padding:1.5mm 3.4mm;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ink-2,#33445C);cursor:pointer;font-family:inherit;font-size:8.3pt;font-weight:600;letter-spacing:.1px;transition:background .12s ease,color .12s ease,box-shadow .12s ease,border-color .12s ease}
+.et-tool:hover{background:#EDF3FC;color:var(--blue-deep,#003B8F)}
+.et-tool.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 7px rgba(12,100,252,.3)}
+.et-tool[disabled]{opacity:.35;cursor:not-allowed}
+.et-color{width:5mm;height:5mm;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;box-shadow:0 0 0 1px rgba(16,32,51,.08)}
 .et-color[data-color="blue"]{background:#0C64FC}
 .et-color[data-color="orange"]{background:#FF8A00}
 .et-color[data-color="green"]{background:#1a9c5c}
@@ -589,13 +607,13 @@ body.edit-mode.annot-tool-erase .annot{outline:1.5px dashed #dc2626}
 }
 
 /* ═══ Geavanceerde bewerkeditor — geschiedenis, selectie, verplaatsen ═══ */
-.et-history{display:flex;align-items:center;gap:1.6mm;flex-wrap:wrap}
-.et-status{font-size:7.6pt;color:var(--muted,#68748A);margin:0 1mm;white-space:nowrap}
-.et-status.dirty{color:var(--amber,#9A6500);font-weight:700}
-.et-status.saved{color:var(--green,#1E7A4F);font-weight:700}
+.et-history{display:flex;align-items:center;gap:1mm;flex-wrap:wrap;background:#F6F8FC;border:1px solid var(--line,#E3EAF3);border-radius:9px;padding:1.1mm 1.5mm}
+.et-status{font-size:7.3pt;color:var(--muted,#68748A);margin:0 1mm;white-space:nowrap;padding:1mm 2.4mm;border-radius:99px;background:rgba(104,116,138,.1);font-weight:600}
+.et-status.dirty{color:var(--amber,#9A6500);font-weight:700;background:var(--amber-bg,#FFF4DF)}
+.et-status.saved{color:var(--green,#1E7A4F);font-weight:700;background:var(--green-bg,#E9F6EF)}
 .et-tool[disabled]{opacity:.35;cursor:not-allowed}
-.et-danger{color:var(--red,#B4432F);border-color:rgba(180,67,47,.35)}
-.et-danger:hover{background:rgba(180,67,47,.08)}
+.et-danger{color:var(--red,#B4432F)}
+.et-danger:hover{background:var(--red-bg,#FDEFEA)}
 
 body.edit-mode [data-editor-id]{cursor:default}
 body.edit-mode [data-editor-id].ed-movable:hover{outline:1px solid rgba(12,100,252,.28);outline-offset:1px}
@@ -780,20 +798,13 @@ body.edit-mode [data-editor-id].editor-selected{outline:1.5px solid var(--blue,#
       <input type="file" id="importEditorFileInput" accept="application/json,.json" class="visually-hidden">
     </span>
     <span class="et-sep"></span>
-    <span class="et-label">Tekenen:</span>
+    <span class="et-label">Invoegen:</span>
     <button class="et-tool active" type="button" data-tool="none">Tekst</button>
-    <button class="et-tool" type="button" data-tool="highlight">Markeren</button>
-    <button class="et-tool" type="button" data-tool="arrow">Pijl</button>
-    <button class="et-tool" type="button" data-tool="note">Notitie</button>
     <button class="et-tool" type="button" id="etImageBtn">Afbeelding</button>
-    <button class="et-tool" type="button" id="etChartBtn" title="Donutgrafiek invoegen op de actieve pagina">Grafiek</button>
+    <button class="et-tool" type="button" id="etChartDonutBtn" title="Donutgrafiek invoegen op de actieve pagina">Donut</button>
+    <button class="et-tool" type="button" id="etChartBarBtn" title="Staafdiagram invoegen op de actieve pagina">Staafdiagram</button>
+    <button class="et-tool" type="button" id="etAddPageBtn" title="Nieuwe lege pagina toevoegen na de huidige">+ Pagina</button>
     <button class="et-tool" type="button" data-tool="erase">Wissen</button>
-    <span class="et-sep"></span>
-    <span class="et-label">Kleur:</span>
-    <button class="et-color active" type="button" data-color="blue" title="Blauw"></button>
-    <button class="et-color" type="button" data-color="orange" title="Oranje"></button>
-    <button class="et-color" type="button" data-color="green" title="Groen"></button>
-    <button class="et-color" type="button" data-color="red" title="Rood"></button>
     <input type="file" id="etImageInput" accept="image/*" style="display:none">
   </div>
   </div>
@@ -1689,9 +1700,11 @@ function donut(items,title){
   const legend=data.map((x,i)=>`<div class="dl-row"><span class="dl-dot" style="background:${PALETTE[i%6]}"></span><span class="dl-name">${esc(x.label)}</span><span class="dl-v">${money(x.waarde)}</span><span class="dl-p">${Math.round(x.waarde/total*100)}%</span></div>`).join('');
   return `<div class="chart-card"><div class="ch-h">${esc(title)}</div><div class="donut-wrap"><svg viewBox="0 0 80 80">${segs}</svg><div class="donut-legend">${legend}</div></div></div>`;
 }
-function barChart(points,title,fmt=moneyShort){
-  const pts=A(points).filter(p=>isNum(p?.waarde)).slice(0,8);
-  if(pts.length<2) return '';
+/* Puur de balken+as-tekening van een staafdiagram, los van de rest van de
+   kaart — zo kan zowel barChart() hieronder als de live herberekening van
+   een zelf toegevoegde staafdiagram (zie recalcBarSvg) dezelfde tekenlogica
+   gebruiken. Verwacht al gefilterde punten (waarde is een getal, max 8). */
+function barChartSvgInner(pts, fmt){
   const W=300,H=128,padT=16,padB=18,padS=8;
   const vals=pts.map(p=>p.waarde);
   const max=Math.max(...vals,0),min=Math.min(...vals,0),span=(max-min)||1;
@@ -1707,7 +1720,13 @@ function barChart(points,title,fmt=moneyShort){
       `<text x="${cx.toFixed(1)}" y="${(neg?vy+h+8:vy-4).toFixed(1)}" text-anchor="middle" class="ch-val">${fmt(p.waarde)}</text>`+
       `<text x="${cx.toFixed(1)}" y="${H-5}" text-anchor="middle" class="ch-cat">${esc(String(p.periode||''))}</text>`;
   }).join('');
-  return `<div class="chart-card"><div class="ch-h">${esc(title)}</div><svg class="chart" viewBox="0 0 ${W} ${H}"><line x1="${padS}" x2="${W-padS}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#C6D4E6" stroke-width="1"/>${bars}</svg></div>`;
+  return `<line x1="${padS}" x2="${W-padS}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#C6D4E6" stroke-width="1"/>${bars}`;
+}
+function barChart(points,title,fmt=moneyShort){
+  const pts=A(points).filter(p=>isNum(p?.waarde)).slice(0,8);
+  if(pts.length<2) return '';
+  const inner=barChartSvgInner(pts, fmt);
+  return `<div class="chart-card"><div class="ch-h">${esc(title)}</div><svg class="chart" viewBox="0 0 300 128">${inner}</svg></div>`;
 }
 function chartsRow(...cards){
   const cs=cards.filter(Boolean);
@@ -3682,6 +3701,90 @@ function insertDonutChart(page){
   }
 }
 
+/* ── Zelf toegevoegde grafiek (staafdiagram) ──────────────────────────
+   Zelfde opzet als de donut hierboven: barChart() bouwt de basiskaart,
+   daarna wordt de titel + een rijenlijst (periode/waarde) bewerkbaar
+   gemaakt. Omdat een staafdiagram geen losse, per-waarde tekstlaag over
+   de SVG heeft (labels staan ín de SVG als <text>), wordt bij elke
+   wijziging de hele SVG opnieuw getekend via barChartSvgInner — de
+   bewerkbare rijen zelf (buiten de SVG) blijven daarbij intact. */
+function readBarRows(card){
+  return [...card.querySelectorAll('.bl-row')].map(row=>({
+    row,
+    periode: row.querySelector('.bl-period')?.textContent?.trim()||'',
+    waarde: parseEditableNumber(row.querySelector('.bl-value')?.textContent||''),
+  }));
+}
+function recalcBarSvg(card){
+  const svgEl=card.querySelector('svg.chart'); if(!svgEl) return;
+  const rows=readBarRows(card);
+  const validRows=rows.filter(r=>isNum(r.waarde)).slice(0,8);
+  svgEl.innerHTML = validRows.length>=2 ? barChartSvgInner(validRows, moneyShort) : '';
+}
+function buildEditableBarCard(points, title){
+  const html=barChart(points, title);
+  if(!html) return null;
+  const tmp=document.createElement('div'); tmp.innerHTML=html;
+  const card=tmp.firstElementChild;
+  card.classList.add('chart-card-editable');
+  card.dataset.chartType='bar';
+  const chH=card.querySelector('.ch-h'); if(chH) chH.setAttribute('contenteditable','true');
+  const svgEl=card.querySelector('svg.chart');
+  const legend=document.createElement('div'); legend.className='bar-legend';
+  if(svgEl) svgEl.insertAdjacentElement('afterend', legend); else card.appendChild(legend);
+  points.forEach(p=>{
+    const row=document.createElement('div'); row.className='bl-row'; row.style.position='relative';
+    row.innerHTML=`<span class="bl-period" contenteditable="true">${esc(String(p.periode||''))}</span><span class="bl-value" contenteditable="true">${esc(String(p.waarde))}</span>`;
+    legend.appendChild(row);
+    makeDeletable(row);
+  });
+  const addBtn=document.createElement('button');
+  addBtn.type='button'; addBtn.className='add-row-btn add-chart-row-btn'; addBtn.textContent='+ Kolom toevoegen';
+  addBtn.addEventListener('click', ()=>{
+    const idx=legend.querySelectorAll('.bl-row').length;
+    const row=document.createElement('div'); row.className='bl-row'; row.style.position='relative';
+    row.innerHTML=`<span class="bl-period" contenteditable="true">Periode ${idx+1}</span><span class="bl-value" contenteditable="true">0</span>`;
+    legend.appendChild(row);
+    makeDeletable(row);
+    trackInsertion(row, null);
+    recalcBarSvg(card);
+    const periodEl=row.querySelector('.bl-period');
+    periodEl.focus();
+    const range=document.createRange(); range.selectNodeContents(periodEl);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  });
+  card.appendChild(addBtn);
+  return card;
+}
+function insertBarChart(page){
+  if(!page) return;
+  const layer=ensureAnnotLayer(page);
+  const card=buildEditableBarCard(
+    [{periode:'2024',waarde:100000},{periode:'2025',waarde:130000},{periode:'2026 (progn.)',waarde:150000}],
+    'Nieuwe grafiek'
+  );
+  if(!card) return;
+  const wrap=document.createElement('div');
+  wrap.className='annot annot-chart';
+  Object.assign(wrap.style,{left:'26%',top:'30%',width:'52%'});
+  wrap.appendChild(card);
+  layer.appendChild(wrap);
+  finalizeChartCreation(wrap);
+  const chH=card.querySelector('.ch-h');
+  if(chH){
+    chH.focus();
+    const range=document.createRange(); range.selectNodeContents(chH);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  }
+}
+/* Eén dispatcher zodat removeElement/trackInsertion/de input-listener niet
+   per grafiektype hoeven te weten welke herbereken-functie erbij hoort. */
+function recalcChartCard(card){
+  if(!card) return;
+  if(card.dataset.chartType==='bar') recalcBarSvg(card);
+  else recalcDonutSvg(card);
+}
+
 function addAllPlusButtons(root){
   addBlistPlusButtons(root);
   addBnaPlusButtons(root);
@@ -3699,7 +3802,8 @@ const EDITABLE_TEXT_SELECTOR = [
      de door de AI gegenereerde, vaste grafieken elders in het rapport
      blijven bewust read-only, want daar is geen herberekening voor
      aangesloten. */
-  '.chart-card-editable .ch-h','.chart-card-editable .dl-name','.chart-card-editable .dl-v'
+  '.chart-card-editable .ch-h','.chart-card-editable .dl-name','.chart-card-editable .dl-v',
+  '.chart-card-editable .bl-period','.chart-card-editable .bl-value'
 ].join(',');
 
 function setEditMode(on, root){
@@ -4083,6 +4187,98 @@ function updateTocPageNumbers(pages){
     if(hit) pageEl.textContent=String(hit.idx+1);
   });
 }
+/* ── Handmatig toegevoegde pagina ("+ Pagina") ─────────────────────────
+   Voegt een lege pagina toe direct ná de actieve/laatst aangeraakte pagina
+   (of vóór de achterkaft als die actief was), met dezelfde kop/voet-chroom
+   als de rest van het rapport en één bewerkbare alinea als startpunt.
+   Gemarkeerd met data-manual-page zodat removeEmptyAutoContinuationPages()
+   (dat alleen automatische vervolgpagina's opruimt) deze nooit aanraakt. */
+function insertBlankPage(){
+  const pages=[...el.stage.querySelectorAll('.report-page')];
+  if(!pages.length) return;
+  const backcover=el.stage.querySelector('.report-page.backcover');
+  let refPage=(lastActivePage && lastActivePage.isConnected && lastActivePage.classList.contains('report-page')) ? lastActivePage : pages[pages.length-1];
+  if(refPage===backcover) refPage=pages.filter(p=>p!==backcover).pop() || refPage;
+  const templatePage=refPage.classList.contains('cover') ? (pages.find(p=>!p.classList.contains('cover')&&!p.classList.contains('backcover')) || refPage) : refPage;
+  const head=templatePage.querySelector(':scope>.rp-head');
+  const foot=templatePage.querySelector(':scope>.rp-foot');
+
+  const page=document.createElement('section');
+  page.className='report-page';
+  page.dataset.manualPage='1';
+  page.dataset.screenLabel='Nieuwe pagina';
+
+  if(head){
+    const headClone=head.cloneNode(true);
+    const right=headClone.querySelector('.rp-head-right');
+    if(right) right.textContent='Nieuwe pagina';
+    page.appendChild(headClone);
+  }
+  const body=document.createElement('div');
+  body.className='rp-body';
+  body.innerHTML='<p class="para">Nieuwe, lege pagina. Typ hier tekst, of voeg via de werkbalk een grafiek of afbeelding toe.</p>';
+  page.appendChild(body);
+  if(foot){
+    const footClone=foot.cloneNode(true);
+    const footR=footClone.querySelector('.rp-foot-r');
+    if(footR){
+      const delBtn=document.createElement('button');
+      delBtn.type='button'; delBtn.className='page-del-btn no-print'; delBtn.title='Deze pagina verwijderen';
+      delBtn.textContent='Pagina verwijderen';
+      footR.appendChild(delBtn);
+    }
+    page.appendChild(footClone);
+  }
+
+  const parent=refPage.parentElement;
+  const anchorNode=refPage.nextElementSibling;
+
+  const cmd={
+    apply(){
+      parent.insertBefore(page, anchorNode&&anchorNode.parentElement===parent?anchorNode:null);
+      registerEditableObjects(page);
+      if(editModeOn){
+        page.querySelectorAll(EDITABLE_TEXT_SELECTOR).forEach(elm=>{
+          if(elm.closest('.fin-sec')) return;
+          elm.setAttribute('contenteditable','true');
+        });
+        addAllPlusButtons(page);
+        addDeleteButtons(page);
+      }
+      renumberPages();
+    },
+    revert(){
+      page.remove();
+      if(lastActivePage===page) lastActivePage=null;
+      renumberPages();
+    },
+  };
+  commit(cmd, false);
+  lastActivePage=page;
+  requestAnimationFrame(()=>page.scrollIntoView({behavior:'smooth', block:'start'}));
+}
+/* Verwijdert een handmatig toegevoegde pagina (nooit een AI-gegenereerde
+   pagina — die heeft geen data-manual-page en dus ook geen knop). Los van
+   removeElement() gehouden omdat een paginaverwijdering altijd gevolgd
+   moet worden door renumberPages(), zowel bij toepassen als ongedaan maken. */
+function deleteManualPage(page){
+  if(!page || page.dataset.manualPage!=='1') return;
+  const parent=page.parentElement; if(!parent) return;
+  const anchorNode=page.nextElementSibling;
+  const cmd={
+    apply(){
+      page.remove();
+      if(lastActivePage===page) lastActivePage=null;
+      renumberPages();
+    },
+    revert(){
+      parent.insertBefore(page, anchorNode&&anchorNode.parentElement===parent?anchorNode:null);
+      renumberPages();
+    },
+  };
+  commit(cmd, false);
+}
+
 function resolveAllPageOverflows(){
   let guard=0, anyChange=false;
   while(guard<50){
@@ -4622,8 +4818,8 @@ function removeElement(elm){
   const chartCard = elm.closest && elm.closest('.chart-card-editable');
   const wasSelected = Ed.selected===elm.dataset.editorId;
   const cmd={
-    apply(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); if(wasSelected) deselectAll(); },
-    revert(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); selectObject(elm); },
+    apply(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); if(wasSelected) deselectAll(); },
+    revert(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); selectObject(elm); },
   };
   commit(cmd, false);
 }
@@ -4645,8 +4841,8 @@ function trackInsertion(elm, table){
   const nextSibling=elm.nextElementSibling;
   const chartCard = elm.closest && elm.closest('.chart-card-editable');
   const cmd={
-    apply(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); },
-    revert(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); deselectAll(); },
+    apply(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); },
+    revert(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); deselectAll(); },
   };
   commit(cmd, true);
 }
@@ -5199,6 +5395,13 @@ document.addEventListener('click', e=>{
   const target=btn.parentElement;
   if(target) removeElement(target);
 });
+document.addEventListener('click', e=>{
+  const btn=e.target.closest('.page-del-btn');
+  if(!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  const page=btn.closest('.report-page');
+  if(page) deleteManualPage(page);
+});
 
 /* ══ Toolbar ════════════════════════════════════════════════════════ */
 /* Verborgen: dubbelklik op de Credion-titel in de toolbar toont de JSON-download */
@@ -5225,22 +5428,30 @@ $('#etImageInput').addEventListener('change',e=>{
   reader.readAsDataURL(file);
   e.target.value='';
 });
-$('#etChartBtn')?.addEventListener('click',()=>{
+$('#etChartDonutBtn')?.addEventListener('click',()=>{
   const targetPage=lastActivePage||el.stage.querySelector('.report-page');
   if(!targetPage) return;
   insertDonutChart(targetPage);
 });
-/* Live herberekening van een zelf toegevoegde donutgrafiek: gedebouncet
-   (net als tekstwijzigingen elders) zodat de SVG-boog en percentages
-   meelopen terwijl iemand een waarde intypt, zonder het invoerveld zelf
-   steeds opnieuw op te bouwen. */
+$('#etChartBarBtn')?.addEventListener('click',()=>{
+  const targetPage=lastActivePage||el.stage.querySelector('.report-page');
+  if(!targetPage) return;
+  insertBarChart(targetPage);
+});
+$('#etAddPageBtn')?.addEventListener('click',()=>{
+  insertBlankPage();
+});
+/* Live herberekening van een zelf toegevoegde grafiek (donut of staaf):
+   gedebouncet (net als tekstwijzigingen elders) zodat de SVG en percentages/
+   assen meelopen terwijl iemand een waarde intypt, zonder het invoerveld
+   zelf steeds opnieuw op te bouwen. */
 const chartRecalcTimers=new WeakMap();
 el.stage.addEventListener('input', e=>{
-  const valElm=e.target.closest && e.target.closest('.chart-card-editable .dl-v');
+  const valElm=e.target.closest && e.target.closest('.chart-card-editable .dl-v, .chart-card-editable .bl-value');
   if(!valElm) return;
   const card=valElm.closest('.chart-card-editable'); if(!card) return;
   clearTimeout(chartRecalcTimers.get(card));
-  chartRecalcTimers.set(card, setTimeout(()=>recalcDonutSvg(card), 400));
+  chartRecalcTimers.set(card, setTimeout(()=>recalcChartCard(card), 400));
 });
 $('#printReport').addEventListener('click',()=>window.print());
 /* Ook bij Ctrl+P of het browser-printmenu (niet alleen de knop): invoervelden
