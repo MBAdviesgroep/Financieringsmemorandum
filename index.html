@@ -475,7 +475,24 @@ svg.chart{width:100%;height:auto;display:block}
   .report-page.landscape .rp-landscape-rotate{position:static!important;width:100%!important;height:100%!important;transform:none!important;transform-origin:center center!important}
   .report-page:last-child{break-after:auto;page-break-after:auto}
   .panel,.chart-card,.orgcard,table.t,.kpi,.verdict,.kv,.docrow{break-inside:avoid;page-break-inside:avoid}
+  input.fin-input{border:none!important;background:transparent!important;box-shadow:none!important;color:inherit!important;text-align:right!important;-webkit-appearance:none;appearance:none;padding:0!important}
+  [contenteditable]{outline:none!important;background:transparent!important}
+  .blist>div::after{content:none!important}
+  .edit-drop-line{display:none!important}
 }
+
+/* ═══ Bewerkmodus — inline bewerken, doorrekenen, slepen ══════════ */
+#toggleEdit.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+body.edit-mode [contenteditable="true"]{cursor:text;border-radius:2px;outline:1px dashed rgba(12,100,252,.35);outline-offset:1px}
+body.edit-mode [contenteditable="true"]:hover{background:rgba(12,100,252,.06)}
+body.edit-mode [contenteditable="true"]:focus{outline:1.5px solid var(--blue);background:rgba(12,100,252,.09)}
+body.edit-mode input.fin-input{width:100%;min-width:16mm;border:1px solid rgba(12,100,252,.4);border-radius:2px;font:inherit;text-align:right;background:rgba(12,100,252,.07);padding:0 1mm;color:inherit}
+body.edit-mode input.fin-input:focus{outline:none;border-color:var(--blue);background:rgba(12,100,252,.13)}
+body.edit-mode tr[data-fin-total="1"] td.num,body.edit-mode tr[data-bna-role="total"] td.num{background:rgba(15,23,42,.04)}
+body.edit-mode .blist>div,body.edit-mode .draggable-row{position:relative;cursor:grab;padding-right:5mm!important}
+body.edit-mode .blist>div::after,body.edit-mode .draggable-row::after{content:'⠿';position:absolute;right:0.5mm;top:50%;transform:translateY(-50%);opacity:.32;font-size:9pt;line-height:1}
+body.edit-mode .blist>div.dragging,body.edit-mode .draggable-row.dragging{opacity:.35}
+.edit-drop-line{height:0;border-top:2px solid var(--blue);margin:-1px 0}
 </style>
 </head>
 <body>
@@ -585,6 +602,7 @@ svg.chart{width:100%;height:auto;display:block}
     <div class="tb-actions">
       <button class="btn-ghost" type="button" id="downloadJson">Download JSON</button>
       <button class="btn-ghost" type="button" id="newReport">Nieuw rapport</button>
+      <button class="btn-ghost" type="button" id="toggleEdit" title="Tekst en cijfers bewerken, rijen slepen">Bewerken</button>
       <button class="btn-orange" type="button" id="printReport">Print / PDF</button>
     </div>
   </div>
@@ -1450,9 +1468,9 @@ function finStatementTable(rows,order){
     }
     const cells=periods.map(p=>{
       const v=map[m.key]&&map[m.key][p];
-      return `<td class="num ${isNum(v)&&v<0?'neg':''}">${mcell(v)}</td>`;
+      return `<td class="num ${isNum(v)&&v<0?'neg':''}" data-fin-period="${esc(p)}" data-fin-value="${isNum(v)?v:''}">${mcell(v)}</td>`;
     }).join('');
-    trs.push(`<tr${m.total?' class="total"':''}><td>${esc(m.label)}</td>${cells}</tr>`);
+    trs.push(`<tr${m.total?' class="total"':''} data-fin-key="${esc(m.key)}" data-fin-group="${esc(m.group||'')}" data-fin-total="${m.total?1:0}"><td>${esc(m.label)}</td>${cells}</tr>`);
   }
   return tableBlocks([{label:'Post'},...periods.map(p=>({label:p,num:true}))],trs,{protect:true,cls:'fin',periodTag:true});
 }
@@ -1996,9 +2014,9 @@ function buildSections(r,ctx){
       const totVal=totRow&&isNum(totRow.bedrag)?totRow.bedrag:computed;
       const totLbl=totRow&&hasVal(totRow.label)?totRow.label:'Totaal';
       const totSub=totRow?'':'berekend op basis van bronregels';
-      return `<div><table class="t"><thead><tr><th>${esc(label)}</th><th class="num">Bedrag</th></tr></thead><tbody>${
-        detail.map(x=>`<tr><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num">${mcell(x.bedrag)}</td></tr>`).join('')
-      }${isNum(totVal)?`<tr class="total"><td>${esc(totLbl)}${totSub?`<div class="sub">${totSub}</div>`:''}</td><td class="num">${money(totVal)}</td></tr>`:''}</tbody></table></div>`;
+      return `<div><table class="t bna-table"><thead><tr><th>${esc(label)}</th><th class="num">Bedrag</th></tr></thead><tbody>${
+        detail.map(x=>`<tr data-bna-role="detail"><td>${esc(x.label)}${hasVal(x.toelichting)?`<div class="sub">${esc(x.toelichting)}</div>`:''}</td><td class="num" data-bna-value="${x.bedrag}">${mcell(x.bedrag)}</td></tr>`).join('')
+      }${isNum(totVal)?`<tr class="total" data-bna-role="total"><td>${esc(totLbl)}${totSub?`<div class="sub">${totSub}</div>`:''}</td><td class="num">${money(totVal)}</td></tr>`:''}</tbody></table></div>`;
     };
     if(aanw.length||bron.length){
       blocks.push(secbarB('Bronnen en aanwendingen'));
@@ -2986,12 +3004,234 @@ function renderReport(r){
      van de werkelijk gerenderde hoogte. */
   fitCoverText(el.stage.querySelector('.cover-name'),2,13,{long:32,longer:55});
   fitCoverText(el.stage.querySelector('.cover-goal'),3,8,{long:95,longer:150});
+  initEditMode(el.stage);
+}
+
+/* ══ Bewerkmodus ═══════════════════════════════════════════════════════
+   Inline bewerken van het gerenderde rapport: tekst, cijfers (met live
+   doorrekenen van totalen in de financiële tabellen en in bronnen en
+   aanwendingen) en het verslepen van bulletlijsten (sterktes, aandacht-
+   punten, risico's, documentatie-items e.d.). De balans- en resultaten-
+   volgorde zelf blijft vast (dat is bewust hard vastgezet elders) — daar
+   kunnen alleen de bedragen worden aangepast, niet de rijvolgorde.
+   Bewerkingen leven alleen in de DOM/het geprinte document; ze worden niet
+   teruggeschreven naar de brondata. Bij "Nieuw rapport" of het opnieuw
+   inladen van een JSON-bestand ga je terug naar de oorspronkelijke tekst. */
+let editModeOn = false;
+
+function parseEditableNumber(str){
+  if(str==null) return null;
+  let s=String(str).trim().replace(/[€\s]/g,'');
+  if(s==='') return null;
+  if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s=s.replace(/\./g,'').replace(',','.');
+  else if(/^-?\d+,\d+$/.test(s)) s=s.replace(',','.');
+  else s=s.replace(/\.(?=\d{3}(\D|$))/g,'');
+  const n=parseFloat(s);
+  return isFinite(n)?n:null;
+}
+
+/* Balans: totaalregel per groep = som van de niet-totaalregels in diezelfde
+   groep (Activa/Passiva). Werkt ook voor eventuele extra brondetailregels,
+   want die zijn al met de juiste data-fin-group getagd door finStatementTable. */
+/* Zoekt de celwaarde bij een periode zonder van CSS.escape afhankelijk te
+   zijn (niet overal beschikbaar/nodig) — gewoon een array-lookup op het
+   data-fin-period-attribuut. */
+function finCellForPeriod(tr,p){
+  return [...tr.querySelectorAll('td[data-fin-period]')].find(td=>td.dataset.finPeriod===p)||null;
+}
+function recalcBalansTable(table){
+  const rows=[...table.querySelectorAll('tbody tr[data-fin-key]')];
+  const periods=[...new Set(rows.flatMap(tr=>[...tr.querySelectorAll('td[data-fin-period]')].map(td=>td.dataset.finPeriod)))];
+  const totalRows=rows.filter(tr=>tr.dataset.finTotal==='1');
+  totalRows.forEach(totalTr=>{
+    const group=totalTr.dataset.finGroup;
+    const componentRows=rows.filter(tr=>tr!==totalTr&&tr.dataset.finGroup===group&&tr.dataset.finTotal!=='1');
+    periods.forEach(p=>{
+      let som=null;
+      componentRows.forEach(tr=>{
+        const td=finCellForPeriod(tr,p);
+        const v=td?parseEditableNumber(td.dataset.finValue):null;
+        if(v!==null) som=(som||0)+v;
+      });
+      const totTd=finCellForPeriod(totalTr,p);
+      if(totTd&&som!==null){ totTd.dataset.finValue=som; totTd.textContent=money(som); totTd.classList.toggle('neg',som<0); }
+    });
+  });
+}
+
+/* Resultatenrekening: vaste P&L-keten, gebruikmakend van de canonieke keys
+   uit RESULTAAT_ORDER (die zijn hard vastgezet, dus betrouwbaar aanwezig). */
+function recalcResultatenTable(table){
+  const rows=[...table.querySelectorAll('tbody tr[data-fin-key]')];
+  const byKey={}; rows.forEach(tr=>{ (byKey[tr.dataset.finKey]=byKey[tr.dataset.finKey]||[]).push(tr); });
+  const periods=[...new Set(rows.flatMap(tr=>[...tr.querySelectorAll('td[data-fin-period]')].map(td=>td.dataset.finPeriod)))];
+  const val=(tr,p)=>{ if(!tr) return null; const td=finCellForPeriod(tr,p); return td?parseEditableNumber(td.dataset.finValue):null; };
+  const setVal=(tr,p,v)=>{ if(!tr) return; const td=finCellForPeriod(tr,p); if(!td||v===null) return; td.dataset.finValue=v; td.textContent=money(v); td.classList.toggle('neg',v<0); };
+  const opbrengstRows=rows.filter(tr=>tr.dataset.finGroup==='Opbrengsten');
+  const kostenRows=rows.filter(tr=>tr.dataset.finGroup==='Kosten'&&tr.dataset.finTotal!=='1');
+  const totKostenTr=(byKey['totaalbedrijfskosten']||[])[0];
+  const bedrijfsresultaatTr=(byKey['bedrijfsresultaat']||[])[0];
+  const finbatenTr=(byKey['finbatenlasten']||[])[0];
+  const voorBelastingTr=(byKey['resultaatvoorbelasting']||[])[0];
+  const belastingTr=(byKey['belasting']||[])[0];
+  const naBelastingTr=(byKey['resultaatnabelasting']||[])[0];
+  periods.forEach(p=>{
+    let kostenSom=null;
+    kostenRows.forEach(tr=>{ const v=val(tr,p); if(v!==null) kostenSom=(kostenSom||0)+v; });
+    if(totKostenTr&&kostenSom!==null) setVal(totKostenTr,p,kostenSom);
+    let opbrengstSom=null;
+    opbrengstRows.forEach(tr=>{ const v=val(tr,p); if(v!==null) opbrengstSom=(opbrengstSom||0)+v; });
+    const totKosten=totKostenTr?val(totKostenTr,p):null;
+    if(bedrijfsresultaatTr&&opbrengstSom!==null&&totKosten!==null) setVal(bedrijfsresultaatTr,p,opbrengstSom-totKosten);
+    const bedrijfsresultaat=bedrijfsresultaatTr?val(bedrijfsresultaatTr,p):null;
+    const finbaten=finbatenTr?val(finbatenTr,p):0;
+    if(voorBelastingTr&&bedrijfsresultaat!==null) setVal(voorBelastingTr,p,bedrijfsresultaat+(finbaten||0));
+    const voorBelasting=voorBelastingTr?val(voorBelastingTr,p):null;
+    const belasting=belastingTr?val(belastingTr,p):0;
+    if(naBelastingTr&&voorBelasting!==null) setVal(naBelastingTr,p,voorBelasting-(belasting||0));
+  });
+}
+
+function recalcFinTable(table){
+  if(table.querySelector('tr[data-fin-key="totaalactiva"], tr[data-fin-key="totaalpassiva"]')) recalcBalansTable(table);
+  if(table.querySelector('tr[data-fin-key="bedrijfsresultaat"], tr[data-fin-key="totaalbedrijfskosten"]')) recalcResultatenTable(table);
+}
+
+function recalcBnaTable(table){
+  const details=[...table.querySelectorAll('tr[data-bna-role="detail"] td[data-bna-value]')];
+  const totalTd=table.querySelector('tr[data-bna-role="total"] td.num');
+  if(!totalTd) return;
+  let som=null;
+  details.forEach(td=>{ const v=parseEditableNumber(td.dataset.bnaValue); if(v!==null) som=(som||0)+v; });
+  if(som!==null){ totalTd.textContent=money(som); }
+}
+
+/* Maakt de bedragcellen van een financiële tabel (balans/resultaten) of een
+   bronnen/aanwendingen-tabel bewerkbaar: totaalregels blijven read-only
+   (die worden berekend), detailregels worden een invoerveld. */
+function makeFinCellsEditable(root){
+  root.querySelectorAll('table.t.fin tbody tr[data-fin-key]').forEach(tr=>{
+    if(tr.dataset.finTotal==='1') return;
+    tr.querySelectorAll('td[data-fin-period]').forEach(td=>{
+      const raw=td.dataset.finValue;
+      if(raw===''||raw===undefined) return;
+      const input=document.createElement('input');
+      input.type='text'; input.inputMode='decimal'; input.className='fin-input';
+      input.value=Math.round(parseFloat(raw)).toString();
+      td.textContent=''; td.appendChild(input);
+      input.addEventListener('input',()=>{
+        const n=parseEditableNumber(input.value);
+        td.dataset.finValue=n===null?'':n;
+        recalcFinTable(td.closest('table'));
+      });
+    });
+  });
+  root.querySelectorAll('table.bna-table tr[data-bna-role="detail"] td[data-bna-value]').forEach(td=>{
+    const raw=td.dataset.bnaValue;
+    if(raw===''||raw===undefined||raw==='null') return;
+    const input=document.createElement('input');
+    input.type='text'; input.inputMode='decimal'; input.className='fin-input';
+    input.value=Math.round(parseFloat(raw)).toString();
+    td.textContent=''; td.appendChild(input);
+    input.addEventListener('input',()=>{
+      const n=parseEditableNumber(input.value);
+      td.dataset.bnaValue=n===null?'':n;
+      recalcBnaTable(td.closest('table'));
+    });
+  });
+}
+
+/* Zet de invoervelden weer terug naar platte, opgemaakte tekst (bijv. bij
+   het uitzetten van de bewerkmodus, zodat print/PDF er altijd netjes uitziet
+   ook als iemand vergeet expliciet uit een veld te klikken). */
+function collapseFinInputs(root){
+  root.querySelectorAll('input.fin-input').forEach(input=>{
+    const td=input.closest('td');
+    if(!td) return;
+    const n=parseEditableNumber(input.value);
+    td.textContent=n===null?'—':money(n);
+  });
+}
+
+/* Sleepbaar maken van bulletlijsten (.blist — sterktes, aandachtspunten,
+   risico's, kernpunten, documentatie-items, structuurschema). Tabellen met
+   een vaste, betekenisvolle volgorde (met name de financiële tabellen) doen
+   hier bewust niet aan mee. */
+function enableBlistDragDrop(root){
+  root.querySelectorAll('.blist').forEach(list=>{
+    if(list.dataset.dndReady) return;
+    list.dataset.dndReady='1';
+    list.addEventListener('dragstart',e=>{
+      const item=e.target.closest('.blist>div')||(e.target.parentElement===list?e.target:null);
+      if(!item||item.parentElement!==list) return;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    list.addEventListener('dragend',e=>{
+      const item=e.target.closest('.blist>div');
+      if(item) item.classList.remove('dragging');
+    });
+    list.addEventListener('dragover',e=>{
+      const dragging=list.querySelector(':scope>div.dragging');
+      if(!dragging) return;
+      e.preventDefault();
+      const siblings=[...list.children].filter(c=>c!==dragging);
+      const after=siblings.find(c=>{
+        const r=c.getBoundingClientRect();
+        return e.clientY < r.top + r.height/2;
+      });
+      if(after) list.insertBefore(dragging, after); else list.appendChild(dragging);
+    });
+  });
+  [...root.querySelectorAll('.blist>div')].forEach(item=>{ item.setAttribute('draggable','true'); });
+}
+
+const EDITABLE_TEXT_SELECTOR = [
+  '.para','.panel-h','.secbar>span','.secbar>small','.colh','.verdict p','.kpi-v','.kpi-l','.kpi-s',
+  '.kv .k','.kv .v','.cover-name','.cover-goal','.sub',
+  'td:not(.num)','th:not(.num)'
+].join(',');
+
+function setEditMode(on, root){
+  editModeOn = on;
+  document.body.classList.toggle('edit-mode', on);
+  const btn=document.getElementById('toggleEdit');
+  if(btn){ btn.classList.toggle('active', on); btn.textContent = on ? 'Klaar met bewerken' : 'Bewerken'; }
+  if(!root) root = document.getElementById('reportStage');
+  if(!root) return;
+  if(on){
+    root.querySelectorAll(EDITABLE_TEXT_SELECTOR).forEach(elm=>{
+      if(elm.closest('.fin-sec')) return; // groepskoppen (ACTIVA/PASSIVA) niet bewerkbaar
+      elm.setAttribute('contenteditable','true');
+    });
+    root.querySelectorAll('.blist>div').forEach(elm=>elm.setAttribute('contenteditable','true'));
+    makeFinCellsEditable(root);
+    enableBlistDragDrop(root);
+  } else {
+    root.querySelectorAll('[contenteditable="true"]').forEach(elm=>elm.removeAttribute('contenteditable'));
+    root.querySelectorAll('[draggable="true"]').forEach(elm=>elm.removeAttribute('draggable'));
+    collapseFinInputs(root);
+  }
+}
+
+function initEditMode(root){
+  if(editModeOn) setEditMode(true, root);
 }
 
 /* ══ Toolbar ════════════════════════════════════════════════════════ */
 /* Verborgen: dubbelklik op de Credion-titel in de toolbar toont de JSON-download */
 document.querySelector('.tb-brand').addEventListener('dblclick',()=>document.body.classList.toggle('show-json'));
+$('#toggleEdit').addEventListener('click',()=>{
+  if(!el.stage.querySelector('.report-page')) return; // nog geen rapport geladen
+  setEditMode(!editModeOn, el.stage);
+});
 $('#printReport').addEventListener('click',()=>window.print());
+/* Ook bij Ctrl+P of het browser-printmenu (niet alleen de knop): invoervelden
+   worden vlak vóór het printen tijdelijk plat getrokken tot leesbare tekst, en
+   ná het printen weer teruggezet naar bewerkbare velden zolang de bewerkmodus
+   nog aanstaat — zo blijft bewerken daarna gewoon mogelijk. */
+window.addEventListener('beforeprint',()=>{ if(editModeOn) collapseFinInputs(el.stage); });
+window.addEventListener('afterprint',()=>{ if(editModeOn) makeFinCellsEditable(el.stage); });
 $('#downloadJson').addEventListener('click',()=>{
   if(!state.data) return;
   const a=document.createElement('a');
@@ -3003,6 +3243,8 @@ $('#newReport').addEventListener('click',()=>{
   fileReadCache.clear();
   state.files=[]; state.data=null; el.notes.value=''; resetStructInput(); setError(''); renderFiles();
   el.stage.innerHTML=''; window.scrollTo({top:0});
+  editModeOn=false; document.body.classList.remove('edit-mode');
+  const editBtn=document.getElementById('toggleEdit'); if(editBtn){ editBtn.classList.remove('active'); editBtn.textContent='Bewerken'; }
 });
 
 /* Debug/test-hook: render een rapport-JSON zonder API-call (console) */
