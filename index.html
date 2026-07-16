@@ -407,6 +407,14 @@ svg.chart{width:100%;height:auto;display:block}
 .dl-v{margin-left:auto;font-weight:700;color:var(--blue-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
 .dl-p{color:var(--muted);font-size:7.4pt;white-space:nowrap}
 .noviz{font-size:8.6pt;color:var(--muted);background:var(--bg);border:1px dashed #CBD8E8;border-radius:2.4mm;padding:3.4mm 4mm;margin-bottom:4.5mm;line-height:1.5}
+/* Zelf toegevoegde grafiek (vrij te plaatsen, net als een afbeelding-annotatie) */
+.annot-chart{position:absolute;cursor:move}
+.annot-chart .chart-card{width:100%;box-sizing:border-box;box-shadow:0 2px 10px rgba(16,32,51,.06)}
+.chart-card-editable .donut-legend{gap:4.2mm}
+.chart-card-editable .dl-row{position:relative;padding:0.4mm 5.5mm 0.4mm 0}
+.chart-card-editable .dl-name,.chart-card-editable .dl-v,.chart-card-editable .ch-h{cursor:text;border-radius:2px}
+.chart-card-editable .dl-name:hover,.chart-card-editable .dl-v:hover,.chart-card-editable .ch-h:hover{outline:1px dashed rgba(12,100,252,.35)}
+.add-chart-row-btn{margin:2mm 0 0}
 
 /* Organogram */
 .orgcard{border:1px solid var(--line);border-radius:2.6mm;padding:4mm 4.5mm;margin-bottom:4.5mm;background:#fff;break-inside:avoid}
@@ -778,6 +786,7 @@ body.edit-mode [data-editor-id].editor-selected{outline:1.5px solid var(--blue,#
     <button class="et-tool" type="button" data-tool="arrow">Pijl</button>
     <button class="et-tool" type="button" data-tool="note">Notitie</button>
     <button class="et-tool" type="button" id="etImageBtn">Afbeelding</button>
+    <button class="et-tool" type="button" id="etChartBtn" title="Donutgrafiek invoegen op de actieve pagina">Grafiek</button>
     <button class="et-tool" type="button" data-tool="erase">Wissen</button>
     <span class="et-sep"></span>
     <span class="et-label">Kleur:</span>
@@ -1658,16 +1667,25 @@ function finStatementTable(rows,order){
 }
 
 /* Grafieken */
-function donut(items,title){
-  const data=A(items).filter(x=>isNum(x?.waarde)&&x.waarde>0).slice(0,6);
-  if(data.length<2) return '';
-  const total=data.reduce((s,x)=>s+x.waarde,0);
+/* Puur de boog-geometrie van een donut, los van de rest van de opmaak — zo
+   kan zowel de (server/AI-gegenereerde) donut() hieronder als de live
+   herberekening van een zelf toegevoegde grafiek (zie recalcDonutSvg)
+   dezelfde tekenlogica gebruiken en nooit uit de pas lopen. Verwacht al
+   gefilterde items (waarde>0, max 6). */
+function donutArcSegmentsHtml(validItems){
+  const total=validItems.reduce((s,x)=>s+x.waarde,0);
   const R=30,C=2*Math.PI*R; let off=0;
-  const segs=data.map((x,i)=>{
+  return validItems.map((x,i)=>{
     const len=x.waarde/total*C;
     const seg=`<circle r="${R}" cx="40" cy="40" fill="none" stroke="${PALETTE[i%6]}" stroke-width="12" stroke-dasharray="${Math.max(0,len-1.4)} ${C-len+1.4}" stroke-dashoffset="${-off}" transform="rotate(-90 40 40)"/>`;
     off+=len; return seg;
   }).join('');
+}
+function donut(items,title){
+  const data=A(items).filter(x=>isNum(x?.waarde)&&x.waarde>0).slice(0,6);
+  if(data.length<2) return '';
+  const total=data.reduce((s,x)=>s+x.waarde,0);
+  const segs=donutArcSegmentsHtml(data);
   const legend=data.map((x,i)=>`<div class="dl-row"><span class="dl-dot" style="background:${PALETTE[i%6]}"></span><span class="dl-name">${esc(x.label)}</span><span class="dl-v">${money(x.waarde)}</span><span class="dl-p">${Math.round(x.waarde/total*100)}%</span></div>`).join('');
   return `<div class="chart-card"><div class="ch-h">${esc(title)}</div><div class="donut-wrap"><svg viewBox="0 0 80 80">${segs}</svg><div class="donut-legend">${legend}</div></div></div>`;
 }
@@ -3573,6 +3591,97 @@ function addKpiPlusButton(root){
   });
 }
 
+/* ── Zelf toegevoegde grafiek (donut) ─────────────────────────────────
+   Gebruikt dezelfde donut()-sjabloon als de door de AI gegenereerde
+   grafieken (zie "Grafieken" hierboven), maar maakt de titel en elk
+   legenda-segment (label + waarde) direct bewerkbaar, met een "+ Segment
+   toevoegen"-knop en per segment een ×. Bij elke waardewijziging worden
+   alleen de SVG-boog en de percentages herberekend (readDonutRows /
+   recalcDonutSvg) — de bewerkbare tekstvelden zelf blijven ongemoeid, zodat
+   de cursor tijdens het typen niet verspringt. */
+function readDonutRows(card){
+  return [...card.querySelectorAll('.dl-row')].map(row=>({
+    row,
+    label: row.querySelector('.dl-name')?.textContent?.trim()||'',
+    waarde: parseEditableNumber(row.querySelector('.dl-v')?.textContent||''),
+  }));
+}
+function recalcDonutSvg(card){
+  const svgEl=card.querySelector('.donut-wrap>svg'); if(!svgEl) return;
+  const rows=readDonutRows(card);
+  const validRows=rows.filter(r=>isNum(r.waarde)&&r.waarde>0).slice(0,6);
+  const total=validRows.reduce((s,r)=>s+r.waarde,0);
+  svgEl.innerHTML = validRows.length>=2 ? donutArcSegmentsHtml(validRows) : '';
+  rows.forEach(r=>{
+    const idx=validRows.indexOf(r);
+    const pEl=r.row.querySelector('.dl-p');
+    const dotEl=r.row.querySelector('.dl-dot');
+    if(pEl) pEl.textContent = idx>=0 ? Math.round(r.waarde/total*100)+'%' : '—';
+    if(dotEl) dotEl.style.background = idx>=0 ? PALETTE[idx%6] : '#C6D4E6';
+  });
+}
+function buildEditableDonutCard(items, title){
+  const html=donut(items, title);
+  if(!html) return null;
+  const tmp=document.createElement('div'); tmp.innerHTML=html;
+  const card=tmp.firstElementChild;
+  card.classList.add('chart-card-editable');
+  card.dataset.chartType='donut';
+  const chH=card.querySelector('.ch-h'); if(chH) chH.setAttribute('contenteditable','true');
+  card.querySelectorAll('.dl-row').forEach(row=>{
+    row.style.position='relative';
+    const nameEl=row.querySelector('.dl-name'); if(nameEl) nameEl.setAttribute('contenteditable','true');
+    const vEl=row.querySelector('.dl-v'); if(vEl) vEl.setAttribute('contenteditable','true');
+    makeDeletable(row);
+  });
+  const addBtn=document.createElement('button');
+  addBtn.type='button'; addBtn.className='add-row-btn add-chart-row-btn'; addBtn.textContent='+ Segment toevoegen';
+  addBtn.addEventListener('click', ()=>{
+    const legend=card.querySelector('.donut-legend'); if(!legend) return;
+    const idx=legend.querySelectorAll('.dl-row').length;
+    const row=document.createElement('div'); row.className='dl-row'; row.style.position='relative';
+    row.innerHTML=`<span class="dl-dot" style="background:${PALETTE[idx%6]}"></span><span class="dl-name" contenteditable="true">Nieuw segment</span><span class="dl-v" contenteditable="true">0</span><span class="dl-p">—</span>`;
+    legend.appendChild(row);
+    makeDeletable(row);
+    trackInsertion(row, null);
+    recalcDonutSvg(card);
+    const nameEl=row.querySelector('.dl-name');
+    nameEl.focus();
+    const range=document.createRange(); range.selectNodeContents(nameEl);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  });
+  card.appendChild(addBtn);
+  return card;
+}
+function finalizeChartCreation(elm){
+  if(!elm || !elm.isConnected) return;
+  ensureEditorId(elm,'chart');
+  elm.classList.add('ed-movable');
+  trackInsertion(elm, null);
+  selectObject(elm);
+}
+function insertDonutChart(page){
+  if(!page) return;
+  const layer=ensureAnnotLayer(page);
+  const card=buildEditableDonutCard(
+    [{label:'Segment 1',waarde:60},{label:'Segment 2',waarde:40}],
+    'Nieuwe grafiek'
+  );
+  if(!card) return;
+  const wrap=document.createElement('div');
+  wrap.className='annot annot-chart';
+  Object.assign(wrap.style,{left:'26%',top:'30%',width:'48%'});
+  wrap.appendChild(card);
+  layer.appendChild(wrap);
+  finalizeChartCreation(wrap);
+  const chH=card.querySelector('.ch-h');
+  if(chH){
+    chH.focus();
+    const range=document.createRange(); range.selectNodeContents(chH);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  }
+}
+
 function addAllPlusButtons(root){
   addBlistPlusButtons(root);
   addBnaPlusButtons(root);
@@ -3585,7 +3694,12 @@ const EDITABLE_TEXT_SELECTOR = [
   '.para','.panel-h','.secbar>span','.secbar>small','.colh','.verdict p','.kpi-v','.kpi-l','.kpi-s',
   '.kv .k','.kv .v','.cover-name','.cover-goal','.sub',
   '.ck-v','.ck-l','.cm-l','.cm-v','.bm-l','.bm-v','.back-name',
-  'td:not(.num)','th:not(.num)'
+  'td:not(.num)','th:not(.num)',
+  /* Alleen zelf toegevoegde/bewerkbare grafieken (.chart-card-editable) —
+     de door de AI gegenereerde, vaste grafieken elders in het rapport
+     blijven bewust read-only, want daar is geen herberekening voor
+     aangesloten. */
+  '.chart-card-editable .ch-h','.chart-card-editable .dl-name','.chart-card-editable .dl-v'
 ].join(',');
 
 function setEditMode(on, root){
@@ -4052,6 +4166,11 @@ const ADAPTERS = {
   bullet:{move:false,resize:false,front:false,dup:true,del:true,font:true},
   row:{move:false,resize:false,front:false,dup:true,del:true,font:true},
   annotation:{move:true,resize:'annot',front:true,dup:false,del:true,font:true},
+  /* Zelf toegevoegde grafiek (donut): vrij te plaatsen/schalen zoals een
+     annotatie, maar géén lettertype-balk (de segmenten zijn al direct
+     bewerkbaar als tekst) en géén dupliceren (voorkomt twee grafieken met
+     identieke, ontkoppelde data door elkaar). */
+  chart:{move:true,resize:'annot',front:true,dup:false,del:true,font:false},
 };
 /* Beperkt tot lettertypes die zowel op scherm als in de afgedrukte PDF
    betrouwbaar identiek ogen (systeemlettertypes of het al geladen
@@ -4200,7 +4319,11 @@ function setTransform(elm, tx, ty){
 function getTransform(elm){
   return { tx:parseFloat(elm.dataset.editorTx||'0')||0, ty:parseFloat(elm.dataset.editorTy||'0')||0 };
 }
-function isAnnotType(elm){ return elm.dataset.editorType==='annotation'; }
+/* "Annotatie-achtig gepositioneerd" (left/top% i.p.v. transform-offset op de
+   normale documentstroom) — naast echte annotaties geldt dit ook voor een
+   zelf toegevoegde grafiek, die om dezelfde reden vrij op de pagina moet
+   kunnen staan. */
+function isAnnotType(elm){ return elm.dataset.editorType==='annotation' || elm.dataset.editorType==='chart'; }
 
 /* Huidige positie/omvang van een object t.o.v. zijn pagina, ongeacht of
    het via transform (rapportobjecten) of via left/top% (annotaties) wordt
@@ -4269,7 +4392,11 @@ function beginResize(elm, startEvt){
     startW=elm.offsetWidth; startH=elm.offsetHeight;
   }
   const aspect = startH>0 ? startW/startH : 1;
-  const mode = annot ? (elm.classList.contains('annot-image')?'aspect':elm.classList.contains('annot-highlight')?'free':'none') : adapter.resize;
+  /* Grafiek: alleen breedte verstelbaar (zoals kerncijfers/tabellen),
+     hoogte volgt automatisch de inhoud — vandaar geen 'free' of 'aspect'
+     maar een neutrale niet-lege modus die in de annot-tak hieronder alleen
+     de breedte laat meelopen. */
+  const mode = annot ? (elm.classList.contains('annot-image')?'aspect':elm.classList.contains('annot-highlight')?'free':elm.classList.contains('annot-chart')?'w':'none') : adapter.resize;
   if(mode==='none'||mode===false) return;
   let lastW=startW,lastH=startH;
   function move(e){
@@ -4492,10 +4619,11 @@ function removeElement(elm){
   const parent=elm.parentElement; if(!parent) return;
   const nextSibling=elm.nextElementSibling;
   const table = elm.closest && (elm.closest('table.bna-table')||elm.closest('table.t.fin')||elm.closest('table.t.addable-rows'));
+  const chartCard = elm.closest && elm.closest('.chart-card-editable');
   const wasSelected = Ed.selected===elm.dataset.editorId;
   const cmd={
-    apply(){ elm.remove(); recalcAfterMutation(table); if(wasSelected) deselectAll(); },
-    revert(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); selectObject(elm); },
+    apply(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); if(wasSelected) deselectAll(); },
+    revert(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); selectObject(elm); },
   };
   commit(cmd, false);
 }
@@ -4515,9 +4643,10 @@ function trackInsertion(elm, table){
   ensureEditorId(elm, elm.dataset.editorType);
   const parent=elm.parentElement;
   const nextSibling=elm.nextElementSibling;
+  const chartCard = elm.closest && elm.closest('.chart-card-editable');
   const cmd={
-    apply(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); },
-    revert(){ elm.remove(); recalcAfterMutation(table); deselectAll(); },
+    apply(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); },
+    revert(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcDonutSvg(chartCard); deselectAll(); },
   };
   commit(cmd, true);
 }
@@ -5095,6 +5224,23 @@ $('#etImageInput').addEventListener('change',e=>{
   reader.onload=()=>{ insertAnnotImage(targetPage, reader.result); };
   reader.readAsDataURL(file);
   e.target.value='';
+});
+$('#etChartBtn')?.addEventListener('click',()=>{
+  const targetPage=lastActivePage||el.stage.querySelector('.report-page');
+  if(!targetPage) return;
+  insertDonutChart(targetPage);
+});
+/* Live herberekening van een zelf toegevoegde donutgrafiek: gedebouncet
+   (net als tekstwijzigingen elders) zodat de SVG-boog en percentages
+   meelopen terwijl iemand een waarde intypt, zonder het invoerveld zelf
+   steeds opnieuw op te bouwen. */
+const chartRecalcTimers=new WeakMap();
+el.stage.addEventListener('input', e=>{
+  const valElm=e.target.closest && e.target.closest('.chart-card-editable .dl-v');
+  if(!valElm) return;
+  const card=valElm.closest('.chart-card-editable'); if(!card) return;
+  clearTimeout(chartRecalcTimers.get(card));
+  chartRecalcTimers.set(card, setTimeout(()=>recalcDonutSvg(card), 400));
 });
 $('#printReport').addEventListener('click',()=>window.print());
 /* Ook bij Ctrl+P of het browser-printmenu (niet alleen de knop): invoervelden
