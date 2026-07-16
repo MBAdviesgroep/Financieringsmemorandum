@@ -573,6 +573,32 @@ body.edit-mode .edit-toolbar{display:flex}
 .et-color[data-color="red"]{background:#dc2626}
 .et-color.active{border-color:#0f172a}
 
+/* ═══ Paginanavigator ══════════════════════════════════════════════
+   Los overlay-paneel (niet gebonden aan bewerkmodus) met een geschaalde
+   live-kloon per pagina: klikken scrollt naar de pagina, de pijltjes
+   wisselen met de aangrenzende buurpagina — altijd via dezelfde
+   undo-geschiedenis als de rest van de editor, en nooit voorbij het
+   vaste voor-/achterblad. */
+.pagenav-panel{position:fixed;top:0;bottom:0;left:0;width:190px;background:#fff;border-right:1px solid var(--line,#E3EAF3);box-shadow:8px 0 28px rgba(16,32,51,.10);z-index:150;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .18s ease}
+.pagenav-panel.open{transform:translateX(0)}
+.pagenav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px;border-bottom:1px solid var(--line,#E3EAF3)}
+.pagenav-title{font-size:12px;font-weight:800;color:var(--ink,#102033);letter-spacing:.2px}
+.pagenav-close{border:none;background:transparent;color:var(--muted,#68748A);font-size:17px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:5px}
+.pagenav-close:hover{background:#F1F4F9;color:var(--ink,#102033)}
+.pagenav-list{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+.pagenav-item{border:1.5px solid var(--line,#E3EAF3);border-radius:9px;padding:8px;cursor:pointer;background:#FAFBFD;transition:border-color .12s ease,background .12s ease}
+.pagenav-item:hover{border-color:#B9CEF5;background:#F4F8FF}
+.pagenav-thumb{position:relative;width:100%;overflow:hidden;background:#fff;border:1px solid rgba(16,32,51,.1);border-radius:4px;pointer-events:none}
+.pagenav-thumb-inner{transform-origin:top left}
+.pagenav-meta{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+.pagenav-num{font-size:10px;font-weight:700;color:var(--muted,#68748A)}
+.pagenav-moves{display:flex;gap:4px}
+.pagenav-move-btn{width:20px;height:20px;border-radius:50%;border:1px solid var(--line,#E3EAF3);background:#fff;color:var(--ink-2,#33445C);font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit}
+.pagenav-move-btn:hover{background:#EDF3FC;border-color:#B9CEF5}
+.pagenav-move-btn[disabled]{opacity:.3;cursor:not-allowed}
+@media (max-width:900px){.pagenav-panel{width:150px}}
+@media print{.pagenav-panel{display:none!important}}
+
 .annot-layer{position:absolute;inset:0;pointer-events:none;z-index:20}
 body.edit-mode.annot-tool-active .annot-layer{pointer-events:auto}
 .annot-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
@@ -780,6 +806,7 @@ body.edit-mode [data-editor-id].editor-selected{outline:1.5px solid var(--blue,#
     </div>
     <div class="tb-actions">
       <button class="btn-ghost" type="button" id="downloadJson">Download JSON</button>
+      <button class="btn-ghost" type="button" id="togglePageNav" title="Paginaoverzicht: springen tussen pagina's en herschikken">Pagina's</button>
       <button class="btn-ghost" type="button" id="newReport">Nieuw rapport</button>
       <button class="btn-ghost" type="button" id="toggleEdit" title="Tekst en cijfers bewerken, rijen slepen">Bewerken</button>
       <button class="btn-orange" type="button" id="printReport">Print / PDF</button>
@@ -3978,6 +4005,8 @@ function setAnnotColor(color){
 }
 
 let lastActivePage=null;
+let pageNavOpen=false;
+const PAGENAV_THUMB_W=150;
 document.addEventListener('mousedown',e=>{
   const pageHit=e.target.closest('.report-page');
   if(pageHit) lastActivePage=pageHit;
@@ -4167,6 +4196,7 @@ function renumberPages(){
     if(chip) chip.textContent=`Pagina ${idx+1} van ${total}`;
   });
   updateTocPageNumbers(pages);
+  if(pageNavOpen) refreshPageThumbnails();
 }
 /* Wijst elke inhoudsopgave-rij toe aan de eerste pagina waarvan de kop-
    titel de hoofdstuknaam bevat, en werkt het getoonde paginanummer bij.
@@ -4291,6 +4321,131 @@ function resolveAllPageOverflows(){
     anyChange=true;
   }
   if(anyChange) renumberPages();
+}
+/* ══ Paginanavigator ══════════════════════════════════════════════════
+   Los overlay-paneel (werkt ook buiten bewerkmodus) met een geschaalde
+   live-kloon per pagina: klikken scrollt naar de pagina, de pijltjes
+   wisselen met de aangrenzende buurpagina. Herschikken loopt via dezelfde
+   undo-geschiedenis als de rest van de editor en kan nooit voorbij het
+   vaste voor-/achterblad — dat blijft altijd eerste/laatste. */
+function ensurePageNavPanel(){
+  let panel=document.getElementById('pageNavPanel');
+  if(panel) return panel;
+  panel=document.createElement('div');
+  panel.className='pagenav-panel no-print';
+  panel.id='pageNavPanel';
+  panel.innerHTML=`
+    <div class="pagenav-head">
+      <span class="pagenav-title">Pagina&#39;s</span>
+      <button type="button" class="pagenav-close" id="pageNavClose" title="Sluiten">&times;</button>
+    </div>
+    <div class="pagenav-list" id="pageNavList"></div>`;
+  document.body.appendChild(panel);
+  panel.querySelector('#pageNavClose').addEventListener('click', closePageNav);
+  return panel;
+}
+function openPageNav(){
+  if(!el.stage.querySelector('.report-page')) return;
+  const panel=ensurePageNavPanel();
+  pageNavOpen=true;
+  panel.classList.add('open');
+  refreshPageThumbnails();
+}
+function closePageNav(){
+  pageNavOpen=false;
+  const panel=document.getElementById('pageNavPanel');
+  if(panel) panel.classList.remove('open');
+}
+function togglePageNav(){ pageNavOpen ? closePageNav() : openPageNav(); }
+function buildPageThumb(page, idx, total, cover, backcover){
+  const item=document.createElement('div');
+  item.className='pagenav-item';
+  const rect=page.getBoundingClientRect();
+  const w=rect.width||793, h=rect.height||1123; // 210×297mm bij ~96dpi als fallback vóór layout
+  const scale=w>0 ? PAGENAV_THUMB_W/w : .19;
+  const thumb=document.createElement('div');
+  thumb.className='pagenav-thumb';
+  thumb.style.height=Math.round(h*scale)+'px';
+  const clone=page.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+  clone.querySelectorAll('[contenteditable]').forEach(n=>n.removeAttribute('contenteditable'));
+  clone.querySelectorAll('[draggable]').forEach(n=>n.removeAttribute('draggable'));
+  clone.querySelectorAll('.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn,.page-del-btn,.annot-resize-se').forEach(n=>n.remove());
+  clone.className=page.className+' pagenav-thumb-inner';
+  clone.style.width=w+'px';
+  clone.style.height=h+'px';
+  clone.style.margin='0';
+  clone.style.boxShadow='none';
+  clone.style.transform=`scale(${scale})`;
+  thumb.appendChild(clone);
+  item.appendChild(thumb);
+
+  const meta=document.createElement('div');
+  meta.className='pagenav-meta';
+  const num=document.createElement('span');
+  num.className='pagenav-num';
+  num.textContent=`${idx+1} / ${total}`;
+  meta.appendChild(num);
+
+  if(page!==cover && page!==backcover){
+    const moves=document.createElement('span');
+    moves.className='pagenav-moves';
+    const upBtn=document.createElement('button');
+    upBtn.type='button'; upBtn.className='pagenav-move-btn'; upBtn.title='Naar boven'; upBtn.textContent='\u2191';
+    const prevPage=page.previousElementSibling;
+    if(!prevPage || prevPage===cover) upBtn.disabled=true;
+    upBtn.addEventListener('click', ev=>{ ev.stopPropagation(); movePageAdjacent(page,-1); });
+    const downBtn=document.createElement('button');
+    downBtn.type='button'; downBtn.className='pagenav-move-btn'; downBtn.title='Naar beneden'; downBtn.textContent='\u2193';
+    const nextPage=page.nextElementSibling;
+    if(!nextPage || nextPage===backcover) downBtn.disabled=true;
+    downBtn.addEventListener('click', ev=>{ ev.stopPropagation(); movePageAdjacent(page,1); });
+    moves.appendChild(upBtn); moves.appendChild(downBtn);
+    meta.appendChild(moves);
+  }
+  item.appendChild(meta);
+  item.addEventListener('click', ()=>{
+    page.scrollIntoView({behavior:'smooth', block:'start'});
+    lastActivePage=page;
+  });
+  return item;
+}
+function refreshPageThumbnails(){
+  const panel=document.getElementById('pageNavPanel');
+  if(!panel) return;
+  const list=panel.querySelector('#pageNavList');
+  if(!list) return;
+  const pages=[...el.stage.querySelectorAll('.report-page')];
+  const cover=el.stage.querySelector('.report-page.cover');
+  const backcover=el.stage.querySelector('.report-page.backcover');
+  list.innerHTML='';
+  const frag=document.createDocumentFragment();
+  pages.forEach((p,idx)=>frag.appendChild(buildPageThumb(p, idx, pages.length, cover, backcover)));
+  list.appendChild(frag);
+}
+/* Wisselt twee aangrenzende pagina's — "omhoog"/"omlaag" is altijd een
+   swap met de buur, dus apply/revert zijn symmetrisch dezelfde bewerking
+   in omgekeerde volgorde. Voor-/achterblad kunnen nooit verplaatst worden
+   en er kan ook nooit voorbij hen heen gewisseld worden. */
+function movePageAdjacent(page, dir){
+  const pages=[...el.stage.querySelectorAll('.report-page')];
+  const idx=pages.indexOf(page);
+  if(idx<0) return;
+  const targetIdx=idx+dir;
+  if(targetIdx<0||targetIdx>=pages.length) return;
+  const other=pages[targetIdx];
+  const cover=el.stage.querySelector('.report-page.cover');
+  const backcover=el.stage.querySelector('.report-page.backcover');
+  if([page,other].includes(cover) || [page,other].includes(backcover)) return;
+  const parent=page.parentElement;
+  const first = dir<0 ? other : page;
+  const second = dir<0 ? page : other;
+  const cmd={
+    apply(){ parent.insertBefore(second, first); renumberPages(); },
+    revert(){ parent.insertBefore(first, second); renumberPages(); },
+  };
+  commit(cmd, false);
 }
 function updateHistoryButtons(){
   const undoBtn=$('#historyUndo'), redoBtn=$('#historyRedo');
@@ -5161,7 +5316,7 @@ async function persistNow(){
 }
 function scheduleAutosave(){
   clearTimeout(Ed.saveTimer);
-  Ed.saveTimer=setTimeout(()=>{ persistNow(); }, 900);
+  Ed.saveTimer=setTimeout(()=>{ persistNow(); if(pageNavOpen) refreshPageThumbnails(); }, 900);
 }
 function manualSave(){ flushPendingEdits(); persistNow().then(()=>showToast('Bewerkversie opgeslagen.')); }
 
@@ -5308,6 +5463,7 @@ async function resumeSavedSession(rec){
   resetHistory();
   Ed.restoring=false;
   Ed.dirty=false; updateStatusLabel();
+  if(pageNavOpen) refreshPageThumbnails(); else closePageNav();
   showToast('Bewerkversie hervat.');
 }
 
@@ -5351,6 +5507,7 @@ function onReportRendered(r, opts){
   Ed.originalReport = deepClone(r);
   resetHistory();
   deselectAll();
+  if(pageNavOpen) refreshPageThumbnails();
 }
 
 function updateEditToolbarVisibility(on){
@@ -5383,7 +5540,7 @@ $('#sessionImportInput')?.addEventListener('change', async e=>{
 $('#sessionsTriggerBtn')?.addEventListener('click', openSessionsModal);
 $('#sessionsModalClose')?.addEventListener('click', closeSessionsModal);
 $('#sessionsModalOverlay')?.addEventListener('click', e=>{ if(e.target.id==='sessionsModalOverlay') closeSessionsModal(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSessionsModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeSessionsModal(); closePageNav(); } });
 
 /* Verwijderknoppen (×) via één centrale, gedelegeerde listener — zo blijft
    een teruggezet (undo van een verwijdering) element altijd werken, ook al
@@ -5480,8 +5637,10 @@ $('#newReport').addEventListener('click',()=>{
   setAnnotTool('none'); lastActivePage=null;
   deselectAll(); resetHistory();
   Ed.originalReport=null; Ed.docId=null; Ed.active=false;
+  closePageNav();
   renderSessionLibrary();
 });
+$('#togglePageNav').addEventListener('click', togglePageNav);
 
 /* Debug/test-hook: render een rapport-JSON zonder API-call (console) */
 window.__credionRender = async (r)=>{
