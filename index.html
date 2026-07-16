@@ -4066,13 +4066,34 @@ const FONT_OPTIONS = [
   {label:'Trebuchet MS', value:'"Trebuchet MS", sans-serif'},
   {label:'Courier New', value:'"Courier New", Courier, monospace'},
 ];
+/* Bij sommige bloktypes (kerncijfers, panelen) zit de zichtbare tekst niet
+   in het geselecteerde containerelement zelf, maar in een kind-element met
+   een eigen, in de stylesheet vastgelegde tekstopmaak (bijv. .kpi-v heeft
+   altijd zijn eigen font-size/font-weight/color). Een inline stijl op de
+   container wordt dan door die eigen regel overschreven en had zichtbaar
+   géén effect — dit loste "lettergrootte doet niets" bij kerncijfers op.
+   styleTargets() bepaalt welke elementen de opmaak écht moeten krijgen;
+   achtergrondkleur blijft wel altijd op de container zelf (dat is het vlak
+   dat gekleurd wordt, niet de tekst erin). */
+const TEXT_STYLE_CHILD_SELECTORS = {
+  kpi: '.kpi-v, .ck-v, .cm-v, .bm-v',
+  panel: '.para',
+};
+function styleTargets(elm){
+  const sel = TEXT_STYLE_CHILD_SELECTORS[elm?.dataset?.editorType];
+  if(!sel) return [elm];
+  const children = [...elm.querySelectorAll(sel)];
+  return children.length ? children : [elm];
+}
+function primaryStyleTarget(elm){ return styleTargets(elm)[0]; }
 function applyFontFamily(elm, value){
-  const before=elm.style.fontFamily||'';
+  const targets=styleTargets(elm);
+  const before=targets.map(t=>t.style.fontFamily||'');
   const after=value||'';
-  if(before===after) return;
+  if(targets.every((t,i)=>before[i]===after)) return;
   const cmd={
-    apply(){ if(after) elm.style.fontFamily=after; else elm.style.removeProperty('font-family'); },
-    revert(){ if(before) elm.style.fontFamily=before; else elm.style.removeProperty('font-family'); },
+    apply(){ targets.forEach(t=>{ if(after) t.style.fontFamily=after; else t.style.removeProperty('font-family'); }); },
+    revert(){ targets.forEach((t,i)=>{ if(before[i]) t.style.fontFamily=before[i]; else t.style.removeProperty('font-family'); }); },
   };
   commit(cmd, false);
 }
@@ -4087,59 +4108,69 @@ function currentFontSizePt(elm){
   return m?m[1]:'';
 }
 function applyFontSize(elm, value){
-  const before=elm.style.fontSize||'';
+  const targets=styleTargets(elm);
+  const before=targets.map(t=>t.style.fontSize||'');
   const after=value?value+'pt':'';
-  if(before===after) return;
+  if(targets.every((t,i)=>before[i]===after)) return;
   const cmd={
-    apply(){ if(after) elm.style.fontSize=after; else elm.style.removeProperty('font-size'); },
-    revert(){ if(before) elm.style.fontSize=before; else elm.style.removeProperty('font-size'); },
+    apply(){ targets.forEach(t=>{ if(after) t.style.fontSize=after; else t.style.removeProperty('font-size'); }); },
+    revert(){ targets.forEach((t,i)=>{ if(before[i]) t.style.fontSize=before[i]; else t.style.removeProperty('font-size'); }); },
   };
   commit(cmd, false);
 }
 
 /* ── Vet/cursief/onderstrepen/uitlijning + kleur ──────────────────────
    Werkt op het hele geselecteerde blok (net als lettertype/-grootte
-   hierboven), niet op een los stukje tekst binnen het blok — bewust
-   eenvoudig en voorspelbaar gehouden, consistent met de rest van deze
-   gerichte editor. */
+   hierboven, via dezelfde styleTargets()-resolutie), niet op een los
+   stukje tekst binnen het blok — bewust eenvoudig en voorspelbaar
+   gehouden, consistent met de rest van deze gerichte editor. */
 function styleProp(elm, prop){ return elm.style[prop]||''; }
 function toggleBlockStyle(elm, prop, onValue, offValue){
-  const before=styleProp(elm, prop);
-  const after = before===onValue ? (offValue||'') : onValue;
+  const targets=styleTargets(elm);
+  const before=targets.map(t=>styleProp(t, prop));
+  const after = before[0]===onValue ? (offValue||'') : onValue;
+  const cssName=cssPropName(prop);
   const cmd={
-    apply(){ if(after) elm.style[prop]=after; else elm.style.removeProperty(cssPropName(prop)); },
-    revert(){ if(before) elm.style[prop]=before; else elm.style.removeProperty(cssPropName(prop)); },
+    apply(){ targets.forEach(t=>{ if(after) t.style[prop]=after; else t.style.removeProperty(cssName); }); },
+    revert(){ targets.forEach((t,i)=>{ if(before[i]) t.style[prop]=before[i]; else t.style.removeProperty(cssName); }); },
   };
   commit(cmd, false);
 }
 function cssPropName(camel){ return camel.replace(/[A-Z]/g, m=>'-'+m.toLowerCase()); }
 function applyTextAlign(elm, value){
-  const before=elm.style.textAlign||'';
+  const targets=styleTargets(elm);
+  const before=targets.map(t=>t.style.textAlign||'');
   const after=value||'';
-  if(before===after) return;
+  if(targets.every((t,i)=>before[i]===after)) return;
   const cmd={
-    apply(){ if(after) elm.style.textAlign=after; else elm.style.removeProperty('text-align'); },
-    revert(){ if(before) elm.style.textAlign=before; else elm.style.removeProperty('text-align'); },
+    apply(){ targets.forEach(t=>{ if(after) t.style.textAlign=after; else t.style.removeProperty('text-align'); }); },
+    revert(){ targets.forEach((t,i)=>{ if(before[i]) t.style.textAlign=before[i]; else t.style.removeProperty('text-align'); }); },
   };
   commit(cmd, false);
 }
 function applyStyleProp(elm, prop, value){
-  const before=elm.style[prop]||'';
+  /* Achtergrondkleur kleurt het hele blok/vlak, dus die blijft altijd op de
+     container zelf staan — alleen tekstkleur (en de overige tekstopmaak
+     hierboven) volgt de kind-tekst als die apart is opgemaakt. */
+  const targets = prop==='backgroundColor' ? [elm] : styleTargets(elm);
+  const before=targets.map(t=>t.style[prop]||'');
   const after=value||'';
-  if(before===after) return;
+  if(targets.every((t,i)=>before[i]===after)) return;
   const cssName=cssPropName(prop);
   const cmd={
-    apply(){ if(after) elm.style[prop]=after; else elm.style.removeProperty(cssName); },
-    revert(){ if(before) elm.style[prop]=before; else elm.style.removeProperty(cssName); },
+    apply(){ targets.forEach(t=>{ if(after) t.style[prop]=after; else t.style.removeProperty(cssName); }); },
+    revert(){ targets.forEach((t,i)=>{ if(before[i]) t.style[prop]=before[i]; else t.style.removeProperty(cssName); }); },
   };
   commit(cmd, false);
 }
 function resetColors(elm){
-  const beforeColor=elm.style.color||'', beforeBg=elm.style.backgroundColor||'';
-  if(!beforeColor && !beforeBg) return;
+  const textTargets=styleTargets(elm);
+  const beforeColors=textTargets.map(t=>t.style.color||'');
+  const beforeBg=elm.style.backgroundColor||'';
+  if(!beforeColors.some(Boolean) && !beforeBg) return;
   const cmd={
-    apply(){ elm.style.removeProperty('color'); elm.style.removeProperty('background-color'); },
-    revert(){ if(beforeColor) elm.style.color=beforeColor; if(beforeBg) elm.style.backgroundColor=beforeBg; },
+    apply(){ textTargets.forEach(t=>t.style.removeProperty('color')); elm.style.removeProperty('background-color'); },
+    revert(){ textTargets.forEach((t,i)=>{ if(beforeColors[i]) t.style.color=beforeColors[i]; }); if(beforeBg) elm.style.backgroundColor=beforeBg; },
   };
   commit(cmd, false);
 }
@@ -4348,16 +4379,21 @@ function positionContextMenu(rect, adapter, elm){
     items.push(['Naar achteren',()=>sendBackward(elm)]);
   }
   if(!items.length && !adapter.font){ ctxMenuEl.style.display='none'; return; }
-  const currentFont=elm.style.fontFamily||'';
-  const currentSize=currentFontSizePt(elm);
+  /* De balk moet de huidige opmaak tonen van het element dat de wijzigingen
+     ook echt krijgt (zie styleTargets hierboven), niet per se van de
+     geselecteerde container zelf — anders staat "Standaard" terwijl het
+     kerncijfer al een afwijkende grootte heeft, of andersom. */
+  const styleReadTarget=primaryStyleTarget(elm);
+  const currentFont=styleReadTarget.style.fontFamily||'';
+  const currentSize=currentFontSizePt(styleReadTarget);
   const fontHtml = adapter.font ? `<select class="ef-font" title="Lettertype">${FONT_OPTIONS.map(f=>`<option value="${esc(f.value)}"${f.value===currentFont?' selected':''}>${esc(f.label)}</option>`).join('')}</select>` : '';
   const sizeHtml = adapter.font ? `<select class="ef-size" title="Lettergrootte">${FONT_SIZE_OPTIONS.map(v=>`<option value="${esc(v)}"${v===currentSize?' selected':''}>${v===''?'Standaard':v+' pt'}</option>`).join('')}</select>` : '';
   let fmtHtml='', colorHtml='';
   if(adapter.font){
-    const isBold=styleProp(elm,'fontWeight')==='700';
-    const isItalic=styleProp(elm,'fontStyle')==='italic';
-    const isUnderline=styleProp(elm,'textDecoration')==='underline';
-    const align=elm.style.textAlign||'';
+    const isBold=styleProp(styleReadTarget,'fontWeight')==='700';
+    const isItalic=styleProp(styleReadTarget,'fontStyle')==='italic';
+    const isUnderline=styleProp(styleReadTarget,'textDecoration')==='underline';
+    const align=styleReadTarget.style.textAlign||'';
     fmtHtml = `<span class="ef-vsep"></span>`
       + `<button type="button" class="ef-fmt${isBold?' active':''}" data-fmt="bold" title="Vet">V</button>`
       + `<button type="button" class="ef-fmt${isItalic?' active':''}" data-fmt="italic" title="Cursief">C</button>`
