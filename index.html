@@ -4726,6 +4726,13 @@ function registerEditableObjects(root){
   // terug kunnen (referenties blijven overigens gewoon de echte DOM-node;
   // dit dient vooral leesbaarheid/robuustheid van het lagenpaneel-idee).
   root.querySelectorAll('.blist,.kpis,.cover-kpis,.cover-meta,.back-meta,table.bna-table>tbody,table.t.addable-rows>tbody,.annot-layer').forEach(elm=>ensureEditorId(elm,'container'));
+  // Zelfherstellend: eventuele blijvende sleep-offsets van kerncijfer-achtige
+  // kaarten die van vóór deze fix (of van een eerdere, foutieve toestand)
+  // dateren, worden hier meteen opgeruimd — dit draait bij elke render/
+  // hervatting, dus een al aangetast rapport corrigeert zichzelf zodra de
+  // pagina opnieuw laadt of een sessie wordt hervat, zonder dat elke kaart
+  // apart versleept hoeft te worden.
+  root.querySelectorAll('.kpis,.cover-kpis,.cover-meta,.back-meta').forEach(resetGridFamilyTransforms);
 }
 
 const ADAPTERS = {
@@ -4980,13 +4987,21 @@ function beginMove(elm, startEvt){
          terug in de rij, met gegarandeerd dezelfde hoogte/uitlijning als
          de buren, want dat regelt de grid zelf. */
       const parent=gridParent;
+      /* Eerst eventuele OUDE, blijvende offsets van buurkaarten opruimen
+         (bv. nog over van vóór deze fix, of van een sessie waarin eerder
+         is gesleept) — anders leest findGridInsertionAnchor() hieronder
+         hun vervormde schermpositie i.p.v. hun echte rij-plek, en klopt de
+         berekende invoegplek niet. Dit is exact de knop die de gemelde
+         "andere kaarten gaan gek doen"-situatie voorkomt, ook wanneer de
+         gesleepte kaart niet degene is die al scheef stond. */
+      resetGridFamilyTransforms(parent);
       const prevAnchor=elm.nextElementSibling;
       const newAnchor=findGridInsertionAnchor(parent, elm, e.clientX, e.clientY);
       const reordered = newAnchor!==prevAnchor;
       const offsetWasNonZero = start.tx!==0 || start.ty!==0;
       if(reordered || offsetWasNonZero){
         const cmd={
-          apply(){ parent.insertBefore(elm, newAnchor); setTransform(elm,0,0); },
+          apply(){ parent.insertBefore(elm, newAnchor); setTransform(elm,0,0); resetGridFamilyTransforms(parent); },
           revert(){ parent.insertBefore(elm, prevAnchor); setTransform(elm, start.tx, start.ty); },
         };
         commit(cmd, false);
