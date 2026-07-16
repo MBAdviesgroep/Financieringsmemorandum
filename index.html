@@ -4735,11 +4735,22 @@ async function idbGetAll(){
     return await new Promise((resolve,reject)=>{
       const tx=db.transaction(IDB_STORE,'readonly');
       const store=tx.objectStore(IDB_STORE);
-      const req = store.getAll ? store.getAll() : null;
-      if(req){ req.onsuccess=()=>resolve(req.result||[]); req.onerror=()=>reject(req.error); return; }
-      /* Vangnet voor omgevingen zonder getAll(): via cursor verzamelen. */
+      /* Altijd via een cursor lezen (niet via store.getAll()) zodat elk
+         record wordt teruggegeven met zijn échte opslagsleutel
+         (cur.primaryKey) als docId, in plaats van het docId-veld dat toevallig
+         in de opgeslagen waarde zit. Bij een enkel ouder record (uit een
+         eerdere versie van de app) kunnen die twee uit elkaar zijn gaan lopen,
+         waardoor "verwijderen" leek te lukken maar nooit het juiste record
+         raakte — dit voorkomt dat structureel. */
       const out=[]; const curReq=store.openCursor();
-      curReq.onsuccess=e=>{ const cur=e.target.result; if(cur){ out.push(cur.value); cur.continue(); } else resolve(out); };
+      curReq.onsuccess=e=>{
+        const cur=e.target.result;
+        if(cur){
+          const val=cur.value;
+          out.push(val && typeof val==='object' ? {...val, docId:cur.primaryKey} : val);
+          cur.continue();
+        } else resolve(out);
+      };
       curReq.onerror=()=>reject(curReq.error);
     });
   }catch(err){ console.error('Opgeslagen rapporten konden niet worden gelezen:', err); return []; }
