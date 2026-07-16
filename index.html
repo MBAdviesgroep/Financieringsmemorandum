@@ -425,6 +425,27 @@ svg.chart{width:100%;height:auto;display:block}
 .chart-card-editable .bl-row{position:relative;padding:0.4mm 5.5mm 0.4mm 0}
 .chart-card-editable .bl-period,.chart-card-editable .bl-value{cursor:text;border-radius:2px}
 .chart-card-editable .bl-period:hover,.chart-card-editable .bl-value:hover{outline:1px dashed rgba(12,100,252,.35)}
+/* Zelf toegevoegde tabel: geen hergebruik van de vaste financiële-tabel-
+   machinerie (table.t) — die zou via het generieke objectmodel een tweede,
+   geneste bewerkbare laag registreren bovenop deze .annot-wrapper. In
+   plaats daarvan een losstaande tabelkaart met eigen rij-/kolomknoppen. */
+.annot-table{position:absolute;cursor:move}
+.annot-table .chart-card{width:100%;box-sizing:border-box;box-shadow:0 2px 10px rgba(16,32,51,.06)}
+.freetable{width:100%;border-collapse:collapse;font-size:7.6pt;margin-top:1mm;table-layout:fixed}
+.freetable th,.freetable td{border:1px solid var(--line);padding:1.6mm 2mm;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.freetable th{background:var(--blue-faint);color:var(--blue-deep);font-weight:700;font-size:7pt;text-transform:uppercase;letter-spacing:.4px}
+.freetable td{color:var(--ink-2)}
+.chart-card-editable .freetable th,.chart-card-editable .freetable td{cursor:text}
+.chart-card-editable .freetable th:hover,.chart-card-editable .freetable td:hover{outline:1px dashed rgba(12,100,252,.35);outline-offset:-1px}
+.freetable-btnrow{display:flex;gap:2mm;margin-top:2.8mm;flex-wrap:wrap}
+/* Rij-/kolomknoppen van zelf toegevoegde grafieken/tabellen blijven altijd
+   in de DOM (zie removeAddDeleteControls) — zichtbaarheid buiten
+   bewerkmodus loopt daarom via CSS in plaats van via JS toevoegen/
+   verwijderen, zodat ze nooit permanent kunnen verdwijnen. */
+.chart-card-editable .row-del,.chart-card-editable .add-chart-row-btn,.chart-card-editable .freetable-btnrow{display:none}
+body.edit-mode .chart-card-editable .row-del{display:flex}
+body.edit-mode .chart-card-editable .add-chart-row-btn{display:block}
+body.edit-mode .chart-card-editable .freetable-btnrow{display:flex}
 
 /* Organogram */
 .orgcard{border:1px solid var(--line);border-radius:2.6mm;padding:4mm 4.5mm;margin-bottom:4.5mm;background:#fff;break-inside:avoid}
@@ -596,6 +617,11 @@ body.edit-mode .edit-toolbar{display:flex}
 .pagenav-move-btn{width:20px;height:20px;border-radius:50%;border:1px solid var(--line,#E3EAF3);background:#fff;color:var(--ink-2,#33445C);font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit}
 .pagenav-move-btn:hover{background:#EDF3FC;border-color:#B9CEF5}
 .pagenav-move-btn[disabled]{opacity:.3;cursor:not-allowed}
+.pagenav-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.pagenav-text-btn{padding:3.5px 8px;border-radius:99px;border:1px solid var(--line,#E3EAF3);background:#fff;color:var(--ink-2,#33445C);font-size:9.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pagenav-text-btn:hover{background:#EDF3FC;border-color:#B9CEF5}
+.pagenav-text-btn-danger{color:#dc2626;border-color:rgba(220,38,38,.35)}
+.pagenav-text-btn-danger:hover{background:#FDEFEA;border-color:#dc2626}
 @media (max-width:900px){.pagenav-panel{width:150px}}
 @media print{.pagenav-panel{display:none!important}}
 
@@ -830,6 +856,7 @@ body.edit-mode [data-editor-id].editor-selected{outline:1.5px solid var(--blue,#
     <button class="et-tool" type="button" id="etImageBtn">Afbeelding</button>
     <button class="et-tool" type="button" id="etChartDonutBtn" title="Donutgrafiek invoegen op de actieve pagina">Donut</button>
     <button class="et-tool" type="button" id="etChartBarBtn" title="Staafdiagram invoegen op de actieve pagina">Staafdiagram</button>
+    <button class="et-tool" type="button" id="etTableBtn" title="Tabel invoegen op de actieve pagina">Tabel</button>
     <button class="et-tool" type="button" id="etAddPageBtn" title="Nieuwe lege pagina toevoegen na de huidige">+ Pagina</button>
     <button class="et-tool" type="button" data-tool="erase">Wissen</button>
     <input type="file" id="etImageInput" accept="image/*" style="display:none">
@@ -3472,7 +3499,16 @@ function addDeleteButtons(root){
   root.querySelectorAll('.cover-kpis>.cover-kpi, .cover-meta>div, .back-meta>div').forEach(elm=>{ elm.style.position='relative'; makeDeletable(elm); });
 }
 function removeAddDeleteControls(root){
-  root.querySelectorAll('.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn').forEach(elm=>elm.remove());
+  /* Knoppen binnen zelf toegevoegde grafieken/tabellen (.chart-card-editable)
+     worden bewust NIET verwijderd: er bestaat geen generieke "+ Segment/
+     Rij/Kolom toevoegen"-herbouwfunctie zoals voor blist/bna/fin/kpi, dus
+     eenmaal verwijderd zouden ze nooit meer terugkomen (ook niet na het
+     opnieuw inschakelen van bewerkmodus). Zichtbaarheid buiten bewerkmodus
+     loopt daarom voor dit type knoppen puur via CSS (body.edit-mode). */
+  root.querySelectorAll('.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn').forEach(elm=>{
+    if(elm.closest('.chart-card-editable')) return;
+    elm.remove();
+  });
   root.querySelectorAll('tr.fin-addrow').forEach(tr=>tr.remove());
 }
 
@@ -3609,6 +3645,7 @@ function addKpiPlusButton(root){
       const kpi=document.createElement('div'); kpi.className='kpi'; kpi.style.position='relative';
       kpi.innerHTML='<div class="kpi-l" contenteditable="true">Label</div><div class="kpi-v" contenteditable="true">Waarde</div>';
       grid.appendChild(kpi);
+      resetGridFamilyTransforms(grid);
       makeDeletable(kpi);
       ensureEditorId(kpi,'kpi');
       trackInsertion(kpi, null);
@@ -3627,6 +3664,7 @@ function addKpiPlusButton(root){
       const kpi=document.createElement('div'); kpi.className='cover-kpi'; kpi.style.position='relative';
       kpi.innerHTML='<div class="ck-v" contenteditable="true">Waarde</div><div class="ck-l" contenteditable="true">Label</div>';
       grid.appendChild(kpi);
+      resetGridFamilyTransforms(grid);
       makeDeletable(kpi);
       ensureEditorId(kpi,'kpi');
       kpi.classList.add('ed-movable');
@@ -3804,12 +3842,127 @@ function insertBarChart(page){
     const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
   }
 }
+
+/* ── Zelf toegevoegde tabel (vrij te plaatsen, net als de grafieken) ──
+   Bewust geen hergebruik van de generieke financiële-tabelmachinerie
+   (table.t + MOVE_SELECTORS.table) — die zou de tabel een TWEEDE keer als
+   los bewerkbaar object registreren, boven op de buitenste .annot-
+   wrapper, met dubbele selectiekaders tot gevolg. In plaats daarvan een
+   losstaande kaart met een eigen rij- én kolomknop; rijen verwijderen
+   loopt gewoon via het bestaande, centrale .row-del-mechanisme. */
+function buildEditableTableCard(cols, rowsCount, title){
+  const card=document.createElement('div');
+  card.className='chart-card table-card chart-card-editable';
+  card.dataset.chartType='table';
+  const h=document.createElement('div');
+  h.className='ch-h'; h.setAttribute('contenteditable','true'); h.textContent=title;
+  card.appendChild(h);
+
+  const table=document.createElement('table');
+  table.className='freetable';
+  const thead=document.createElement('thead');
+  const headRow=document.createElement('tr');
+  for(let c=0;c<cols;c++){
+    const th=document.createElement('th'); th.setAttribute('contenteditable','true'); th.textContent=`Kolom ${c+1}`;
+    headRow.appendChild(th);
+  }
+  thead.appendChild(headRow); table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  for(let r=0;r<rowsCount;r++){
+    const tr=document.createElement('tr'); tr.style.position='relative';
+    for(let c=0;c<cols;c++){
+      const td=document.createElement('td'); td.setAttribute('contenteditable','true'); td.textContent='';
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+    makeDeletable(tr);
+  }
+  table.appendChild(tbody);
+  card.appendChild(table);
+
+  const btnRow=document.createElement('div');
+  btnRow.className='freetable-btnrow';
+  const addRowBtn=document.createElement('button');
+  addRowBtn.type='button'; addRowBtn.className='add-row-btn add-chart-row-btn'; addRowBtn.textContent='+ Rij toevoegen';
+  addRowBtn.addEventListener('click', ()=>{
+    const colCount=headRow.querySelectorAll(':scope>th').length||cols;
+    const tr=document.createElement('tr'); tr.style.position='relative';
+    for(let c=0;c<colCount;c++){
+      const td=document.createElement('td'); td.setAttribute('contenteditable','true'); td.textContent='';
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+    makeDeletable(tr);
+    trackInsertion(tr, null);
+    const firstTd=tr.querySelector('td');
+    if(firstTd){
+      firstTd.focus();
+      const range=document.createRange(); range.selectNodeContents(firstTd);
+      const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    }
+  });
+  const addColBtn=document.createElement('button');
+  addColBtn.type='button'; addColBtn.className='add-row-btn add-chart-row-btn'; addColBtn.textContent='+ Kolom toevoegen';
+  addColBtn.addEventListener('click', ()=>{
+    const bodyRows=[...tbody.querySelectorAll(':scope>tr')];
+    const added=[];
+    const th=document.createElement('th'); th.setAttribute('contenteditable','true');
+    th.textContent=`Kolom ${headRow.children.length+1}`;
+    added.push({cell:th, parent:headRow});
+    bodyRows.forEach(tr=>{
+      const td=document.createElement('td'); td.setAttribute('contenteditable','true'); td.textContent='';
+      added.push({cell:td, parent:tr});
+    });
+    const cmd={
+      apply(){ added.forEach(a=>a.parent.appendChild(a.cell)); },
+      revert(){ added.forEach(a=>a.cell.remove()); },
+    };
+    commit(cmd, false);
+    const firstNewTd=added.find(a=>a.cell.tagName==='TD');
+    if(firstNewTd){
+      firstNewTd.cell.focus();
+      const range=document.createRange(); range.selectNodeContents(firstNewTd.cell);
+      const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    }
+  });
+  btnRow.appendChild(addRowBtn); btnRow.appendChild(addColBtn);
+  card.appendChild(btnRow);
+  return card;
+}
+function finalizeFreeTableCreation(elm){
+  if(!elm || !elm.isConnected) return;
+  ensureEditorId(elm,'freetable');
+  elm.classList.add('ed-movable');
+  trackInsertion(elm, null);
+  selectObject(elm);
+}
+function insertFreeTable(page){
+  if(!page) return;
+  const layer=ensureAnnotLayer(page);
+  const card=buildEditableTableCard(3, 2, 'Nieuwe tabel');
+  if(!card) return;
+  const wrap=document.createElement('div');
+  wrap.className='annot annot-table';
+  Object.assign(wrap.style,{left:'22%',top:'30%',width:'56%'});
+  wrap.appendChild(card);
+  layer.appendChild(wrap);
+  finalizeFreeTableCreation(wrap);
+  const h=card.querySelector('.ch-h');
+  if(h){
+    h.focus();
+    const range=document.createRange(); range.selectNodeContents(h);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  }
+}
+
 /* Eén dispatcher zodat removeElement/trackInsertion/de input-listener niet
    per grafiektype hoeven te weten welke herbereken-functie erbij hoort. */
 function recalcChartCard(card){
   if(!card) return;
   if(card.dataset.chartType==='bar') recalcBarSvg(card);
-  else recalcDonutSvg(card);
+  else if(card.dataset.chartType==='donut') recalcDonutSvg(card);
+  // 'table' heeft geen SVG om opnieuw te tekenen — rij-/kolomwijzigingen
+  // hoeven hier dus niets te doen.
 }
 
 function addAllPlusButtons(root){
@@ -4287,16 +4440,20 @@ function insertBlankPage(){
   lastActivePage=page;
   requestAnimationFrame(()=>page.scrollIntoView({behavior:'smooth', block:'start'}));
 }
-/* Verwijdert een handmatig toegevoegde pagina (nooit een AI-gegenereerde
-   pagina — die heeft geen data-manual-page en dus ook geen knop). Los van
-   removeElement() gehouden omdat een paginaverwijdering altijd gevolgd
-   moet worden door renumberPages(), zowel bij toepassen als ongedaan maken. */
-function deleteManualPage(page){
-  if(!page || page.dataset.manualPage!=='1') return;
+/* Verwijdert een willekeurige pagina — handmatig toegevoegd of
+   AI-gegenereerd, maakt niet uit — behalve het vaste voor-/achterblad,
+   die blijven altijd staan. Los van removeElement() gehouden omdat een
+   paginaverwijdering altijd gevolgd moet worden door renumberPages(),
+   zowel bij toepassen als ongedaan maken, en omdat een eventuele selectie
+   binnenin de pagina eerst netjes losgemaakt moet worden. */
+function deletePage(page){
+  if(!page) return;
+  if(page.classList.contains('cover') || page.classList.contains('backcover')) return;
   const parent=page.parentElement; if(!parent) return;
   const anchorNode=page.nextElementSibling;
   const cmd={
     apply(){
+      deselectAll();
       page.remove();
       if(lastActivePage===page) lastActivePage=null;
       renumberPages();
@@ -4307,6 +4464,58 @@ function deleteManualPage(page){
     },
   };
   commit(cmd, false);
+}
+/* Dupliceert een willekeurige pagina (behalve voor-/achterblad) en zet de
+   kopie er direct achter. Bewerkknoppen (×, "+ ...") worden gestript en —
+   als bewerkmodus actief is — meteen weer opgebouwd; alle geneste
+   editor-ID's worden ververst zodat de kopie nooit botst met het
+   origineel (zie ook duplicateSelected() hierboven voor hetzelfde principe
+   op object-niveau). */
+function duplicatePage(page){
+  if(!page) return;
+  if(page.classList.contains('cover') || page.classList.contains('backcover')) return;
+  const clone=page.cloneNode(true);
+  clone.querySelectorAll('.row-del,.add-item-btn,.add-row-btn,.add-kpi-btn,.page-del-btn,.editor-selection-frame').forEach(n=>{
+    if(n.closest('.chart-card-editable')) return; // die knoppen blijven staan, zichtbaarheid loopt via CSS (zie removeAddDeleteControls)
+    n.remove();
+  });
+  clone.querySelectorAll('[contenteditable]').forEach(n=>n.removeAttribute('contenteditable'));
+  clone.querySelectorAll('.editor-selected').forEach(n=>n.classList.remove('editor-selected'));
+  clone.querySelectorAll('[data-editor-id]').forEach(n=>{
+    const type=n.dataset.editorType;
+    n.removeAttribute('data-editor-id');
+    if(type) ensureEditorId(n, type);
+  });
+  const right=clone.querySelector(':scope>.rp-head .rp-head-right');
+  if(right) right.textContent=(sourceHeaderTitle(page)||right.textContent||'').trim()+' — kopie';
+
+  const parent=page.parentElement;
+  const anchorNode=page.nextElementSibling;
+
+  const cmd={
+    apply(){
+      parent.insertBefore(clone, anchorNode&&anchorNode.parentElement===parent?anchorNode:null);
+      registerEditableObjects(clone);
+      if(editModeOn){
+        clone.querySelectorAll(EDITABLE_TEXT_SELECTOR).forEach(elm=>{
+          if(elm.closest('.fin-sec')) return;
+          elm.setAttribute('contenteditable','true');
+        });
+        addAllPlusButtons(clone);
+        addDeleteButtons(clone);
+      }
+      renumberPages();
+    },
+    revert(){
+      deselectAll();
+      clone.remove();
+      if(lastActivePage===clone) lastActivePage=null;
+      renumberPages();
+    },
+  };
+  commit(cmd, false);
+  lastActivePage=clone;
+  requestAnimationFrame(()=>clone.scrollIntoView({behavior:'smooth', block:'start'}));
 }
 
 function resolveAllPageOverflows(){
@@ -4405,6 +4614,19 @@ function buildPageThumb(page, idx, total, cover, backcover){
     meta.appendChild(moves);
   }
   item.appendChild(meta);
+
+  if(page!==cover && page!==backcover){
+    const actions=document.createElement('div');
+    actions.className='pagenav-actions';
+    const dupBtn=document.createElement('button');
+    dupBtn.type='button'; dupBtn.className='pagenav-text-btn'; dupBtn.title='Deze pagina dupliceren'; dupBtn.textContent='Kopie';
+    dupBtn.addEventListener('click', ev=>{ ev.stopPropagation(); duplicatePage(page); });
+    const delBtn=document.createElement('button');
+    delBtn.type='button'; delBtn.className='pagenav-text-btn pagenav-text-btn-danger'; delBtn.title='Deze pagina verwijderen'; delBtn.textContent='Verwijderen';
+    delBtn.addEventListener('click', ev=>{ ev.stopPropagation(); deletePage(page); });
+    actions.appendChild(dupBtn); actions.appendChild(delBtn);
+    item.appendChild(actions);
+  }
   item.addEventListener('click', ()=>{
     page.scrollIntoView({behavior:'smooth', block:'start'});
     lastActivePage=page;
@@ -4522,6 +4744,10 @@ const ADAPTERS = {
      bewerkbaar als tekst) en géén dupliceren (voorkomt twee grafieken met
      identieke, ontkoppelde data door elkaar). */
   chart:{move:true,resize:'annot',front:true,dup:false,del:true,font:false},
+  /* Zelf toegevoegde tabel: zelfde vrije plaatsing/schaling als een
+     grafiek, ook zonder lettertype-balk (cellen zijn al direct bewerkbaar)
+     en zonder dupliceren (gebruik in plaats daarvan "+ Rij"/"+ Kolom"). */
+  freetable:{move:true,resize:'annot',front:true,dup:false,del:true,font:false},
 };
 /* Beperkt tot lettertypes die zowel op scherm als in de afgedrukte PDF
    betrouwbaar identiek ogen (systeemlettertypes of het al geladen
@@ -4674,7 +4900,7 @@ function getTransform(elm){
    normale documentstroom) — naast echte annotaties geldt dit ook voor een
    zelf toegevoegde grafiek, die om dezelfde reden vrij op de pagina moet
    kunnen staan. */
-function isAnnotType(elm){ return elm.dataset.editorType==='annotation' || elm.dataset.editorType==='chart'; }
+function isAnnotType(elm){ return elm.dataset.editorType==='annotation' || elm.dataset.editorType==='chart' || elm.dataset.editorType==='freetable'; }
 
 /* Huidige positie/omvang van een object t.o.v. zijn pagina, ongeacht of
    het via transform (rapportobjecten) of via left/top% (annotaties) wordt
@@ -4683,11 +4909,47 @@ function objectScreenRect(elm){
   return elm.getBoundingClientRect();
 }
 
+/* Kerncijfer-achtige kaarten (.kpis/.cover-kpis/.cover-meta/.back-meta)
+   staan in een rij-/gridlayout waar CSS zelf al voor gelijke hoogte en
+   nette uitlijning zorgt — zólang er geen losse pixel-transform overheen
+   ligt. Zie beginMove()/duplicateSelected() hieronder: voor dit type wordt
+   nooit een blijvende offset achtergelaten, alleen de DOM-volgorde
+   verandert (slepen = herschikken, niet vrij zweven). */
+function gridFamilyContainer(elm){
+  const p=elm && elm.parentElement;
+  return (p && p.matches('.kpis,.cover-kpis,.cover-meta,.back-meta')) ? p : null;
+}
+/* Nult de sleep-offset van broertjes in zo'n rij/grid — nodig omdat het
+   invoegen of verwijderen van een kaart de rij laat herschikken, waardoor
+   een eerder gesleepte buurkaart niet meer bij zijn (verschoven) vak past
+   en "gek" gaat staan. */
+function resetGridFamilyTransforms(container){
+  if(!container) return;
+  [...container.children].forEach(child=>{
+    if(child.dataset.editorTx || child.dataset.editorTy) setTransform(child, 0, 0);
+  });
+}
+/* Vindt de kaart waar 'elm' vóór moet komen te staan, puur op basis van de
+   loslaatpositie (leesvolgorde: eerst rij, dan kolom) — null betekent
+   "aan het einde". Zelfde soort logica als de bestaande bullet-lijst-
+   drag&drop (enableBlistDragDrop), maar dan voor een rij-/grid-layout met
+   meerdere kolommen i.p.v. één kolom. */
+function findGridInsertionAnchor(container, elm, dropX, dropY){
+  const siblings=[...container.children].filter(c=>c!==elm);
+  return siblings.find(sib=>{
+    const r=sib.getBoundingClientRect();
+    if(dropY < r.top) return true;
+    if(dropY <= r.bottom && dropX < r.left+r.width/2) return true;
+    return false;
+  }) || null;
+}
+
 /* ── Verplaatsen ──────────────────────────────────────────────────── */
 function beginMove(elm, startEvt){
   const page=pageOf(elm); if(!page) return;
   const scale=pageScale(page);
   const annot=isAnnotType(elm);
+  const gridParent = !annot ? gridFamilyContainer(elm) : null;
   const start = annot
     ? { left:parseFloat(elm.style.left)||0, top:parseFloat(elm.style.top)||0 }
     : getTransform(elm);
@@ -4710,6 +4972,30 @@ function beginMove(elm, startEvt){
   function up(e){
     document.removeEventListener('pointermove',move);
     document.removeEventListener('pointerup',up);
+    if(gridParent){
+      /* Kerncijfer-achtige kaart: geen vrije pixel-offset laten staan.
+         In plaats daarvan de kaart naar de dichtstbijzijnde plek in de
+         rij/grid verplaatsen (op basis van de loslaatpositie) en de
+         transform altijd weer op nul zetten — de kaart "springt" zo
+         terug in de rij, met gegarandeerd dezelfde hoogte/uitlijning als
+         de buren, want dat regelt de grid zelf. */
+      const parent=gridParent;
+      const prevAnchor=elm.nextElementSibling;
+      const newAnchor=findGridInsertionAnchor(parent, elm, e.clientX, e.clientY);
+      const reordered = newAnchor!==prevAnchor;
+      const offsetWasNonZero = start.tx!==0 || start.ty!==0;
+      if(reordered || offsetWasNonZero){
+        const cmd={
+          apply(){ parent.insertBefore(elm, newAnchor); setTransform(elm,0,0); },
+          revert(){ parent.insertBefore(elm, prevAnchor); setTransform(elm, start.tx, start.ty); },
+        };
+        commit(cmd, false);
+      } else {
+        setTransform(elm, 0, 0);
+      }
+      repositionFrame();
+      return;
+    }
     const changed = annot ? (last.left!==start.left||last.top!==start.top) : (last.tx!==start.tx||last.ty!==start.ty);
     if(changed){
       const cmd={
@@ -4747,7 +5033,7 @@ function beginResize(elm, startEvt){
      hoogte volgt automatisch de inhoud — vandaar geen 'free' of 'aspect'
      maar een neutrale niet-lege modus die in de annot-tak hieronder alleen
      de breedte laat meelopen. */
-  const mode = annot ? (elm.classList.contains('annot-image')?'aspect':elm.classList.contains('annot-highlight')?'free':elm.classList.contains('annot-chart')?'w':'none') : adapter.resize;
+  const mode = annot ? (elm.classList.contains('annot-image')?'aspect':elm.classList.contains('annot-highlight')?'free':(elm.classList.contains('annot-chart')||elm.classList.contains('annot-table'))?'w':'none') : adapter.resize;
   if(mode==='none'||mode===false) return;
   let lastW=startW,lastH=startH;
   function move(e){
@@ -4971,10 +5257,11 @@ function removeElement(elm){
   const nextSibling=elm.nextElementSibling;
   const table = elm.closest && (elm.closest('table.bna-table')||elm.closest('table.t.fin')||elm.closest('table.t.addable-rows'));
   const chartCard = elm.closest && elm.closest('.chart-card-editable');
+  const gridParent = gridFamilyContainer(elm);
   const wasSelected = Ed.selected===elm.dataset.editorId;
   const cmd={
-    apply(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); if(wasSelected) deselectAll(); },
-    revert(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); selectObject(elm); },
+    apply(){ elm.remove(); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); if(gridParent) resetGridFamilyTransforms(gridParent); if(wasSelected) deselectAll(); },
+    revert(){ parent.insertBefore(elm, nextSibling&&nextSibling.parentElement===parent?nextSibling:null); recalcAfterMutation(table); if(chartCard) recalcChartCard(chartCard); if(gridParent) resetGridFamilyTransforms(gridParent); selectObject(elm); },
   };
   commit(cmd, false);
 }
@@ -5011,7 +5298,13 @@ function duplicateSelected(){
   ensureEditorId(clone, elm.dataset.editorType);
   // her-ID alle geneste bewerkbare kinderen (bv. rijen binnen een gedupliceerde tabel)
   clone.querySelectorAll('[data-editor-id]').forEach(child=>{ child.removeAttribute('data-editor-id'); ensureEditorId(child, child.dataset.editorType); });
-  if(adapter.move && !isAnnotType(clone)){
+  const gridParent=gridFamilyContainer(elm);
+  if(gridParent){
+    // Kerncijfer-achtige kaart: geen diagonale plak-offset — de kopie
+    // moet gewoon netjes in de rij verschijnen, op dezelfde hoogte als
+    // de rest (zie ook beginMove()/resetGridFamilyTransforms()).
+    setTransform(clone, 0, 0);
+  } else if(adapter.move && !isAnnotType(clone)){
     const t=getTransform(elm);
     setTransform(clone, t.tx+18, t.ty+18);
   } else if(isAnnotType(clone)){
@@ -5019,6 +5312,7 @@ function duplicateSelected(){
     clone.style.top=(parseFloat(elm.style.top)||0)+3+'%';
   }
   elm.insertAdjacentElement('afterend', clone);
+  if(gridParent) resetGridFamilyTransforms(gridParent);
   if(clone.matches('.blist>div')) makeDeletable(clone);
   if(clone.matches('table.bna-table tr[data-bna-role="detail"]')||clone.matches('table.t.addable-rows tbody tr')) makeDeletable(clone);
   if(clone.matches('.kpis>.kpi')) makeDeletable(clone);
@@ -5557,7 +5851,7 @@ document.addEventListener('click', e=>{
   if(!btn) return;
   e.preventDefault(); e.stopPropagation();
   const page=btn.closest('.report-page');
-  if(page) deleteManualPage(page);
+  if(page) deletePage(page);
 });
 
 /* ══ Toolbar ════════════════════════════════════════════════════════ */
@@ -5594,6 +5888,11 @@ $('#etChartBarBtn')?.addEventListener('click',()=>{
   const targetPage=lastActivePage||el.stage.querySelector('.report-page');
   if(!targetPage) return;
   insertBarChart(targetPage);
+});
+$('#etTableBtn')?.addEventListener('click',()=>{
+  const targetPage=lastActivePage||el.stage.querySelector('.report-page');
+  if(!targetPage) return;
+  insertFreeTable(targetPage);
 });
 $('#etAddPageBtn')?.addEventListener('click',()=>{
   insertBlankPage();
